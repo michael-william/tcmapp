@@ -1,60 +1,268 @@
-# CLAUDE.md
+# CLAUDE.md - Tableau Migration Web Application
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-This is a single-file HTML application called "Tableau Cloud Migration Prerequisite Questions - Pro". It's a self-contained interactive checklist tool for managing Tableau Cloud migration projects with no build process or external dependencies.
+**Tableau Cloud Migration Prerequisite Questions - Web Application**
 
-## Architecture
+A full-stack web application for managing Tableau Cloud migration projects. This application transforms a single-file HTML checklist into a collaborative tool with user authentication, database persistence, and customizable question templates.
 
-**Single-File Application**: The entire application exists in `tableau-migration-checklist-pro.html` containing:
-- Embedded CSS styles (lines 8-988)
-- HTML structure (lines 990-1101)
-- Inline JavaScript application logic (lines 1103-2095)
-- Hardcoded questions array at line 1104 containing all 54 migration questions
+**Purpose**: Enable InterWorks consultants to create and manage migration checklists for multiple clients, with each client able to answer questions through a dedicated portal.
 
-**Data Persistence**: Uses browser localStorage with three keys:
-- `tableauMigrationQuestionsPro` - stores question completion state and answers
-- `tableauMigrationClientInfoPro` - stores client project metadata
-- `tableauMigrationAdditionalNotes` - stores free-form notes
+## Tech Stack
 
-**Question Types**: The application supports multiple input types defined by flags in the questions array:
-- Standard checkbox questions (default)
-- `isTextInput` - multi-line text areas for detailed responses
-- `isDateInput` - date picker inputs
-- `isDropdown` - dropdown select menus
-- `isYesNo` - radio button Yes/No selections (with optional custom options via `yesNoOptions`)
-- `hasConditionalInput` - shows text field when main question is completed
-- `hasConditionalDate` - shows date field when Yes/No answer is "Yes"
-- `isFullWidth` - spans entire grid width
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (Mongoose ODM)
+- **Authentication**: JWT with bcrypt
+- **Testing**: Jest + Supertest + MongoDB Memory Server
 
-**External Dependencies**:
-- jsPDF library (CDN: https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js) - for PDF export
-- InterWorks logo image reference: `IWstacked-%23ffffff.png` (local file)
+### Frontend
+- **Framework**: React 18
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Routing**: React Router v6
+- **HTTP Client**: Axios
+- **Testing**: Vitest + React Testing Library + MSW
 
-## Key Functionality
+### Deployment
+- **Containerization**: Docker + Docker Compose
+- **Services**: Frontend (port 5173), Backend (port 5000), MongoDB (port 27017)
 
-**Section Management**: Questions are organized into sections (Security, Communications, Stakeholders, Access & Connectivity, Tableau Server, Pre Flight Checks, Tableau Cloud, Tableau Bridge, Cloud Data Sources). Sections are collapsible and track completion progress.
+## Repository Structure
 
-**Search & Filtering** (lines 1199-1219):
-- Text search across questions and sections
-- Filter by section dropdown
-- Filter by status (all/unanswered/answered)
+```
+tableau-migration-app/
+├── backend/                    # Express API server
+│   ├── src/
+│   │   ├── models/            # Mongoose models (User, Migration)
+│   │   ├── routes/            # API endpoints (auth, migrations, users)
+│   │   ├── middleware/        # Auth middleware (JWT verification)
+│   │   ├── seeds/             # Default question template
+│   │   ├── config/            # Database configuration
+│   │   └── __tests__/         # Backend tests
+│   ├── package.json
+│   ├── CLAUDE.md             # Backend-specific docs
+│   └── .env                  # Backend environment variables
+│
+├── frontend/                   # React application
+│   ├── src/
+│   │   ├── components/        # React components (atomic design)
+│   │   │   ├── ui/           # Base shadcn/ui components
+│   │   │   ├── atoms/        # Simple building blocks
+│   │   │   ├── molecules/    # Component combinations
+│   │   │   ├── organisms/    # Complex components
+│   │   │   └── templates/    # Page layouts
+│   │   ├── pages/            # Page components
+│   │   ├── lib/              # Utilities and helpers
+│   │   ├── hooks/            # Custom React hooks
+│   │   └── __tests__/        # Frontend tests
+│   ├── package.json
+│   ├── CLAUDE.md             # Frontend-specific docs
+│   └── vite.config.js
+│
+├── docker-compose.yml         # Container orchestration
+├── .env.example              # Environment variables template
+├── CLAUDE.md                 # This file
+└── tableau-migration-checklist-pro.html  # Original HTML prototype (reference)
+```
 
-**PDF Export** (lines 1828-2078):
-- Generates comprehensive PDF report with client info, progress stats, and all answered questions
-- Filename format: `{ClientName}_Tableau_Migration_Checklist_{Date}.pdf`
+## How to Run the Application
 
-**Special Logic**:
-- Tableau Bridge section: Questions are conditionally hidden if first question ("Do you require the use of Tableau Bridge?") is answered "No" (lines 1270-1276)
+### Prerequisites
+- Docker and Docker Compose installed
+- Node.js 18+ (for local development without Docker)
+- MongoDB (for local development without Docker)
 
-## Development Notes
+### Using Docker Compose (Recommended)
 
-**No Build Process**: This is a static HTML file. Open directly in browser or serve via simple HTTP server. No compilation, transpilation, or bundling required.
+```bash
+# Start all services
+docker-compose up --build
 
-**Testing**: Manual testing in browser only. No automated test suite exists.
+# Access the application
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:5000/api
+# MongoDB: mongodb://localhost:27017
+```
 
-**State Management**: All question state updates trigger `saveProgress()` function which persists to localStorage. Progress is loaded on page load via `loadQuestions()` (line 2094).
+### Local Development (Without Docker)
 
-**Modifying Questions**: The questions array starts at line 1104 as a single-line JavaScript array. Each question object can include properties: `section`, `question`, `completed`, `timestamp`, plus any of the question type flags mentioned above.
+**Backend:**
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## How to Run Tests
+
+### Backend Tests
+```bash
+cd backend
+npm install
+npm test              # Run all tests with coverage
+npm run test:watch    # Run tests in watch mode
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm install
+npm test              # Run all tests with coverage
+npm run test:watch    # Run tests in watch mode
+npm run test:ui       # Open Vitest UI
+```
+
+### Run All Tests
+```bash
+# From project root
+cd backend && npm test && cd ../frontend && npm test
+```
+
+## Environment Variables
+
+Create `.env` files in the appropriate directories:
+
+**Backend `.env`:**
+```
+MONGODB_URI=mongodb://localhost:27017/tableau-migrations-dev
+JWT_SECRET=your-super-secure-random-jwt-secret
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+PORT=5000
+```
+
+**Frontend `.env`:**
+```
+VITE_API_URL=http://localhost:5000/api
+```
+
+See `.env.example` for a complete template.
+
+## Key Architectural Decisions
+
+### Authentication Strategy
+- JWT tokens stored in localStorage (frontend)
+- Token expiration: 7 days (configurable)
+- Password hashing: bcrypt with 10 salt rounds
+- Role-based access control: `interworks` and `client` roles
+
+### Database Design
+- NoSQL (MongoDB) for flexible schema
+- Two main models: User and Migration
+- Migration contains embedded questions array (not separate collection)
+- Question template cloned on migration creation
+
+### Frontend Architecture
+- Atomic Design pattern for components
+- shadcn/ui for base component library
+- Tailwind CSS for styling with custom purple gradient theme (#6633ff, #4616a8)
+- Auto-save functionality with debouncing
+
+### Testing Strategy
+- Backend: Jest + Supertest for integration tests, MongoDB Memory Server for isolation
+- Frontend: Vitest + React Testing Library for component tests, MSW for API mocking
+- Coverage targets: 80%+ backend, 70%+ frontend
+- E2E tests: Playwright (optional, for critical flows)
+
+## Common Development Tasks
+
+### Add a New API Endpoint
+1. Define route in `backend/src/routes/`
+2. Add middleware if needed (auth, validation)
+3. Create test in `backend/src/__tests__/routes/`
+4. Run tests: `cd backend && npm test`
+
+### Add a New Component
+1. Create component in appropriate directory:
+   - Atoms: `frontend/src/components/atoms/`
+   - Molecules: `frontend/src/components/molecules/`
+   - Organisms: `frontend/src/components/organisms/`
+2. Create test in `frontend/src/__tests__/components/`
+3. Run tests: `cd frontend && npm test`
+
+### Add a New Page
+1. Create page component in `frontend/src/pages/`
+2. Add route in main routing file
+3. Create test in `frontend/src/__tests__/pages/`
+4. Add MSW handlers in `frontend/src/__tests__/mocks/handlers.js`
+
+### Seed Database with Questions
+```bash
+cd backend
+npm run seed
+```
+
+### Update Question Template
+Edit `backend/src/seeds/questionTemplate.js` with the 54 migration questions.
+
+## User Roles and Permissions
+
+### InterWorks Role
+- Create/delete migrations
+- Customize questions per migration
+- Create/delete client users
+- View all migrations
+- Edit any migration
+
+### Client Role
+- View assigned migration only
+- Answer questions
+- Export PDF
+- Cannot customize questions
+- Cannot access other migrations
+
+## Deployment
+
+### Production Considerations
+- Use strong JWT_SECRET (generate with `openssl rand -base64 32`)
+- Enable HTTPS (use reverse proxy like Nginx with Let's Encrypt)
+- Set up MongoDB backups
+- Configure CORS for production domain
+- Add rate limiting on auth endpoints
+- Use environment variables for all secrets
+- Set NODE_ENV=production
+
+### Docker Compose Production
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Migration from Original HTML
+The original single-file HTML application (`tableau-migration-checklist-pro.html`) serves as the source of truth for:
+- Question structure and types (line 1104)
+- UI styling and design patterns
+- PDF export format
+- Question rendering logic
+
+## Support and Documentation
+
+For more detailed documentation:
+- Backend: See `backend/CLAUDE.md`
+- Frontend: See `frontend/CLAUDE.md`
+
+## Future Extensibility
+
+### Planned Features
+- Magic link authentication (passwordless login)
+- Email notifications
+- Migration status workflow (draft, in-progress, completed)
+- File attachments
+- Comments and collaboration
+- Activity log and audit trail
+- Analytics dashboard
+
+### Extension Points
+- User model ready for `loginToken` and `loginTokenExpiry` fields
+- Email service integration points prepared
+- Extensible question types via `questionType` enum
