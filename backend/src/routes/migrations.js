@@ -7,6 +7,7 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const Migration = require('../models/Migration');
+const Client = require('../models/Client');
 const User = require('../models/User');
 const { requireAuth, requireInterWorks } = require('../middleware/auth');
 const questionTemplate = require('../seeds/questionTemplate');
@@ -22,10 +23,9 @@ router.post(
   requireAuth,
   requireInterWorks,
   [
-    body('clientEmail')
-      .isEmail()
-      .withMessage('Valid client email is required')
-      .normalizeEmail(),
+    body('clientId')
+      .isMongoId()
+      .withMessage('Valid client ID is required'),
     body('clientInfo').optional().isObject(),
   ],
   async (req, res) => {
@@ -38,29 +38,20 @@ router.post(
         });
       }
 
-      const { clientEmail, clientInfo } = req.body;
+      const { clientId, clientInfo } = req.body;
 
-      // Check if client user exists
-      const clientUser = await User.findOne({ email: clientEmail });
-      if (!clientUser) {
+      // Check if client exists
+      const client = await Client.findById(clientId);
+      if (!client) {
         return res.status(404).json({
           success: false,
-          message: 'Client user not found. Please create the user first.',
+          message: 'Client not found. Please create the client first.',
         });
       }
 
-      // Check if migration already exists for this client
-      const existingMigration = await Migration.findOne({ clientEmail });
-      if (existingMigration) {
-        return res.status(400).json({
-          success: false,
-          message: 'Migration already exists for this client.',
-        });
-      }
-
-      // Create migration with question template
+      // Create migration with question template (no restriction on multiple migrations per client)
       const migration = await Migration.create({
-        clientEmail,
+        clientId,
         clientInfo: clientInfo || {},
         questions: questionTemplate,
         createdBy: req.user.email,
@@ -87,22 +78,23 @@ router.post(
  */
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { clientEmail, section } = req.query;
+    const { clientId, section } = req.query;
 
     // Build query
     let query = {};
 
-    // Clients can only see their own migration
-    if (req.user.role === 'client') {
-      query.clientEmail = req.user.email;
-    } else if (clientEmail) {
-      // InterWorks can filter by client email
-      query.clientEmail = clientEmail;
+    // Guests can only see migrations for their client
+    if (req.user.role === 'guest') {
+      query.clientId = req.user.clientId;
+    } else if (clientId) {
+      // InterWorks can filter by client ID
+      query.clientId = clientId;
     }
 
     const migrations = await Migration.find(query)
       .sort({ updatedAt: -1 })
-      .select('-questions'); // Exclude questions for list view (performance)
+      .select('-questions') // Exclude questions for list view (performance)
+      .populate('clientId', 'name email');
 
     // Calculate progress for each migration
     const migrationsWithProgress = await Promise.all(
@@ -144,7 +136,7 @@ router.get('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       });
     }
 
-    const migration = await Migration.findById(req.params.id);
+    const migration = await Migration.findById(req.params.id).populate('clientId', 'name email');
 
     if (!migration) {
       return res.status(404).json({
@@ -153,11 +145,11 @@ router.get('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       });
     }
 
-    // Check access: clients can only view their own migration
-    if (req.user.role === 'client' && migration.clientEmail !== req.user.email) {
+    // Check access: guests can only view migrations for their client
+    if (req.user.role === 'guest' && migration.clientId._id.toString() !== req.user.clientId.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only view your own migration.',
+        message: 'Access denied. You can only view migrations for your client.',
       });
     }
 
@@ -202,11 +194,11 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       });
     }
 
-    // Check access: clients can only update their own migration
-    if (req.user.role === 'client' && migration.clientEmail !== req.user.email) {
+    // Check access: guests can only update migrations for their client
+    if (req.user.role === 'guest' && migration.clientId.toString() !== req.user.clientId.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only update your own migration.',
+        message: 'Access denied. You can only update migrations for your client.',
       });
     }
 

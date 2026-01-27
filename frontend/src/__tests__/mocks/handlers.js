@@ -8,6 +8,15 @@ import { http, HttpResponse } from 'msw';
 
 const API_URL = 'http://localhost:5000/api';
 
+// Mock client data
+const mockClient = {
+  _id: '507f1f77bcf86cd799439010',
+  name: 'Test Client Company',
+  email: 'contact@testclient.com',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 // Mock user data
 const mockUser = {
   _id: '507f1f77bcf86cd799439011',
@@ -18,11 +27,12 @@ const mockUser = {
   updatedAt: new Date().toISOString(),
 };
 
-const mockClientUser = {
+const mockGuestUser = {
   _id: '507f1f77bcf86cd799439012',
-  email: 'client@example.com',
-  name: 'Client User',
-  role: 'client',
+  email: 'guest@example.com',
+  name: 'Guest User',
+  role: 'guest',
+  clientId: mockClient,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -32,6 +42,7 @@ const mockToken = 'mock-jwt-token-for-testing';
 // Mock migration data
 const mockMigration = {
   _id: 'migration-123',
+  clientId: mockClient,
   clientInfo: {
     clientName: 'Acme Corporation',
     projectName: 'Q2 2024 Migration',
@@ -83,8 +94,9 @@ const mockMigration = {
   updatedAt: new Date().toISOString(),
 };
 
+const clients = [mockClient];
 const migrations = [mockMigration];
-const users = [mockUser, mockClientUser];
+const users = [mockUser, mockGuestUser];
 
 export const handlers = [
   // Auth - Register
@@ -110,7 +122,7 @@ export const handlers = [
           ...mockUser,
           email: body.email,
           name: body.name,
-          role: body.role || 'client',
+          role: body.role || 'guest',
         },
       },
       { status: 201 }
@@ -159,6 +171,177 @@ export const handlers = [
     });
   }),
 
+  // Clients - List all
+  http.get(`${API_URL}/clients`, ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      clients: clients,
+    });
+  }),
+
+  // Clients - Get single
+  http.get(`${API_URL}/clients/:id`, ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const client = clients.find((c) => c._id === params.id);
+
+    if (!client) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Client not found.',
+        },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      success: true,
+      client: client,
+    });
+  }),
+
+  // Clients - Create new
+  http.post(`${API_URL}/clients`, async ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    // Check if email already exists
+    if (clients.find((c) => c.email === body.email)) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'A client with this email already exists.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const newClient = {
+      _id: `client-${Date.now()}`,
+      name: body.name,
+      email: body.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    clients.push(newClient);
+
+    return HttpResponse.json(
+      {
+        success: true,
+        client: newClient,
+      },
+      { status: 201 }
+    );
+  }),
+
+  // Clients - Update
+  http.put(`${API_URL}/clients/:id`, async ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const clientIndex = clients.findIndex((c) => c._id === params.id);
+
+    if (clientIndex === -1) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Client not found.',
+        },
+        { status: 404 }
+      );
+    }
+
+    clients[clientIndex] = {
+      ...clients[clientIndex],
+      ...body,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json({
+      success: true,
+      client: clients[clientIndex],
+    });
+  }),
+
+  // Clients - Delete
+  http.delete(`${API_URL}/clients/:id`, ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const clientIndex = clients.findIndex((c) => c._id === params.id);
+
+    if (clientIndex === -1) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Client not found.',
+        },
+        { status: 404 }
+      );
+    }
+
+    clients.splice(clientIndex, 1);
+
+    return HttpResponse.json({
+      success: true,
+      message: 'Client deleted successfully.',
+    });
+  }),
+
   // Migrations - List all
   http.get(`${API_URL}/migrations`, ({ request }) => {
     const authHeader = request.headers.get('Authorization');
@@ -198,6 +381,7 @@ export const handlers = [
     const newMigration = {
       ...mockMigration,
       _id: `migration-${Date.now()}`,
+      clientId: body.clientId || mockClient._id,
       clientInfo: body.clientInfo || {},
       questions: body.questions || mockMigration.questions,
       createdAt: new Date().toISOString(),
@@ -373,7 +557,8 @@ export const handlers = [
       _id: `user-${Date.now()}`,
       name: body.name,
       email: body.email,
-      role: body.role || 'client',
+      role: body.role || 'guest',
+      clientId: body.clientId || mockClient._id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

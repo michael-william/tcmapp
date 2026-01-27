@@ -12,6 +12,7 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { MigrationChecklist } from './pages/MigrationChecklist';
 import { UserManagement } from './pages/UserManagement';
+import { ClientManagement } from './pages/ClientManagement';
 
 function App() {
   return (
@@ -45,6 +46,15 @@ function App() {
             element={
               <ProtectedRoute requireInterWorks>
                 <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/clients"
+            element={
+              <ProtectedRoute requireInterWorks>
+                <ClientManagement />
               </ProtectedRoute>
             }
           />

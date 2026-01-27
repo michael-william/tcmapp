@@ -56,11 +56,10 @@ const questionSchema = new mongoose.Schema({
 
 const migrationSchema = new mongoose.Schema(
   {
-    clientEmail: {
-      type: String,
-      required: [true, 'Client email is required'],
-      lowercase: true,
-      trim: true,
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+      required: [true, 'Client ID is required'],
     },
     clientInfo: {
       clientName: String,
@@ -90,7 +89,7 @@ const migrationSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
-migrationSchema.index({ clientEmail: 1 });
+migrationSchema.index({ clientId: 1 });
 migrationSchema.index({ createdBy: 1 });
 
 // Method to calculate progress

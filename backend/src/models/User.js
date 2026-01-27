@@ -1,7 +1,8 @@
 /**
  * User Model
  *
- * Represents users in the system (InterWorks consultants and client users).
+ * Represents users in the system (InterWorks consultants and guest users).
+ * Guest users are associated with a client company.
  */
 
 const mongoose = require('mongoose');
@@ -23,13 +24,20 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['interworks', 'client'],
+      enum: ['interworks', 'guest'],
       required: [true, 'Role is required'],
-      default: 'client',
+      default: 'guest',
     },
     name: {
       type: String,
       trim: true,
+    },
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Client',
+      required: function() {
+        return this.role === 'guest';
+      },
     },
   },
   {

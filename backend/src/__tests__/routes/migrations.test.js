@@ -8,6 +8,7 @@ const request = require('supertest');
 const express = require('express');
 const migrationRoutes = require('../../routes/migrations');
 const User = require('../../models/User');
+const Client = require('../../models/Client');
 const Migration = require('../../models/Migration');
 const { generateJWT } = require('../testHelpers');
 
@@ -18,10 +19,17 @@ app.use('/api/migrations', migrationRoutes);
 
 describe('Migration Routes', () => {
   let interworksUser, interworksToken;
-  let clientUser, clientToken;
+  let guestUser, guestToken;
+  let client;
   let migration;
 
   beforeEach(async () => {
+    // Create Client
+    client = await Client.create({
+      name: 'Acme Corp',
+      email: 'contact@acme.com',
+    });
+
     // Create InterWorks user
     interworksUser = await User.create({
       email: 'consultant@interworks.com',
@@ -36,25 +44,27 @@ describe('Migration Routes', () => {
       role: interworksUser.role,
     });
 
-    // Create client user
-    clientUser = await User.create({
-      email: 'client@company.com',
+    // Create guest user
+    guestUser = await User.create({
+      email: 'guest@company.com',
       passwordHash: 'Password123!',
-      name: 'Client User',
-      role: 'client',
+      name: 'Guest User',
+      role: 'guest',
+      clientId: client._id,
     });
 
-    clientToken = generateJWT({
-      userId: clientUser._id.toString(),
-      email: clientUser.email,
-      role: clientUser.role,
+    guestToken = generateJWT({
+      userId: guestUser._id.toString(),
+      email: guestUser.email,
+      role: guestUser.role,
+      clientId: guestUser.clientId.toString(),
     });
   });
 
   describe('POST /api/migrations', () => {
     it('should create migration with template (InterWorks only)', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id.toString(),
         clientInfo: {
           clientName: 'Acme Corp',
           region: 'US-West',
@@ -68,14 +78,40 @@ describe('Migration Routes', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.migration.clientEmail).toBe('client@company.com');
+      expect(response.body.migration.clientId).toBe(client._id.toString());
       expect(response.body.migration.questions).toHaveLength(55);
       expect(response.body.migration.createdBy).toBe('consultant@interworks.com');
     });
 
-    it('should fail if client user does not exist', async () => {
+    it('should allow multiple migrations for same client', async () => {
+      // Create first migration
+      await Migration.create({
+        clientId: client._id,
+        questions: [],
+        createdBy: 'consultant@interworks.com',
+      });
+
+      // Create second migration - should succeed
       const migrationData = {
-        clientEmail: 'nonexistent@company.com',
+        clientId: client._id.toString(),
+        clientInfo: {
+          clientName: 'Acme Corp',
+        },
+      };
+
+      const response = await request(app)
+        .post('/api/migrations')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(migrationData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.migration.clientId).toBe(client._id.toString());
+    });
+
+    it('should fail if client does not exist', async () => {
+      const migrationData = {
+        clientId: '507f1f77bcf86cd799439011', // Non-existent ID
       };
 
       const response = await request(app)
@@ -88,36 +124,14 @@ describe('Migration Routes', () => {
       expect(response.body.message).toContain('not found');
     });
 
-    it('should fail if migration already exists for client', async () => {
-      // Create first migration
-      await Migration.create({
-        clientEmail: 'client@company.com',
-        questions: [],
-        createdBy: 'consultant@interworks.com',
-      });
-
+    it('should fail for guest users', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id.toString(),
       };
 
       const response = await request(app)
         .post('/api/migrations')
-        .set('Authorization', `Bearer ${interworksToken}`)
-        .send(migrationData)
-        .expect(400);
-
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain('already exists');
-    });
-
-    it('should fail for client users', async () => {
-      const migrationData = {
-        clientEmail: 'client@company.com',
-      };
-
-      const response = await request(app)
-        .post('/api/migrations')
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(migrationData)
         .expect(403);
 
@@ -126,7 +140,7 @@ describe('Migration Routes', () => {
 
     it('should fail without authentication', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id.toString(),
       };
 
       await request(app).post('/api/migrations').send(migrationData).expect(401);
@@ -135,10 +149,10 @@ describe('Migration Routes', () => {
 
   describe('GET /api/migrations', () => {
     beforeEach(async () => {
-      // Create some migrations
+      // Create some migrations for the main client
       await Migration.create({
-        clientEmail: 'client@company.com',
-        clientInfo: { clientName: 'Company A' },
+        clientId: client._id,
+        clientInfo: { clientName: 'Acme Corp' },
         questions: [
           {
             id: 'q1',
@@ -163,15 +177,14 @@ describe('Migration Routes', () => {
       });
 
       // Create another client and migration
-      const otherClient = await User.create({
+      const otherClient = await Client.create({
+        name: 'Other Corp',
         email: 'other@company.com',
-        passwordHash: 'Password123!',
-        role: 'client',
       });
 
       await Migration.create({
-        clientEmail: 'other@company.com',
-        clientInfo: { clientName: 'Company B' },
+        clientId: otherClient._id,
+        clientInfo: { clientName: 'Other Corp' },
         questions: [],
         createdBy: 'consultant@interworks.com',
       });
@@ -189,33 +202,33 @@ describe('Migration Routes', () => {
       expect(response.body.migrations[0].progress).toBeDefined();
     });
 
-    it('should list only own migration for client users', async () => {
+    it('should list only own client migrations for guest users', async () => {
       const response = await request(app)
         .get('/api/migrations')
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.migrations).toHaveLength(1);
-      expect(response.body.migrations[0].clientEmail).toBe('client@company.com');
+      expect(response.body.migrations[0].clientId._id.toString()).toBe(client._id.toString());
     });
 
-    it('should filter by client email (InterWorks only)', async () => {
+    it('should filter by client ID (InterWorks only)', async () => {
       const response = await request(app)
-        .get('/api/migrations?clientEmail=client@company.com')
+        .get(`/api/migrations?clientId=${client._id}`)
         .set('Authorization', `Bearer ${interworksToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.migrations).toHaveLength(1);
-      expect(response.body.migrations[0].clientEmail).toBe('client@company.com');
+      expect(response.body.migrations[0].clientId._id.toString()).toBe(client._id.toString());
     });
   });
 
   describe('GET /api/migrations/:id', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         clientInfo: { clientName: 'Acme Corp' },
         questions: [
           {
@@ -244,10 +257,10 @@ describe('Migration Routes', () => {
       expect(response.body.migration.progress).toBeDefined();
     });
 
-    it('should get own migration for client', async () => {
+    it('should get own client migration for guest', async () => {
       const response = await request(app)
         .get(`/api/migrations/${migration._id}`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
@@ -255,16 +268,23 @@ describe('Migration Routes', () => {
     });
 
     it('should deny access to other client migrations', async () => {
-      const otherClient = await User.create({
-        email: 'other@company.com',
+      const otherClient = await Client.create({
+        name: 'Other Client',
+        email: 'other2@company.com',
+      });
+
+      const otherGuest = await User.create({
+        email: 'guest2@company.com',
         passwordHash: 'Password123!',
-        role: 'client',
+        role: 'guest',
+        clientId: otherClient._id,
       });
 
       const otherToken = generateJWT({
-        userId: otherClient._id.toString(),
-        email: otherClient.email,
-        role: otherClient.role,
+        userId: otherGuest._id.toString(),
+        email: otherGuest.email,
+        role: otherGuest.role,
+        clientId: otherGuest.clientId.toString(),
       });
 
       const response = await request(app)
@@ -290,7 +310,7 @@ describe('Migration Routes', () => {
   describe('PUT /api/migrations/:id', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         clientInfo: { clientName: 'Acme Corp' },
         questions: [
           {
@@ -347,7 +367,7 @@ describe('Migration Routes', () => {
 
       const response = await request(app)
         .put(`/api/migrations/${migration._id}`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(updates)
         .expect(200);
 
@@ -362,7 +382,7 @@ describe('Migration Routes', () => {
 
       const response = await request(app)
         .put(`/api/migrations/${migration._id}`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(updates)
         .expect(200);
 
@@ -370,17 +390,24 @@ describe('Migration Routes', () => {
       expect(response.body.migration.additionalNotes).toBe('Some important notes');
     });
 
-    it('should deny client access to other migrations', async () => {
-      const otherClient = await User.create({
-        email: 'other@company.com',
+    it('should deny guest access to other client migrations', async () => {
+      const otherClient = await Client.create({
+        name: 'Other Client',
+        email: 'other3@company.com',
+      });
+
+      const otherGuest = await User.create({
+        email: 'guest3@company.com',
         passwordHash: 'Password123!',
-        role: 'client',
+        role: 'guest',
+        clientId: otherClient._id,
       });
 
       const otherToken = generateJWT({
-        userId: otherClient._id.toString(),
-        email: otherClient.email,
-        role: otherClient.role,
+        userId: otherGuest._id.toString(),
+        email: otherGuest.email,
+        role: otherGuest.role,
+        clientId: otherGuest.clientId.toString(),
       });
 
       const updates = {
@@ -400,7 +427,7 @@ describe('Migration Routes', () => {
   describe('DELETE /api/migrations/:id', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [],
         createdBy: 'consultant@interworks.com',
       });
@@ -419,10 +446,10 @@ describe('Migration Routes', () => {
       expect(deleted).toBeNull();
     });
 
-    it('should fail for client users', async () => {
+    it('should fail for guest users', async () => {
       const response = await request(app)
         .delete(`/api/migrations/${migration._id}`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .expect(403);
 
       expect(response.body.success).toBe(false);
@@ -443,7 +470,7 @@ describe('Migration Routes', () => {
   describe('POST /api/migrations/:id/questions', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -481,7 +508,7 @@ describe('Migration Routes', () => {
       expect(response.body.migration.questions[1].order).toBe(2);
     });
 
-    it('should fail for client users', async () => {
+    it('should fail for guest users', async () => {
       const newQuestion = {
         section: 'Security',
         questionText: 'Unauthorized question',
@@ -490,7 +517,7 @@ describe('Migration Routes', () => {
 
       const response = await request(app)
         .post(`/api/migrations/${migration._id}/questions`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(newQuestion)
         .expect(403);
 
@@ -516,7 +543,7 @@ describe('Migration Routes', () => {
   describe('PUT /api/migrations/:id/questions/:questionId', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -549,14 +576,14 @@ describe('Migration Routes', () => {
       expect(response.body.migration.questions[0].questionType).toBe('yesNo');
     });
 
-    it('should fail for client users', async () => {
+    it('should fail for guest users', async () => {
       const updates = {
         questionText: 'Unauthorized update',
       };
 
       const response = await request(app)
         .put(`/api/migrations/${migration._id}/questions/q1`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(updates)
         .expect(403);
 
@@ -581,7 +608,7 @@ describe('Migration Routes', () => {
   describe('DELETE /api/migrations/:id/questions/:questionId', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -616,10 +643,10 @@ describe('Migration Routes', () => {
       expect(response.body.migration.questions[0].order).toBe(1);
     });
 
-    it('should fail for client users', async () => {
+    it('should fail for guest users', async () => {
       const response = await request(app)
         .delete(`/api/migrations/${migration._id}/questions/q1`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .expect(403);
 
       expect(response.body.success).toBe(false);
@@ -629,7 +656,7 @@ describe('Migration Routes', () => {
   describe('PUT /api/migrations/:id/questions/reorder', () => {
     beforeEach(async () => {
       migration = await Migration.create({
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -695,14 +722,14 @@ describe('Migration Routes', () => {
       expect(response.body.message).toContain('Invalid question IDs');
     });
 
-    it('should fail for client users', async () => {
+    it('should fail for guest users', async () => {
       const newOrder = {
         questionIds: ['q2', 'q1', 'q3'],
       };
 
       const response = await request(app)
         .put(`/api/migrations/${migration._id}/questions/reorder`)
-        .set('Authorization', `Bearer ${clientToken}`)
+        .set('Authorization', `Bearer ${guestToken}`)
         .send(newOrder)
         .expect(403);
 

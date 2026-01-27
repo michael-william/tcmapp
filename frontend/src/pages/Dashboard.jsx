@@ -11,6 +11,13 @@ import { MigrationCard } from '@/components/organisms/MigrationCard';
 import { SearchFilter } from '@/components/molecules/SearchFilter';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
+import { Label } from '@/components/ui/Label';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
 import { Plus, Loader2 } from 'lucide-react';
@@ -22,15 +29,22 @@ export const Dashboard = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState('');
+  const [createLoading, setCreateLoading] = useState(false);
 
   const { user } = useAuth();
   const navigate = useNavigate();
   const isInterWorks = user?.role === 'interworks';
 
-  // Fetch migrations
+  // Fetch migrations and clients
   useEffect(() => {
     fetchMigrations();
-  }, []);
+    if (isInterWorks) {
+      fetchClients();
+    }
+  }, [isInterWorks]);
 
   const fetchMigrations = async () => {
     try {
@@ -44,6 +58,15 @@ export const Dashboard = () => {
       console.error('Error fetching migrations:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const response = await api.get('/clients');
+      setClients(response.data.clients || []);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
     }
   };
 
@@ -74,22 +97,42 @@ export const Dashboard = () => {
     setFilteredMigrations(filtered);
   }, [searchTerm, selectedStatus, migrations]);
 
+  // Open create migration modal
+  const handleOpenCreateModal = () => {
+    if (clients.length === 0) {
+      setError('Please create a client first before creating a migration.');
+      return;
+    }
+    setIsCreateModalOpen(true);
+    setSelectedClientId(clients[0]?._id || '');
+  };
+
   // Create new migration
   const handleCreateMigration = async () => {
+    if (!selectedClientId) {
+      setError('Please select a client');
+      return;
+    }
+
+    setCreateLoading(true);
     try {
       const response = await api.post('/migrations', {
+        clientId: selectedClientId,
         clientInfo: {
-          clientName: 'New Client',
-          projectName: 'New Migration',
+          clientName: 'New Migration',
+          projectName: 'New Project',
         },
       });
 
       if (response.data.migration) {
+        setIsCreateModalOpen(false);
         navigate(`/migration/${response.data.migration._id}`);
       }
     } catch (err) {
       console.error('Error creating migration:', err);
-      setError('Failed to create migration');
+      setError(err.response?.data?.message || 'Failed to create migration');
+    } finally {
+      setCreateLoading(false);
     }
   };
 
@@ -130,16 +173,16 @@ export const Dashboard = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {isInterWorks ? 'All Migrations' : 'Your Migration'}
+              {isInterWorks ? 'All Migrations' : 'Your Migrations'}
             </h1>
             <p className="text-muted-foreground mt-1">
               {isInterWorks
                 ? 'Manage client migration projects'
-                : 'View and update your migration checklist'}
+                : 'View and update your migration checklists'}
             </p>
           </div>
           {isInterWorks && (
-            <Button onClick={handleCreateMigration} className="gap-2">
+            <Button onClick={handleOpenCreateModal} className="gap-2">
               <Plus className="h-4 w-4" />
               New Migration
             </Button>
@@ -173,7 +216,7 @@ export const Dashboard = () => {
                   ? 'No migrations match your filters'
                   : isInterWorks
                   ? 'No migrations yet. Create your first migration to get started.'
-                  : 'No migration assigned yet. Contact your InterWorks consultant.'}
+                  : 'No migrations assigned yet. Contact your InterWorks consultant.'}
               </p>
             </CardContent>
           </Card>
@@ -191,6 +234,48 @@ export const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Create Migration Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Migration</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="client">Select Client</Label>
+              <select
+                id="client"
+                value={selectedClientId}
+                onChange={(e) => setSelectedClientId(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                disabled={createLoading}
+              >
+                {clients.map((client) => (
+                  <option key={client._id} value={client._id}>
+                    {client.name} ({client.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateModalOpen(false)}
+                disabled={createLoading}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleCreateMigration} disabled={createLoading}>
+                {createLoading ? 'Creating...' : 'Create Migration'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

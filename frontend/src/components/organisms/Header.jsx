@@ -35,6 +35,30 @@ export const Header = ({ userName, role, onLogout, className }) => {
             </div>
           </div>
 
+          {/* Navigation Menu (InterWorks only) */}
+          {role === 'interworks' && (
+            <nav className="flex items-center gap-4 ml-8">
+              <a
+                href="/"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </a>
+              <a
+                href="/clients"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Clients
+              </a>
+              <a
+                href="/users"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Users
+              </a>
+            </nav>
+          )}
+
           {/* User Info and Logout */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">

@@ -25,7 +25,12 @@ const requireAuth = async (req, res, next) => {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test-jwt-secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Debug logging for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[AUTH] Token verified for user: ${decoded.email} (${decoded.role})`);
+    }
 
     // Find user
     const user = await User.findById(decoded.userId);
@@ -43,10 +48,15 @@ const requireAuth = async (req, res, next) => {
       email: user.email,
       role: user.role,
       name: user.name,
+      clientId: user.clientId, // For guest users
     };
 
     next();
   } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[AUTH ERROR] ${error.name}: ${error.message}`);
+    }
+
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
@@ -81,7 +91,21 @@ const requireInterWorks = (req, res, next) => {
   next();
 };
 
+/**
+ * Require guest role
+ */
+const requireGuest = (req, res, next) => {
+  if (req.user.role !== 'guest') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. This action requires guest permissions.',
+    });
+  }
+  next();
+};
+
 module.exports = {
   requireAuth,
   requireInterWorks,
+  requireGuest,
 };

@@ -26,14 +26,14 @@ describe('User Model', () => {
       expect(user.updatedAt).toBeDefined();
     });
 
-    it('should default role to client', async () => {
+    it('should default role to guest', async () => {
       const userData = {
-        email: 'client@company.com',
+        email: 'guest@company.com',
         passwordHash: 'Password123!',
       };
 
       const user = await User.create(userData);
-      expect(user.role).toBe('client');
+      expect(user.role).toBe('guest');
     });
 
     it('should lowercase email', async () => {
@@ -61,7 +61,7 @@ describe('User Model', () => {
     it('should fail without password', async () => {
       const userData = {
         email: 'test@interworks.com',
-        role: 'client',
+        role: 'guest',
       };
 
       await expect(User.create(userData)).rejects.toThrow();
@@ -71,7 +71,7 @@ describe('User Model', () => {
       const userData = {
         email: 'not-an-email',
         passwordHash: 'Password123!',
-        role: 'client',
+        role: 'guest',
       };
 
       await expect(User.create(userData)).rejects.toThrow();
@@ -81,7 +81,17 @@ describe('User Model', () => {
       const userData = {
         email: 'test@interworks.com',
         passwordHash: 'Password123!',
-        role: 'admin', // Invalid role
+        role: 'admin', // Invalid role (only 'interworks' and 'guest' are valid)
+      };
+
+      await expect(User.create(userData)).rejects.toThrow();
+    });
+
+    it('should fail with invalid role - client is no longer valid', async () => {
+      const userData = {
+        email: 'test2@interworks.com',
+        passwordHash: 'Password123!',
+        role: 'client', // 'client' is no longer a valid role
       };
 
       await expect(User.create(userData)).rejects.toThrow();
@@ -163,6 +173,52 @@ describe('User Model', () => {
       const userJSON = user.toJSON();
       expect(userJSON.passwordHash).toBeUndefined();
       expect(userJSON.email).toBe('json@interworks.com');
+    });
+  });
+
+  describe('Guest User with ClientId', () => {
+    it('should create guest user with clientId', async () => {
+      // Note: This test assumes Client model exists and can be created
+      const Client = require('../../models/Client');
+      const client = await Client.create({
+        name: 'Test Client',
+        email: 'client@test.com',
+      });
+
+      const userData = {
+        email: 'guest@test.com',
+        passwordHash: 'Password123!',
+        role: 'guest',
+        clientId: client._id,
+      };
+
+      const user = await User.create(userData);
+      expect(user.role).toBe('guest');
+      expect(user.clientId.toString()).toBe(client._id.toString());
+    });
+
+    it('should fail to create guest user without clientId', async () => {
+      const userData = {
+        email: 'guestnoclient@test.com',
+        passwordHash: 'Password123!',
+        role: 'guest',
+        // Missing clientId
+      };
+
+      await expect(User.create(userData)).rejects.toThrow();
+    });
+
+    it('should allow interworks user without clientId', async () => {
+      const userData = {
+        email: 'interworks2@test.com',
+        passwordHash: 'Password123!',
+        role: 'interworks',
+        // No clientId needed for interworks
+      };
+
+      const user = await User.create(userData);
+      expect(user.role).toBe('interworks');
+      expect(user.clientId).toBeUndefined();
     });
   });
 });

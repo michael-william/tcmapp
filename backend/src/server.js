@@ -5,6 +5,24 @@
  */
 
 require('dotenv').config();
+
+// Validate critical environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined');
+  process.exit(1);
+}
+
+// Log startup configuration (with masked JWT_SECRET)
+if (process.env.NODE_ENV === 'development') {
+  console.log('=== Server Configuration ===');
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`PORT: ${process.env.PORT || 5000}`);
+  console.log(`JWT_SECRET: ${process.env.JWT_SECRET ? '***' + process.env.JWT_SECRET.slice(-4) : 'NOT SET'}`);
+  console.log(`JWT_EXPIRES_IN: ${process.env.JWT_EXPIRES_IN || '7d'}`);
+  console.log(`MONGODB_URI: ${process.env.MONGODB_URI ? 'SET' : 'NOT SET'}`);
+  console.log('============================\n');
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,6 +30,7 @@ const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/auth');
 const migrationRoutes = require('./routes/migrations');
 const userRoutes = require('./routes/users');
+const clientRoutes = require('./routes/clients');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +69,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
 app.use('/api/migrations', migrationRoutes);
 app.use('/api/users', userRoutes);
 

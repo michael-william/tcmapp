@@ -112,6 +112,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Check if user is guest
+   * @returns {boolean}
+   */
+  const isGuest = () => {
+    return user?.role === 'guest';
+  };
+
+  /**
    * Get current user info from API
    * @returns {Promise<Object>} User data
    */
@@ -139,6 +147,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isInterWorks,
+    isGuest,
     getCurrentUser,
   };
 

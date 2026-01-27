@@ -1,7 +1,7 @@
 /**
  * UserManagement Page
  *
- * User management for InterWorks users (create/delete clients).
+ * User management for InterWorks users (create/delete guests).
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/Dialog';
 import { Badge } from '@/components/ui/Badge';
+import { ClientSelector } from '@/components/molecules/ClientSelector';
 import api from '@/lib/api';
 import { Plus, Trash2, Loader2, User } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export const UserManagement = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [clientId, setClientId] = useState('');
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export const UserManagement = () => {
     setFormError('');
 
     // Validation
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !clientId) {
       setFormError('All fields are required');
       return;
     }
@@ -78,7 +80,8 @@ export const UserManagement = () => {
         name,
         email,
         password,
-        role: 'client',
+        clientId,
+        role: 'guest',
       });
 
       if (response.data.user) {
@@ -111,6 +114,7 @@ export const UserManagement = () => {
     setName('');
     setEmail('');
     setPassword('');
+    setClientId('');
     setFormError('');
   };
 
@@ -137,7 +141,7 @@ export const UserManagement = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground">User Management</h1>
             <p className="text-muted-foreground mt-1">
-              Manage client users and permissions
+              Manage guest users and permissions
             </p>
           </div>
           <Button onClick={() => setIsCreateModalOpen(true)} className="gap-2">
@@ -179,11 +183,16 @@ export const UserManagement = () => {
                       <div>
                         <p className="font-medium">{user.name}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
+                        {user.clientId && (
+                          <p className="text-xs text-muted-foreground">
+                            Client: {user.clientId.name || user.clientId}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge variant={user.role === 'interworks' ? 'default' : 'secondary'}>
-                        {user.role === 'interworks' ? 'InterWorks' : 'Client'}
+                        {user.role === 'interworks' ? 'InterWorks' : 'Guest'}
                       </Badge>
                       {user.role !== 'interworks' && (
                         <Button
@@ -255,6 +264,15 @@ export const UserManagement = () => {
                 disabled={createLoading}
               />
             </div>
+
+            {/* Client Selection */}
+            <ClientSelector
+              value={clientId}
+              onChange={setClientId}
+              required={true}
+              disabled={createLoading}
+              label="Assign to Client"
+            />
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4">

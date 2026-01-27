@@ -8,6 +8,7 @@ const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const crypto = require('crypto');
 const User = require('../models/User');
+const Client = require('../models/Client');
 const Migration = require('../models/Migration');
 const { requireAuth, requireInterWorks } = require('../middleware/auth');
 
@@ -23,7 +24,7 @@ const generatePassword = () => {
 
 /**
  * POST /api/users
- * Create client user (InterWorks only)
+ * Create guest user (InterWorks only)
  */
 router.post(
   '/',
@@ -36,6 +37,9 @@ router.post(
       .normalizeEmail(),
     body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').optional().trim(),
+    body('clientId')
+      .isMongoId()
+      .withMessage('Valid client ID is required'),
   ],
   async (req, res) => {
     try {
@@ -47,7 +51,7 @@ router.post(
         });
       }
 
-      const { email, name } = req.body;
+      const { email, name, clientId } = req.body;
       let { password } = req.body;
 
       // Check if user already exists
@@ -59,23 +63,33 @@ router.post(
         });
       }
 
+      // Validate that client exists
+      const client = await Client.findById(clientId);
+      if (!client) {
+        return res.status(404).json({
+          success: false,
+          message: 'Client not found. Please create the client first.',
+        });
+      }
+
       // Generate password if not provided
       const isPasswordGenerated = !password;
       if (!password) {
         password = generatePassword();
       }
 
-      // Create client user
+      // Create guest user
       const user = await User.create({
         email,
         passwordHash: password,
         name,
-        role: 'client',
+        role: 'guest',
+        clientId,
       });
 
       res.status(201).json({
         success: true,
-        message: 'Client user created successfully.',
+        message: 'Guest user created successfully.',
         user: user.toJSON(),
         ...(isPasswordGenerated && { generatedPassword: password }),
       });
@@ -95,22 +109,30 @@ router.post(
  */
 router.get('/', requireAuth, requireInterWorks, async (req, res) => {
   try {
-    const { role } = req.query;
+    const { role, clientId } = req.query;
 
     // Build query
     let query = {};
     if (role) {
       query.role = role;
     }
+    if (clientId) {
+      query.clientId = clientId;
+    }
 
-    const users = await User.find(query).sort({ createdAt: -1 });
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .populate('clientId', 'name email');
 
-    // Get migration count for each user
+    // Get migration count for each guest user's client
     const usersWithMigrations = await Promise.all(
       users.map(async (user) => {
-        const migrationCount = await Migration.countDocuments({
-          clientEmail: user.email,
-        });
+        let migrationCount = 0;
+        if (user.role === 'guest' && user.clientId) {
+          migrationCount = await Migration.countDocuments({
+            clientId: user.clientId._id,
+          });
+        }
 
         return {
           ...user.toJSON(),
@@ -152,7 +174,7 @@ router.get(
         });
       }
 
-      const user = await User.findById(req.params.id);
+      const user = await User.findById(req.params.id).populate('clientId', 'name email');
 
       if (!user) {
         return res.status(404).json({
@@ -161,10 +183,13 @@ router.get(
         });
       }
 
-      // Get migrations for this user
-      const migrations = await Migration.find({
-        clientEmail: user.email,
-      }).select('_id clientInfo.clientName createdAt');
+      // Get migrations for this user's client (if guest)
+      let migrations = [];
+      if (user.role === 'guest' && user.clientId) {
+        migrations = await Migration.find({
+          clientId: user.clientId._id,
+        }).select('_id clientInfo.clientName createdAt');
+      }
 
       res.json({
         success: true,
@@ -277,17 +302,8 @@ router.delete(
         });
       }
 
-      // Check if user has migrations
-      const migrationCount = await Migration.countDocuments({
-        clientEmail: user.email,
-      });
-
-      if (migrationCount > 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot delete user. User has ${migrationCount} active migration(s). Delete migrations first.`,
-        });
-      }
+      // Guest users can be deleted without checking migrations
+      // (migrations belong to the client, not individual guest users)
 
       await User.findByIdAndDelete(req.params.id);
 
