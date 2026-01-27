@@ -8,6 +8,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth.jsx';
 import { ProtectedRoute } from './components/organisms/ProtectedRoute';
+import { Toaster } from './components/ui/Toast';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { MigrationChecklist } from './pages/MigrationChecklist';
@@ -62,6 +63,7 @@ function App() {
           {/* Catch all - redirect to dashboard */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster />
       </AuthProvider>
     </Router>
   );

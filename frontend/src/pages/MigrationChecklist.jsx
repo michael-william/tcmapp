@@ -12,11 +12,12 @@ import { QuestionSection } from '@/components/organisms/QuestionSection';
 import { ExportSection } from '@/components/organisms/ExportSection';
 import { SearchFilter } from '@/components/molecules/SearchFilter';
 import { QuestionManagementModal } from '@/components/organisms/QuestionManagementModal';
+import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { useMigration } from '@/hooks/useMigration';
-import { useDebounce } from '@/hooks/useDebounce';
+import { toast } from '@/components/ui/Toast';
 import { Loader2, Settings, ArrowLeft } from 'lucide-react';
 
 export const MigrationChecklist = () => {
@@ -30,9 +31,11 @@ export const MigrationChecklist = () => {
     loading,
     error,
     saving,
+    saveError,
+    lastSaved,
     updateQuestion,
     updateClientInfo,
-    saveMigration,
+    retrySave,
   } = useMigration(id);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,17 +43,19 @@ export const MigrationChecklist = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [collapsedSections, setCollapsedSections] = useState({});
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
 
-  // Debounce changes and auto-save
-  const debouncedChanges = useDebounce(hasChanges, 1000);
-
+  // Show error toast when save fails
   useEffect(() => {
-    if (debouncedChanges && hasChanges) {
-      saveMigration();
-      setHasChanges(false);
+    if (saveError) {
+      toast.error('Failed to save changes', {
+        description: saveError,
+        action: {
+          label: 'Retry',
+          onClick: retrySave,
+        },
+      });
     }
-  }, [debouncedChanges]);
+  }, [saveError, retrySave]);
 
   // Group questions by section
   const questionsBySection = useMemo(() => {
@@ -122,13 +127,11 @@ export const MigrationChecklist = () => {
   // Handle question change
   const handleQuestionChange = (questionId, updates) => {
     updateQuestion(questionId, updates);
-    setHasChanges(true);
   };
 
   // Handle client info change
   const handleClientInfoChange = (field, value) => {
     updateClientInfo(field, value);
-    setHasChanges(true);
   };
 
   // Toggle section collapse
@@ -201,9 +204,12 @@ export const MigrationChecklist = () => {
               <h1 className="text-2xl font-bold text-foreground">
                 {migration.clientInfo?.clientName || 'Migration Checklist'}
               </h1>
-              {saving && (
-                <p className="text-xs text-muted-foreground mt-1">Saving changes...</p>
-              )}
+              <SaveStatus
+                saving={saving}
+                lastSaved={lastSaved}
+                error={saveError}
+                onRetry={retrySave}
+              />
             </div>
           </div>
           {isInterWorks && (
