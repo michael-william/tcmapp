@@ -15,10 +15,11 @@ import { cn } from '@/lib/utils';
 export const MigrationCard = ({ migration, onView, onDelete, isInterWorks = false, className }) => {
   if (!migration) return null;
 
-  const { clientInfo, questions = [] } = migration;
-  const completedCount = questions.filter((q) => q.completed).length;
-  const totalCount = questions.length;
-  const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const { clientInfo, progress } = migration;
+  // Use progress from backend if available, otherwise calculate from questions
+  const completedCount = progress?.completed || 0;
+  const totalCount = progress?.total || 0;
+  const percentage = progress?.percentage || 0;
 
   return (
     <Card className={cn('hover:shadow-lg transition-shadow animate-fadeIn', className)}>

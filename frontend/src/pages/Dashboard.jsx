@@ -86,8 +86,9 @@ export const Dashboard = () => {
     // Status filter
     if (selectedStatus !== 'all') {
       filtered = filtered.filter((m) => {
-        const completedCount = m.questions?.filter((q) => q.completed).length || 0;
-        const totalCount = m.questions?.length || 0;
+        // Use progress from backend
+        const completedCount = m.progress?.completed || 0;
+        const totalCount = m.progress?.total || 0;
         const isComplete = completedCount === totalCount && totalCount > 0;
 
         return selectedStatus === 'completed' ? isComplete : !isComplete;
