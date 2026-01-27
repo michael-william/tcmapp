@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 
-export const Header = ({ userName, role, onLogout, className }) => {
+export const Header = ({ userName, role, onLogout, onNavigate, className }) => {
   return (
     <header
       className={cn(
@@ -38,24 +38,24 @@ export const Header = ({ userName, role, onLogout, className }) => {
           {/* Navigation Menu (InterWorks only) */}
           {role === 'interworks' && (
             <nav className="flex items-center gap-4 ml-8">
-              <a
-                href="/"
+              <button
+                onClick={() => onNavigate?.('/')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Dashboard
-              </a>
-              <a
-                href="/clients"
+              </button>
+              <button
+                onClick={() => onNavigate?.('/clients')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Clients
-              </a>
-              <a
-                href="/users"
+              </button>
+              <button
+                onClick={() => onNavigate?.('/users')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Users
-              </a>
+              </button>
             </nav>
           )}
 

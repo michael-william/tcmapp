@@ -13,12 +13,13 @@ import { ExportSection } from '@/components/organisms/ExportSection';
 import { SearchFilter } from '@/components/molecules/SearchFilter';
 import { QuestionManagementModal } from '@/components/organisms/QuestionManagementModal';
 import { SaveStatus } from '@/components/molecules/SaveStatus';
+import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { useMigration } from '@/hooks/useMigration';
 import { toast } from '@/components/ui/Toast';
-import { Loader2, Settings, ArrowLeft } from 'lucide-react';
+import { Loader2, Settings, ArrowLeft, Save } from 'lucide-react';
 
 export const MigrationChecklist = () => {
   const { id } = useParams();
@@ -33,8 +34,10 @@ export const MigrationChecklist = () => {
     saving,
     saveError,
     lastSaved,
+    hasUnsavedChanges,
     updateQuestion,
     updateClientInfo,
+    saveMigration,
     retrySave,
   } = useMigration(id);
 
@@ -43,6 +46,11 @@ export const MigrationChecklist = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [collapsedSections, setCollapsedSections] = useState({});
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
+
+  // Navigation blocking state
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   // Show error toast when save fails
   useEffect(() => {
@@ -56,6 +64,23 @@ export const MigrationChecklist = () => {
       });
     }
   }, [saveError, retrySave]);
+
+  // Browser beforeunload warning
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
 
   // Group questions by section
   const questionsBySection = useMemo(() => {
@@ -155,9 +180,55 @@ export const MigrationChecklist = () => {
     console.log('Adding question:', newQuestion);
   };
 
+  // Manual save handler
+  const handleSave = async () => {
+    const result = await saveMigration();
+    if (result.success) {
+      toast.success('Changes saved successfully');
+    }
+  };
+
+  // Navigation handler
+  const handleNavigation = (path) => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation(path);
+      setShowUnsavedModal(true);
+    } else {
+      navigate(path);
+    }
+  };
+
+  // Modal action handlers
+  const handleCancelNavigation = () => {
+    setShowUnsavedModal(false);
+    setPendingNavigation(null);
+  };
+
+  const handleDiscardChanges = () => {
+    setShowUnsavedModal(false);
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+    }
+  };
+
+  const handleSaveAndNavigate = async () => {
+    setIsNavigating(true);
+    const result = await saveMigration();
+    setIsNavigating(false);
+
+    if (result.success) {
+      setShowUnsavedModal(false);
+      if (pendingNavigation) {
+        navigate(pendingNavigation);
+      }
+    } else {
+      toast.error('Failed to save changes. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
-      <MigrationLayout completed={0} total={0} percentage={0}>
+      <MigrationLayout completed={0} total={0} percentage={0} onNavigate={handleNavigation}>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -167,11 +238,11 @@ export const MigrationChecklist = () => {
 
   if (error) {
     return (
-      <MigrationLayout completed={0} total={0} percentage={0}>
+      <MigrationLayout completed={0} total={0} percentage={0} onNavigate={handleNavigation}>
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="py-12 text-center">
             <p className="text-destructive mb-4">{error}</p>
-            <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+            <Button onClick={() => handleNavigation('/')}>Back to Dashboard</Button>
           </CardContent>
         </Card>
       </MigrationLayout>
@@ -180,7 +251,7 @@ export const MigrationChecklist = () => {
 
   if (!migration) {
     return (
-      <MigrationLayout completed={0} total={0} percentage={0}>
+      <MigrationLayout completed={0} total={0} percentage={0} onNavigate={handleNavigation}>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">Migration not found</p>
@@ -191,12 +262,17 @@ export const MigrationChecklist = () => {
   }
 
   return (
-    <MigrationLayout completed={completed} total={total} percentage={percentage}>
+    <MigrationLayout
+      completed={completed}
+      total={total}
+      percentage={percentage}
+      onNavigate={handleNavigation}
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+            <Button variant="ghost" size="sm" onClick={() => handleNavigation('/')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
@@ -208,21 +284,44 @@ export const MigrationChecklist = () => {
                 saving={saving}
                 lastSaved={lastSaved}
                 error={saveError}
+                hasUnsavedChanges={hasUnsavedChanges}
                 onRetry={retrySave}
               />
             </div>
           </div>
-          {isInterWorks && (
+
+          {/* Save button */}
+          <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsManagementModalOpen(true)}
+              onClick={handleSave}
+              disabled={saving || !hasUnsavedChanges}
               className="gap-2"
             >
-              <Settings className="h-4 w-4" />
-              Manage Questions
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                </>
+              )}
             </Button>
-          )}
+
+            {isInterWorks && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsManagementModalOpen(true)}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Manage Questions
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Client Information */}
@@ -280,6 +379,15 @@ export const MigrationChecklist = () => {
           onSave={handleAddQuestion}
         />
       )}
+
+      {/* Unsaved Changes Modal */}
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onCancel={handleCancelNavigation}
+        onDiscard={handleDiscardChanges}
+        onSave={handleSaveAndNavigate}
+        saving={isNavigating}
+      />
     </MigrationLayout>
   );
 };

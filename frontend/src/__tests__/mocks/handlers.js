@@ -45,13 +45,13 @@ const mockMigration = {
   clientId: mockClient,
   clientInfo: {
     clientName: 'Acme Corporation',
-    projectName: 'Q2 2024 Migration',
-    contactName: 'John Doe',
-    contactEmail: 'john@acme.com',
-    currentTableauVersion: '2023.1',
-    targetTableauVersion: '2024.1',
-    migrationDate: '2024-06-15',
-    environment: 'Production',
+    region: 'US-West',
+    serverVersion: '2023.1',
+    serverUrl: 'https://tableau.acme.com',
+    kickoffDate: '2024-05-01',
+    primaryContact: 'John Doe',
+    meetingCadence: 'Weekly',
+    goLiveDate: '2024-06-15',
   },
   questions: [
     {

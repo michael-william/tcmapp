@@ -30,7 +30,7 @@ export const MigrationCard = ({ migration, onView, onDelete, isInterWorks = fals
               {clientInfo?.clientName || 'Untitled Migration'}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {clientInfo?.projectName || 'No project name'}
+              {clientInfo?.region || 'No region specified'}
             </p>
           </div>
           <Badge variant={percentage === 100 ? 'default' : 'outline'}>
@@ -51,12 +51,12 @@ export const MigrationCard = ({ migration, onView, onDelete, isInterWorks = fals
           <Progress value={percentage} />
         </div>
 
-        {/* Migration Date */}
-        {clientInfo?.migrationDate && (
+        {/* Go-Live Date */}
+        {clientInfo?.goLiveDate && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span>
-              Migration: {new Date(clientInfo.migrationDate).toLocaleDateString()}
+              Go-Live: {new Date(clientInfo.goLiveDate).toLocaleDateString()}
             </span>
           </div>
         )}

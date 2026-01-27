@@ -15,6 +15,7 @@ export const MigrationLayout = ({
   completed = 0,
   total = 0,
   percentage = 0,
+  onNavigate,
   className,
 }) => {
   const { user, logout } = useAuth();
@@ -25,6 +26,7 @@ export const MigrationLayout = ({
         userName={user?.name || 'User'}
         role={user?.role || 'client'}
         onLogout={logout}
+        onNavigate={onNavigate}
       />
 
       <ProgressSection completed={completed} total={total} percentage={percentage} />

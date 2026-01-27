@@ -1,7 +1,7 @@
 /**
  * useMigration Hook
  *
- * Manages migration data fetching, updates, and auto-save.
+ * Manages migration data fetching, updates, and manual save.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -12,7 +12,7 @@ export const useMigration = (migrationId) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [lastSaved, setLastSaved] = useState(null);
 
@@ -56,7 +56,7 @@ export const useMigration = (migrationId) => {
       migrationRef.current = updated; // Keep ref in sync
       return updated;
     });
-    setPendingChanges(true); // Triggers auto-save
+    setHasUnsavedChanges(true); // Mark as unsaved (no auto-save trigger)
     setSaveError(null); // Clear previous errors
   }, []);
 
@@ -75,7 +75,7 @@ export const useMigration = (migrationId) => {
       migrationRef.current = updated; // Keep ref in sync
       return updated;
     });
-    setPendingChanges(true); // Triggers auto-save
+    setHasUnsavedChanges(true); // Mark as unsaved (no auto-save trigger)
     setSaveError(null); // Clear previous errors
   }, []);
 
@@ -87,18 +87,15 @@ export const useMigration = (migrationId) => {
     try {
       setSaving(true);
       setSaveError(null);
-      const response = await api.put(`/migrations/${migrationId}`, {
+      await api.put(`/migrations/${migrationId}`, {
         clientInfo: currentMigration.clientInfo,
         questions: currentMigration.questions,
       });
 
-      // Update local state with server response
-      if (response.data.migration) {
-        setMigration(response.data.migration);
-        migrationRef.current = response.data.migration;
-      }
-
+      // Don't replace entire state - it's already correct
+      // Just update metadata
       setLastSaved(new Date());
+      setHasUnsavedChanges(false); // Clear unsaved flag
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to save migration';
@@ -110,37 +107,19 @@ export const useMigration = (migrationId) => {
     }
   }, [migrationId]);
 
-  // Auto-save effect with debouncing
-  useEffect(() => {
-    if (!pendingChanges) return;
-
-    // Clear previous timer
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    // Debounce save (1 second)
-    saveTimeoutRef.current = setTimeout(async () => {
-      await saveToBackend();
-      setPendingChanges(false);
-    }, 1000);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [pendingChanges, saveToBackend]);
-
   // Save migration to backend (manual save)
   const saveMigration = useCallback(async () => {
-    return await saveToBackend();
+    const result = await saveToBackend();
+    if (result.success) {
+      setHasUnsavedChanges(false);
+    }
+    return result;
   }, [saveToBackend]);
 
   // Retry failed save
-  const retrySave = useCallback(() => {
-    setPendingChanges(true); // Re-triggers auto-save
-  }, []);
+  const retrySave = useCallback(async () => {
+    return await saveMigration();
+  }, [saveMigration]);
 
   // Fetch migration on mount or when migrationId changes
   useEffect(() => {
@@ -154,7 +133,7 @@ export const useMigration = (migrationId) => {
     saving,
     saveError,
     lastSaved,
-    pendingChanges,
+    hasUnsavedChanges,
     updateQuestion,
     updateClientInfo,
     saveMigration,

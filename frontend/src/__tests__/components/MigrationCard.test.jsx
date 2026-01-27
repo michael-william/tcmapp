@@ -13,8 +13,8 @@ describe('MigrationCard Component', () => {
     _id: '123',
     clientInfo: {
       clientName: 'Acme Corp',
-      projectName: 'Q2 Migration',
-      migrationDate: '2024-06-15',
+      region: 'US-West',
+      goLiveDate: '2024-06-15',
     },
     questions: [
       { _id: 'q1', completed: true },
@@ -34,16 +34,16 @@ describe('MigrationCard Component', () => {
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
   });
 
-  it('displays project name', () => {
+  it('displays region', () => {
     render(<MigrationCard migration={mockMigration} />);
-    expect(screen.getByText('Q2 Migration')).toBeInTheDocument();
+    expect(screen.getByText('US-West')).toBeInTheDocument();
   });
 
   it('displays fallback text when client name is missing', () => {
     const migrationNoName = { ...mockMigration, clientInfo: {} };
     render(<MigrationCard migration={migrationNoName} />);
     expect(screen.getByText('Untitled Migration')).toBeInTheDocument();
-    expect(screen.getByText('No project name')).toBeInTheDocument();
+    expect(screen.getByText('No region specified')).toBeInTheDocument();
   });
 
   it('displays completion percentage', () => {
@@ -56,18 +56,18 @@ describe('MigrationCard Component', () => {
     expect(screen.getByText('2/4 questions')).toBeInTheDocument();
   });
 
-  it('displays migration date when provided', () => {
+  it('displays go-live date when provided', () => {
     render(<MigrationCard migration={mockMigration} />);
-    expect(screen.getByText(/Migration: 6\/15\/2024/)).toBeInTheDocument();
+    expect(screen.getByText(/Go-Live: 6\/15\/2024/)).toBeInTheDocument();
   });
 
-  it('does not display migration date when not provided', () => {
+  it('does not display go-live date when not provided', () => {
     const migrationNoDate = {
       ...mockMigration,
-      clientInfo: { ...mockMigration.clientInfo, migrationDate: null },
+      clientInfo: { ...mockMigration.clientInfo, goLiveDate: null },
     };
     render(<MigrationCard migration={migrationNoDate} />);
-    expect(screen.queryByText(/Migration:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Go-Live:/)).not.toBeInTheDocument();
   });
 
   it('renders View Checklist button', () => {

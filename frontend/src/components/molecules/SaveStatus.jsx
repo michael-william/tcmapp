@@ -1,8 +1,8 @@
 import React from 'react';
-import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
-export const SaveStatus = ({ saving, lastSaved, error, onRetry }) => {
+export const SaveStatus = ({ saving, lastSaved, error, hasUnsavedChanges, onRetry }) => {
   if (saving) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -23,6 +23,15 @@ export const SaveStatus = ({ saving, lastSaved, error, onRetry }) => {
         >
           Retry
         </button>
+      </div>
+    );
+  }
+
+  if (hasUnsavedChanges) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-warning mt-1">
+        <AlertCircle className="h-3 w-3" />
+        <span>Unsaved changes</span>
       </div>
     );
   }

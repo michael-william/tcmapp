@@ -12,13 +12,13 @@ import { cn } from '@/lib/utils';
 export const ClientInfoSection = ({ clientInfo = {}, onChange, readOnly = false, className }) => {
   const fields = [
     { key: 'clientName', label: 'Client Name', type: 'text' },
-    { key: 'projectName', label: 'Project Name', type: 'text' },
-    { key: 'contactName', label: 'Contact Name', type: 'text' },
-    { key: 'contactEmail', label: 'Contact Email', type: 'email' },
-    { key: 'currentTableauVersion', label: 'Current Tableau Version', type: 'text' },
-    { key: 'targetTableauVersion', label: 'Target Tableau Version', type: 'text' },
-    { key: 'migrationDate', label: 'Migration Date', type: 'date' },
-    { key: 'environment', label: 'Environment', type: 'text' },
+    { key: 'region', label: 'Region', type: 'text' },
+    { key: 'serverVersion', label: 'Server Version', type: 'text' },
+    { key: 'serverUrl', label: 'Server URL', type: 'text' },
+    { key: 'kickoffDate', label: 'Kickoff Date', type: 'date' },
+    { key: 'primaryContact', label: 'Primary Contact', type: 'text' },
+    { key: 'meetingCadence', label: 'Meeting Cadence', type: 'text' },
+    { key: 'goLiveDate', label: 'Go-Live Date', type: 'date' },
   ];
 
   const handleFieldChange = (key, value) => {
