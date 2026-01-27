@@ -261,68 +261,82 @@ export const MigrationChecklist = () => {
     );
   }
 
+  // Page header with navigation and actions
+  const pageHeader = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={() => handleNavigation('/')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {migration.clientInfo?.clientName || 'Migration Checklist'}
+          </h1>
+          <SaveStatus
+            saving={saving}
+            lastSaved={lastSaved}
+            error={saveError}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onRetry={retrySave}
+          />
+        </div>
+      </div>
+      <div className="flex flex-row">
+        <SearchFilter
+          selectedSection={selectedSection}
+          onSectionChange={setSelectedSection}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          sections={sections}
+        />
+      </div>
+
+      {/* Save button */}
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={handleSave}
+          disabled={saving || !hasUnsavedChanges}
+          className="gap-2"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+            </>
+          )}
+        </Button>
+
+        {isInterWorks && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsManagementModalOpen(true)}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Manage Questions
+          </Button>
+        )}
+      </div>
+      
+    </div>
+  );
+
   return (
     <MigrationLayout
       completed={completed}
       total={total}
       percentage={percentage}
       onNavigate={handleNavigation}
+      pageHeader={pageHeader}
     >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => handleNavigation('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {migration.clientInfo?.clientName || 'Migration Checklist'}
-              </h1>
-              <SaveStatus
-                saving={saving}
-                lastSaved={lastSaved}
-                error={saveError}
-                hasUnsavedChanges={hasUnsavedChanges}
-                onRetry={retrySave}
-              />
-            </div>
-          </div>
-
-          {/* Save button */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSave}
-              disabled={saving || !hasUnsavedChanges}
-              className="gap-2"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
-                </>
-              )}
-            </Button>
-
-            {isInterWorks && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsManagementModalOpen(true)}
-                className="gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                Manage Questions
-              </Button>
-            )}
-          </div>
-        </div>
 
         {/* Client Information */}
         <ClientInfoSection
@@ -331,7 +345,7 @@ export const MigrationChecklist = () => {
           readOnly={!isInterWorks}
         />
 
-        {/* Search and Filter */}
+        {/* Search and Filter
         <SearchFilter
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -340,7 +354,7 @@ export const MigrationChecklist = () => {
           selectedStatus={selectedStatus}
           onStatusChange={setSelectedStatus}
           sections={sections}
-        />
+        /> */}
 
         {/* Question Sections */}
         {Object.keys(filteredSections).length === 0 ? (

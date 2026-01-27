@@ -16,6 +16,7 @@ export const MigrationLayout = ({
   total = 0,
   percentage = 0,
   onNavigate,
+  pageHeader,
   className,
 }) => {
   const { user, logout } = useAuth();
@@ -30,6 +31,14 @@ export const MigrationLayout = ({
       />
 
       <ProgressSection completed={completed} total={total} percentage={percentage} />
+
+      {pageHeader && (
+        <div className="bg-white/80 backdrop-blur-lg border-b px-4 py-4 sticky top-[200px] z-30">
+          <div className="container mx-auto">
+            {pageHeader}
+          </div>
+        </div>
+      )}
 
       <main className={cn('container mx-auto px-4 py-8', className)}>
         {children}
