@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/Dialog';
 import { Badge } from '@/components/ui/Badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { ClientSelector } from '@/components/molecules/ClientSelector';
 import api from '@/lib/api';
 import { Plus, Trash2, Loader2, User } from 'lucide-react';
@@ -33,6 +34,7 @@ export const UserManagement = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [clientId, setClientId] = useState('');
+  const [role, setRole] = useState('guest'); // Default to guest
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -58,8 +60,14 @@ export const UserManagement = () => {
     setFormError('');
 
     // Validation
-    if (!name || !email || !password || !clientId) {
-      setFormError('All fields are required');
+    if (!name || !email || !password) {
+      setFormError('Name, email, and password are required');
+      return;
+    }
+
+    // Client only required for guest users
+    if (role === 'guest' && !clientId) {
+      setFormError('Client assignment is required for guest users');
       return;
     }
 
@@ -80,8 +88,8 @@ export const UserManagement = () => {
         name,
         email,
         password,
-        clientId,
-        role: 'guest',
+        role,
+        ...(clientId && clientId !== '__none__' && { clientId }), // Filter out sentinel value
       });
 
       if (response.data.user) {
@@ -115,6 +123,7 @@ export const UserManagement = () => {
     setEmail('');
     setPassword('');
     setClientId('');
+    setRole('guest'); // Reset to default
     setFormError('');
   };
 
@@ -265,14 +274,57 @@ export const UserManagement = () => {
               />
             </div>
 
-            {/* Client Selection */}
-            <ClientSelector
-              value={clientId}
-              onChange={setClientId}
-              required={true}
-              disabled={createLoading}
-              label="Assign to Client"
-            />
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label>User Role</Label>
+              <RadioGroup
+                value={role}
+                onValueChange={(value) => {
+                  setRole(value);
+                  if (value === 'interworks') {
+                    setClientId('__none__'); // Use sentinel value instead of empty string
+                  }
+                }}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="guest" id="role-guest" />
+                  <Label htmlFor="role-guest" className="font-normal cursor-pointer">
+                    Guest User
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="interworks" id="role-interworks" />
+                  <Label htmlFor="role-interworks" className="font-normal cursor-pointer">
+                    InterWorks User
+                  </Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground">
+                {role === 'guest'
+                  ? 'Guest users can only access their assigned client\'s migrations.'
+                  : 'InterWorks users have full access. Client assignment is optional for team organization.'}
+              </p>
+            </div>
+
+            {/* Client Selection - Conditional based on role */}
+            {role === 'guest' ? (
+              <ClientSelector
+                value={clientId}
+                onChange={setClientId}
+                required={true}
+                disabled={createLoading}
+                label="Assign to Client"
+              />
+            ) : (
+              <ClientSelector
+                value={clientId}
+                onChange={setClientId}
+                required={false}
+                disabled={createLoading}
+                label="Assign to Client (Optional)"
+              />
+            )}
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-4">

@@ -5,12 +5,24 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 
 export const Header = ({ userName, role, onLogout, onNavigate, className }) => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    // Use callback if provided (for unsaved changes modal)
+    // Otherwise use React Router's navigate
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
+  };
   return (
     <header
       className={cn(
@@ -39,19 +51,19 @@ export const Header = ({ userName, role, onLogout, onNavigate, className }) => {
           {role === 'interworks' && (
             <nav className="flex items-center gap-4 ml-8">
               <button
-                onClick={() => onNavigate?.('/')}
+                onClick={() => handleNavigation('/')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Dashboard
               </button>
               <button
-                onClick={() => onNavigate?.('/clients')}
+                onClick={() => handleNavigation('/clients')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Clients
               </button>
               <button
-                onClick={() => onNavigate?.('/users')}
+                onClick={() => handleNavigation('/users')}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Users

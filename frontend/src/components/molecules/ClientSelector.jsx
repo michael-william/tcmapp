@@ -93,6 +93,11 @@ export const ClientSelector = ({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
+          {!required && (
+            <SelectItem value="__none__">
+              <span className="text-muted-foreground">None (No client assignment)</span>
+            </SelectItem>
+          )}
           {clients.map((client) => (
             <SelectItem key={client._id} value={client._id}>
               {client.name} ({client.email})
