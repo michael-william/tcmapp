@@ -48,7 +48,7 @@ const requireAuth = async (req, res, next) => {
       email: user.email,
       role: user.role,
       name: user.name,
-      clientId: user.clientId, // For guest users
+      clientIds: user.clientIds || [], // Array of client IDs for guest users
     };
 
     next();

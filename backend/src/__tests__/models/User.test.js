@@ -27,9 +27,16 @@ describe('User Model', () => {
     });
 
     it('should default role to guest', async () => {
+      const Client = require('../../models/Client');
+      const client = await Client.create({
+        name: 'Test Client',
+        email: 'testclient@test.com',
+      });
+
       const userData = {
         email: 'guest@company.com',
         passwordHash: 'Password123!',
+        clientIds: [client._id],
       };
 
       const user = await User.create(userData);
@@ -176,8 +183,8 @@ describe('User Model', () => {
     });
   });
 
-  describe('Guest User with ClientId', () => {
-    it('should create guest user with clientId', async () => {
+  describe('Guest User with ClientIds', () => {
+    it('should create guest user with clientIds', async () => {
       // Note: This test assumes Client model exists and can be created
       const Client = require('../../models/Client');
       const client = await Client.create({
@@ -189,36 +196,73 @@ describe('User Model', () => {
         email: 'guest@test.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: client._id,
+        clientIds: [client._id],
       };
 
       const user = await User.create(userData);
       expect(user.role).toBe('guest');
-      expect(user.clientId.toString()).toBe(client._id.toString());
+      expect(user.clientIds[0].toString()).toBe(client._id.toString());
+      expect(user.clientIds).toHaveLength(1);
     });
 
-    it('should fail to create guest user without clientId', async () => {
+    it('should create guest user with multiple clientIds', async () => {
+      const Client = require('../../models/Client');
+      const client1 = await Client.create({
+        name: 'Test Client 1',
+        email: 'client1@test.com',
+      });
+      const client2 = await Client.create({
+        name: 'Test Client 2',
+        email: 'client2@test.com',
+      });
+
+      const userData = {
+        email: 'multiguest@test.com',
+        passwordHash: 'Password123!',
+        role: 'guest',
+        clientIds: [client1._id, client2._id],
+      };
+
+      const user = await User.create(userData);
+      expect(user.role).toBe('guest');
+      expect(user.clientIds).toHaveLength(2);
+      expect(user.clientIds[0].toString()).toBe(client1._id.toString());
+      expect(user.clientIds[1].toString()).toBe(client2._id.toString());
+    });
+
+    it('should fail to create guest user without clientIds', async () => {
       const userData = {
         email: 'guestnoclient@test.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        // Missing clientId
+        // Missing clientIds
       };
 
       await expect(User.create(userData)).rejects.toThrow();
     });
 
-    it('should allow interworks user without clientId', async () => {
+    it('should fail to create guest user with empty clientIds array', async () => {
+      const userData = {
+        email: 'guestemptyarray@test.com',
+        passwordHash: 'Password123!',
+        role: 'guest',
+        clientIds: [],
+      };
+
+      await expect(User.create(userData)).rejects.toThrow();
+    });
+
+    it('should allow interworks user without clientIds', async () => {
       const userData = {
         email: 'interworks2@test.com',
         passwordHash: 'Password123!',
         role: 'interworks',
-        // No clientId needed for interworks
+        // No clientIds needed for interworks
       };
 
       const user = await User.create(userData);
       expect(user.role).toBe('interworks');
-      expect(user.clientId).toBeUndefined();
+      expect(user.clientIds).toEqual([]);
     });
   });
 });

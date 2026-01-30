@@ -49,14 +49,14 @@ describe('Client Routes', () => {
       passwordHash: 'Password123!',
       name: 'Guest User',
       role: 'guest',
-      clientId: client._id,
+      clientIds: [client._id],
     });
 
     guestToken = generateJWT({
       userId: guestUser._id.toString(),
       email: guestUser.email,
       role: guestUser.role,
-      clientId: guestUser.clientId.toString(),
+      clientIds: [guestUser.clientIds[0].toString()],
     });
   });
 

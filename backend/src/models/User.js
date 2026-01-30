@@ -32,12 +32,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    clientId: {
-      type: mongoose.Schema.Types.ObjectId,
+    clientIds: {
+      type: [mongoose.Schema.Types.ObjectId],
       ref: 'Client',
-      required: function() {
-        return this.role === 'guest';
-      },
+      default: [],
+      validate: {
+        validator: function(clientIds) {
+          if (this.role === 'guest') {
+            return clientIds && clientIds.length > 0;
+          }
+          return true;
+        },
+        message: 'Guest users must have at least one client assigned'
+      }
     },
   },
   {

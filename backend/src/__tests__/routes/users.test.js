@@ -49,14 +49,14 @@ describe('User Management Routes', () => {
       passwordHash: 'Password123!',
       name: 'Guest User',
       role: 'guest',
-      clientId: client._id,
+      clientIds: [client._id],
     });
 
     guestToken = generateJWT({
       userId: guestUser._id.toString(),
       email: guestUser.email,
       role: guestUser.role,
-      clientId: guestUser.clientId.toString(),
+      clientIds: [guestUser.clientIds[0].toString()],
     });
   });
 
@@ -66,7 +66,7 @@ describe('User Management Routes', () => {
         email: 'newguest@company.com',
         password: 'GuestPass123!',
         name: 'New Guest',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -87,7 +87,7 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'autoguest@company.com',
         name: 'Auto Guest',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -103,12 +103,12 @@ describe('User Management Routes', () => {
       expect(response.body.generatedPassword.length).toBeGreaterThan(8);
     });
 
-    it('should fail without clientId for guest users', async () => {
+    it('should fail without clientIds for guest users', async () => {
       const userData = {
         email: 'noclient@company.com',
         password: 'Password123!',
         role: 'guest',
-        // Missing clientId
+        // Missing clientIds
       };
 
       const response = await request(app)
@@ -120,11 +120,11 @@ describe('User Management Routes', () => {
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail with non-existent clientId', async () => {
+    it('should fail with non-existent clientIds', async () => {
       const userData = {
         email: 'badclient@company.com',
         password: 'Password123!',
-        clientId: '507f1f77bcf86cd799439011', // Non-existent
+        clientIds: ['507f1f77bcf86cd799439011'], // Non-existent
       };
 
       const response = await request(app)
@@ -141,7 +141,7 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'guest@company.com', // Already exists
         password: 'Password123!',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -158,7 +158,7 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'not-an-email',
         password: 'Password123!',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -174,7 +174,7 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'test@company.com',
         password: 'short',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -190,7 +190,7 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'hacker@company.com',
         password: 'Password123!',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -206,13 +206,13 @@ describe('User Management Routes', () => {
       const userData = {
         email: 'test@company.com',
         password: 'Password123!',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       await request(app).post('/api/users').send(userData).expect(401);
     });
 
-    it('should create InterWorks user without clientId', async () => {
+    it('should create InterWorks user without clientIds', async () => {
       const userData = {
         email: 'newconsultant@interworks.com',
         password: 'ConsultantPass123!',
@@ -229,16 +229,16 @@ describe('User Management Routes', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.user.email).toBe('newconsultant@interworks.com');
       expect(response.body.user.role).toBe('interworks');
-      expect(response.body.user.clientId).toBeUndefined();
+      expect(response.body.user.clientIds).toEqual([]);
     });
 
-    it('should create InterWorks user with optional clientId', async () => {
+    it('should create InterWorks user with optional clientIds', async () => {
       const userData = {
         email: 'teamlead@interworks.com',
         password: 'TeamPass123!',
         name: 'Team Lead',
         role: 'interworks',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response = await request(app)
@@ -250,7 +250,7 @@ describe('User Management Routes', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.user.email).toBe('teamlead@interworks.com');
       expect(response.body.user.role).toBe('interworks');
-      expect(response.body.user.clientId).toBeDefined();
+      expect(response.body.user.clientIds).toHaveLength(1);
     });
 
     it('should create multiple InterWorks users for same client', async () => {
@@ -259,7 +259,7 @@ describe('User Management Routes', () => {
         password: 'Pass123!',
         name: 'Consultant 1',
         role: 'interworks',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const user2Data = {
@@ -267,7 +267,7 @@ describe('User Management Routes', () => {
         password: 'Pass123!',
         name: 'Consultant 2',
         role: 'interworks',
-        clientId: client._id.toString(),
+        clientIds: [client._id.toString()],
       };
 
       const response1 = await request(app)
@@ -284,8 +284,8 @@ describe('User Management Routes', () => {
 
       expect(response1.body.success).toBe(true);
       expect(response2.body.success).toBe(true);
-      expect(response1.body.user.clientId._id).toBe(client._id.toString());
-      expect(response2.body.user.clientId._id).toBe(client._id.toString());
+      expect(response1.body.user.clientIds[0]._id).toBe(client._id.toString());
+      expect(response2.body.user.clientIds[0]._id).toBe(client._id.toString());
     });
 
     it('should reject invalid role values', async () => {
@@ -305,13 +305,13 @@ describe('User Management Routes', () => {
       expect(response.body.success).toBe(false);
     });
 
-    it('should still require clientId for guest users', async () => {
+    it('should still require clientIds for guest users', async () => {
       const userData = {
         email: 'guestnoclient@company.com',
         password: 'Password123!',
         name: 'Guest Without Client',
         role: 'guest',
-        // Missing clientId
+        // Missing clientIds
       };
 
       const response = await request(app)
@@ -322,6 +322,31 @@ describe('User Management Routes', () => {
 
       expect(response.body.success).toBe(false);
     });
+
+    it('should create guest user with multiple clients', async () => {
+      const secondClient = await Client.create({
+        name: 'Second Client Company',
+        email: 'second@client.com',
+      });
+
+      const userData = {
+        email: 'multiguest@company.com',
+        password: 'GuestPass123!',
+        name: 'Multi Client Guest',
+        clientIds: [client._id.toString(), secondClient._id.toString()],
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(userData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.email).toBe('multiguest@company.com');
+      expect(response.body.user.role).toBe('guest');
+      expect(response.body.user.clientIds).toHaveLength(2);
+    });
   });
 
   describe('GET /api/users', () => {
@@ -331,14 +356,14 @@ describe('User Management Routes', () => {
         email: 'user1@company.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: client._id,
+        clientIds: [client._id],
       });
 
       await User.create({
         email: 'user2@company.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: client._id,
+        clientIds: [client._id],
       });
 
       await User.create({
@@ -378,10 +403,10 @@ describe('User Management Routes', () => {
       });
 
       await User.create({
-        email: 'othergues@company.com',
+        email: 'otherguest@company.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: otherClient._id,
+        clientIds: [otherClient._id],
       });
 
       const response = await request(app)
@@ -391,7 +416,7 @@ describe('User Management Routes', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.users).toHaveLength(3); // Only guests for main client
-      expect(response.body.users.every((u) => u.clientId._id === client._id.toString())).toBe(true);
+      expect(response.body.users.every((u) => u.clientIds.some(c => c._id === client._id.toString()))).toBe(true);
     });
 
     it('should include migration count for guest client', async () => {
@@ -487,6 +512,83 @@ describe('User Management Routes', () => {
       expect(response.body.user.name).toBe('Updated Name');
     });
 
+    it('should update user email', async () => {
+      const updates = {
+        email: 'newemail@company.com',
+      };
+
+      const response = await request(app)
+        .put(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.email).toBe('newemail@company.com');
+    });
+
+    it('should update user role from guest to interworks', async () => {
+      const updates = {
+        role: 'interworks',
+      };
+
+      const response = await request(app)
+        .put(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.role).toBe('interworks');
+      expect(response.body.user.clientIds).toEqual([]);
+    });
+
+    it('should update user clientIds (add client)', async () => {
+      const secondClient = await Client.create({
+        name: 'Second Client',
+        email: 'second@client.com',
+      });
+
+      const updates = {
+        clientIds: [client._id.toString(), secondClient._id.toString()],
+      };
+
+      const response = await request(app)
+        .put(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.clientIds).toHaveLength(2);
+    });
+
+    it('should update user clientIds (remove client)', async () => {
+      const secondClient = await Client.create({
+        name: 'Second Client',
+        email: 'second@client.com',
+      });
+
+      // First add second client
+      guestUser.clientIds = [client._id, secondClient._id];
+      await guestUser.save();
+
+      // Now remove second client
+      const updates = {
+        clientIds: [client._id.toString()],
+      };
+
+      const response = await request(app)
+        .put(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.clientIds).toHaveLength(1);
+      expect(response.body.user.clientIds[0]._id).toBe(client._id.toString());
+    });
+
     it('should update user password', async () => {
       const updates = {
         password: 'NewPassword123!',
@@ -519,6 +621,21 @@ describe('User Management Routes', () => {
       expect(response.body.success).toBe(false);
     });
 
+    it('should fail when removing all clientIds from guest user', async () => {
+      const updates = {
+        clientIds: [],
+      };
+
+      const response = await request(app)
+        .put(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain('at least one client');
+    });
+
     it('should return 404 for non-existent user', async () => {
       const fakeId = '507f1f77bcf86cd799439011';
       const updates = { name: 'Test' };
@@ -546,9 +663,26 @@ describe('User Management Routes', () => {
   });
 
   describe('DELETE /api/users/:id', () => {
-    it('should delete guest user (InterWorks only)', async () => {
+    it('should return 409 when deleting guest user without force', async () => {
       const response = await request(app)
         .delete(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Confirmation required');
+      expect(response.body.requiresForce).toBe(true);
+      expect(response.body.message).toContain('guest user');
+      expect(response.body.message).toContain('client(s)');
+
+      // Verify user still exists
+      const stillExists = await User.findById(guestUser._id);
+      expect(stillExists).not.toBeNull();
+    });
+
+    it('should delete guest user with force=true', async () => {
+      const response = await request(app)
+        .delete(`/api/users/${guestUser._id}?force=true`)
         .set('Authorization', `Bearer ${interworksToken}`)
         .expect(200);
 
@@ -559,7 +693,7 @@ describe('User Management Routes', () => {
       expect(deleted).toBeNull();
     });
 
-    it('should delete guest even with client migrations', async () => {
+    it('should return 409 when deleting guest with client migrations without force', async () => {
       // Create migrations for guest's client
       await Migration.create({
         clientId: client._id,
@@ -567,9 +701,32 @@ describe('User Management Routes', () => {
         createdBy: 'admin@interworks.com',
       });
 
-      // Should still succeed (guests can be deleted freely)
       const response = await request(app)
         .delete(`/api/users/${guestUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Confirmation required');
+      expect(response.body.requiresForce).toBe(true);
+      expect(response.body.message).toContain('migration(s)');
+      expect(response.body.migrationCount).toBe(1);
+
+      // Verify user still exists
+      const stillExists = await User.findById(guestUser._id);
+      expect(stillExists).not.toBeNull();
+    });
+
+    it('should delete guest with client migrations when force=true', async () => {
+      // Create migrations for guest's client
+      await Migration.create({
+        clientId: client._id,
+        questions: [],
+        createdBy: 'admin@interworks.com',
+      });
+
+      const response = await request(app)
+        .delete(`/api/users/${guestUser._id}?force=true`)
         .set('Authorization', `Bearer ${interworksToken}`)
         .expect(200);
 
@@ -580,14 +737,79 @@ describe('User Management Routes', () => {
       expect(deleted).toBeNull();
     });
 
-    it('should fail to delete InterWorks users', async () => {
+    it('should fail to delete InterWorks user without force when they have migrations', async () => {
+      // Create migration created by interworks user
+      await Migration.create({
+        clientId: client._id,
+        questions: [],
+        createdBy: interworksUser.email,
+      });
+
       const response = await request(app)
         .delete(`/api/users/${interworksUser._id}`)
         .set('Authorization', `Bearer ${interworksToken}`)
-        .expect(403);
+        .expect(409);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain('Cannot delete InterWorks users');
+      expect(response.body.error).toBe('Confirmation required');
+      expect(response.body.migrationCount).toBe(1);
+      expect(response.body.requiresForce).toBe(true);
+      expect(response.body.message).toContain('migration(s)');
+
+      // Verify user still exists
+      const stillExists = await User.findById(interworksUser._id);
+      expect(stillExists).not.toBeNull();
+    });
+
+    it('should delete InterWorks user with force=true when they have migrations', async () => {
+      // Create migration created by interworks user
+      await Migration.create({
+        clientId: client._id,
+        questions: [],
+        createdBy: interworksUser.email,
+      });
+
+      const response = await request(app)
+        .delete(`/api/users/${interworksUser._id}?force=true`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Verify deletion
+      const deleted = await User.findById(interworksUser._id);
+      expect(deleted).toBeNull();
+    });
+
+    it('should return 409 when deleting InterWorks user without force (no migrations)', async () => {
+      const response = await request(app)
+        .delete(`/api/users/${interworksUser._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Confirmation required');
+      expect(response.body.requiresForce).toBe(true);
+      expect(response.body.migrationCount).toBe(0);
+      expect(response.body.message).toContain('InterWorks user');
+      expect(response.body.message).toContain('administrative privileges');
+
+      // Verify user still exists
+      const stillExists = await User.findById(interworksUser._id);
+      expect(stillExists).not.toBeNull();
+    });
+
+    it('should delete InterWorks user without migrations when force=true', async () => {
+      const response = await request(app)
+        .delete(`/api/users/${interworksUser._id}?force=true`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Verify deletion
+      const deleted = await User.findById(interworksUser._id);
+      expect(deleted).toBeNull();
     });
 
     it('should return 404 for non-existent user', async () => {

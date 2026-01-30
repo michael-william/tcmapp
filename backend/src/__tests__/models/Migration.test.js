@@ -5,13 +5,24 @@
  */
 
 const Migration = require('../../models/Migration');
+const Client = require('../../models/Client');
 const questionTemplate = require('../../seeds/questionTemplate');
 
 describe('Migration Model', () => {
+  let client;
+
+  beforeEach(async () => {
+    // Create a test client for migrations
+    client = await Client.create({
+      name: 'Test Client',
+      email: 'client@company.com',
+    });
+  });
+
   describe('Migration Creation', () => {
     it('should create a migration with valid data', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         clientInfo: {
           clientName: 'Acme Corp',
           region: 'US-West',
@@ -28,7 +39,7 @@ describe('Migration Model', () => {
 
       const migration = await Migration.create(migrationData);
 
-      expect(migration.clientEmail).toBe('client@company.com');
+      expect(migration.clientId.toString()).toBe(client._id.toString());
       expect(migration.clientInfo.clientName).toBe('Acme Corp');
       expect(migration.questions).toHaveLength(55); // 55 questions in template
       expect(migration.createdBy).toBe('consultant@interworks.com');
@@ -36,20 +47,23 @@ describe('Migration Model', () => {
       expect(migration.updatedAt).toBeDefined();
     });
 
-    it('should lowercase client email', async () => {
+    it('should lowercase createdBy email', async () => {
       const migrationData = {
-        clientEmail: 'Client@Company.COM',
+        clientId: client._id,
+        clientInfo: {
+          clientName: 'Test Corp',
+        },
         questions: [],
-        createdBy: 'consultant@interworks.com',
+        createdBy: 'Consultant@InterWorks.COM',
       };
 
       const migration = await Migration.create(migrationData);
-      expect(migration.clientEmail).toBe('client@company.com');
+      expect(migration.createdBy).toBe('consultant@interworks.com');
     });
 
     it('should default additionalNotes to empty string', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [],
         createdBy: 'consultant@interworks.com',
       };
@@ -60,7 +74,7 @@ describe('Migration Model', () => {
   });
 
   describe('Validation', () => {
-    it('should fail without clientEmail', async () => {
+    it('should fail without clientId', async () => {
       const migrationData = {
         questions: [],
         createdBy: 'consultant@interworks.com',
@@ -71,7 +85,7 @@ describe('Migration Model', () => {
 
     it('should fail without createdBy', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [],
       };
 
@@ -82,7 +96,7 @@ describe('Migration Model', () => {
   describe('Question Structure', () => {
     it('should store questions with correct schema', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -123,7 +137,7 @@ describe('Migration Model', () => {
 
     it('should default questionType to checkbox', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -144,7 +158,7 @@ describe('Migration Model', () => {
 
     it('should validate questionType enum', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -165,7 +179,7 @@ describe('Migration Model', () => {
 
     it('should store dropdown options', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -188,7 +202,7 @@ describe('Migration Model', () => {
 
     it('should store question metadata', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -220,7 +234,7 @@ describe('Migration Model', () => {
   describe('calculateProgress Method', () => {
     it('should calculate progress correctly', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',
@@ -276,7 +290,7 @@ describe('Migration Model', () => {
 
     it('should return 0% for no questions', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [],
         createdBy: 'consultant@interworks.com',
       };
@@ -291,7 +305,7 @@ describe('Migration Model', () => {
 
     it('should return 100% when all questions completed', async () => {
       const migrationData = {
-        clientEmail: 'client@company.com',
+        clientId: client._id,
         questions: [
           {
             id: 'q1',

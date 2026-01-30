@@ -38,10 +38,13 @@ router.post(
     body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').optional().trim(),
     body('role').optional().isIn(['interworks', 'guest']).withMessage('Role must be interworks or guest'),
-    body('clientId')
-      .if(body('role').equals('guest'))
+    body('clientIds')
+      .optional()
+      .isArray()
+      .withMessage('clientIds must be an array'),
+    body('clientIds.*')
       .isMongoId()
-      .withMessage('Valid client ID is required for guest users'),
+      .withMessage('Each clientId must be a valid MongoDB ID'),
   ],
   async (req, res) => {
     try {
@@ -53,7 +56,7 @@ router.post(
         });
       }
 
-      const { email, name, clientId, role } = req.body;
+      const { email, name, clientIds, role } = req.body;
       let { password } = req.body;
 
       // Check if user already exists
@@ -65,13 +68,21 @@ router.post(
         });
       }
 
-      // Validate that client exists (only for guest users or when clientId is provided)
-      if (role === 'guest' || (!role && clientId) || clientId) {
-        const client = await Client.findById(clientId);
-        if (!client) {
+      // Validate guest users have at least one client
+      if (role === 'guest' && (!clientIds || clientIds.length === 0)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Guest users must be assigned to at least one client.',
+        });
+      }
+
+      // Validate that all clients exist
+      if (clientIds && clientIds.length > 0) {
+        const clients = await Client.find({ _id: { $in: clientIds } });
+        if (clients.length !== clientIds.length) {
           return res.status(404).json({
             success: false,
-            message: 'Client not found. Please create the client first.',
+            message: 'One or more clients not found. Please verify all client IDs.',
           });
         }
       }
@@ -88,12 +99,12 @@ router.post(
         passwordHash: password,
         name,
         role: role || 'guest', // Default to guest for backward compatibility
-        ...(clientId && { clientId }), // Only include if provided
+        clientIds: clientIds || [], // Default to empty array
       });
 
-      // Populate clientId if it exists
-      if (user.clientId) {
-        user = await User.findById(user._id).populate('clientId', 'name email');
+      // Populate clientIds if they exist
+      if (user.clientIds && user.clientIds.length > 0) {
+        user = await User.findById(user._id).populate('clientIds', 'name email');
       }
 
       res.status(201).json({
@@ -126,20 +137,21 @@ router.get('/', requireAuth, requireInterWorks, async (req, res) => {
       query.role = role;
     }
     if (clientId) {
-      query.clientId = clientId;
+      query.clientIds = clientId;
     }
 
     const users = await User.find(query)
       .sort({ createdAt: -1 })
-      .populate('clientId', 'name email');
+      .populate('clientIds', 'name email');
 
-    // Get migration count for each guest user's client
+    // Get migration count for each guest user's clients
     const usersWithMigrations = await Promise.all(
       users.map(async (user) => {
         let migrationCount = 0;
-        if (user.role === 'guest' && user.clientId) {
+        if (user.role === 'guest' && user.clientIds && user.clientIds.length > 0) {
+          const clientIdArray = user.clientIds.map(c => c._id);
           migrationCount = await Migration.countDocuments({
-            clientId: user.clientId._id,
+            clientId: { $in: clientIdArray },
           });
         }
 
@@ -183,7 +195,7 @@ router.get(
         });
       }
 
-      const user = await User.findById(req.params.id).populate('clientId', 'name email');
+      const user = await User.findById(req.params.id).populate('clientIds', 'name email');
 
       if (!user) {
         return res.status(404).json({
@@ -192,11 +204,12 @@ router.get(
         });
       }
 
-      // Get migrations for this user's client (if guest)
+      // Get migrations for this user's clients (if guest)
       let migrations = [];
-      if (user.role === 'guest' && user.clientId) {
+      if (user.role === 'guest' && user.clientIds && user.clientIds.length > 0) {
+        const clientIdArray = user.clientIds.map(c => c._id);
         migrations = await Migration.find({
-          clientId: user.clientId._id,
+          clientId: { $in: clientIdArray },
         }).select('_id clientInfo.clientName createdAt');
       }
 
@@ -226,7 +239,11 @@ router.put(
   [
     param('id').isMongoId(),
     body('name').optional().trim(),
+    body('email').optional().isEmail().normalizeEmail(),
     body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('role').optional().isIn(['interworks', 'guest']).withMessage('Role must be interworks or guest'),
+    body('clientIds').optional().isArray().withMessage('clientIds must be an array'),
+    body('clientIds.*').isMongoId().withMessage('Each clientId must be a valid MongoDB ID'),
   ],
   async (req, res) => {
     try {
@@ -247,23 +264,76 @@ router.put(
         });
       }
 
-      const { name, password } = req.body;
+      const { name, email, password, role, clientIds } = req.body;
+
+      // Check email uniqueness if changing email
+      if (email && email !== user.email) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'User with this email already exists.',
+          });
+        }
+      }
+
+      // Validate all clients exist if clientIds provided
+      if (clientIds) {
+        const clients = await Client.find({ _id: { $in: clientIds } });
+        if (clients.length !== clientIds.length) {
+          return res.status(404).json({
+            success: false,
+            message: 'One or more clients not found. Please verify all client IDs.',
+          });
+        }
+      }
+
+      // Determine final role
+      const finalRole = role !== undefined ? role : user.role;
+
+      // Validate guest users have at least one client
+      const finalClientIds = clientIds !== undefined ? clientIds : user.clientIds || [];
+      if (finalRole === 'guest' && finalClientIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Guest users must be assigned to at least one client.',
+        });
+      }
 
       // Update allowed fields
       if (name !== undefined) {
         user.name = name;
       }
 
+      if (email !== undefined) {
+        user.email = email;
+      }
+
       if (password) {
         user.passwordHash = password;
       }
 
+      if (role !== undefined) {
+        user.role = role;
+        // If changing to InterWorks, clear clientIds (unless explicitly provided)
+        if (role === 'interworks' && clientIds === undefined) {
+          user.clientIds = [];
+        }
+      }
+
+      if (clientIds !== undefined) {
+        user.clientIds = clientIds;
+      }
+
       await user.save();
+
+      // Populate clientIds for response
+      const updatedUser = await User.findById(user._id).populate('clientIds', 'name email');
 
       res.json({
         success: true,
         message: 'User updated successfully.',
-        user: user.toJSON(),
+        user: updatedUser.toJSON(),
       });
     } catch (error) {
       console.error('Update user error:', error);
@@ -303,17 +373,41 @@ router.delete(
         });
       }
 
-      // Prevent deleting InterWorks users
-      if (user.role === 'interworks') {
-        return res.status(403).json({
+      // Always warn when deleting users (both InterWorks and guest)
+      const force = req.query.force === 'true';
+      if (!force) {
+        let message;
+        let migrationCount = 0;
+
+        if (user.role === 'interworks') {
+          migrationCount = await Migration.countDocuments({ createdBy: user.email });
+          message = migrationCount > 0
+            ? `This InterWorks user has created ${migrationCount} migration(s). Deleting will not affect migrations, but audit trail will be preserved.`
+            : 'This is an InterWorks user with administrative privileges. Are you sure you want to delete this user?';
+        } else if (user.role === 'guest') {
+          // For guest users, check their assigned clients and migrations
+          const clientCount = user.clientIds?.length || 0;
+          if (clientCount > 0) {
+            migrationCount = await Migration.countDocuments({
+              clientId: { $in: user.clientIds },
+            });
+          }
+
+          message = clientCount > 0
+            ? `This guest user has access to ${clientCount} client(s) with ${migrationCount} migration(s). Are you sure you want to delete this user?`
+            : 'Are you sure you want to delete this guest user?';
+        }
+
+        return res.status(409).json({
           success: false,
-          message: 'Cannot delete InterWorks users.',
+          error: 'Confirmation required',
+          message,
+          migrationCount,
+          requiresForce: true,
         });
       }
 
-      // Guest users can be deleted without checking migrations
-      // (migrations belong to the client, not individual guest users)
-
+      // Proceed with deletion
       await User.findByIdAndDelete(req.params.id);
 
       res.json({

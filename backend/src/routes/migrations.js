@@ -111,9 +111,9 @@ router.get('/', requireAuth, async (req, res) => {
     // Build query
     let query = {};
 
-    // Guests can only see migrations for their client
+    // Guests can only see migrations for their assigned clients
     if (req.user.role === 'guest') {
-      query.clientId = req.user.clientId;
+      query.clientId = { $in: req.user.clientIds };
     } else if (clientId) {
       // InterWorks can filter by client ID
       query.clientId = clientId;
@@ -180,12 +180,16 @@ router.get('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       });
     }
 
-    // Check access: guests can only view migrations for their client
-    if (req.user.role === 'guest' && migration.clientId._id.toString() !== req.user.clientId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. You can only view migrations for your client.',
-      });
+    // Check access: guests can only view migrations for their assigned clients
+    if (req.user.role === 'guest') {
+      const userClientIds = req.user.clientIds.map(id => id.toString());
+      const migrationClientId = migration.clientId._id.toString();
+      if (!userClientIds.includes(migrationClientId)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only view migrations for your assigned clients.',
+        });
+      }
     }
 
     const progress = migration.calculateProgress();
@@ -235,12 +239,16 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       });
     }
 
-    // Check access: guests can only update migrations for their client
-    if (req.user.role === 'guest' && migration.clientId.toString() !== req.user.clientId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied. You can only update migrations for your client.',
-      });
+    // Check access: guests can only update migrations for their assigned clients
+    if (req.user.role === 'guest') {
+      const userClientIds = req.user.clientIds.map(id => id.toString());
+      const migrationClientId = migration.clientId.toString();
+      if (!userClientIds.includes(migrationClientId)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only update migrations for your assigned clients.',
+        });
+      }
     }
 
     const { clientInfo, questions, additionalNotes } = req.body;

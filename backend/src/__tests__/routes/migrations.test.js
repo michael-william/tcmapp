@@ -50,14 +50,14 @@ describe('Migration Routes', () => {
       passwordHash: 'Password123!',
       name: 'Guest User',
       role: 'guest',
-      clientId: client._id,
+      clientIds: [client._id],
     });
 
     guestToken = generateJWT({
       userId: guestUser._id.toString(),
       email: guestUser.email,
       role: guestUser.role,
-      clientId: guestUser.clientId.toString(),
+      clientIds: [guestUser.clientIds[0].toString()],
     });
   });
 
@@ -223,6 +223,51 @@ describe('Migration Routes', () => {
       expect(response.body.migrations).toHaveLength(1);
       expect(response.body.migrations[0].clientId._id.toString()).toBe(client._id.toString());
     });
+
+    it('should list migrations from all assigned clients for guest users', async () => {
+      // Create second client
+      const secondClient = await Client.create({
+        name: 'Second Corp',
+        email: 'second@company.com',
+      });
+
+      // Create migration for second client
+      await Migration.create({
+        clientId: secondClient._id,
+        clientInfo: { clientName: 'Second Corp' },
+        questions: [],
+        createdBy: 'consultant@interworks.com',
+      });
+
+      // Create guest user with access to both clients
+      const multiClientGuest = await User.create({
+        email: 'multiguest@company.com',
+        passwordHash: 'Password123!',
+        name: 'Multi Client Guest',
+        role: 'guest',
+        clientIds: [client._id, secondClient._id],
+      });
+
+      const multiGuestToken = generateJWT({
+        userId: multiClientGuest._id.toString(),
+        email: multiClientGuest.email,
+        role: multiClientGuest.role,
+        clientIds: [client._id.toString(), secondClient._id.toString()],
+      });
+
+      const response = await request(app)
+        .get('/api/migrations')
+        .set('Authorization', `Bearer ${multiGuestToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.migrations).toHaveLength(2);
+
+      // Verify both clients' migrations are included
+      const clientIds = response.body.migrations.map(m => m.clientId._id.toString());
+      expect(clientIds).toContain(client._id.toString());
+      expect(clientIds).toContain(secondClient._id.toString());
+    });
   });
 
   describe('GET /api/migrations/:id', () => {
@@ -267,6 +312,55 @@ describe('Migration Routes', () => {
       expect(response.body.migration._id).toBe(migration._id.toString());
     });
 
+    it('should allow guest to access migration from any assigned client', async () => {
+      // Create second client
+      const secondClient = await Client.create({
+        name: 'Second Client',
+        email: 'second@company.com',
+      });
+
+      // Create migration for second client
+      const secondMigration = await Migration.create({
+        clientId: secondClient._id,
+        clientInfo: { clientName: 'Second Client' },
+        questions: [],
+        createdBy: 'consultant@interworks.com',
+      });
+
+      // Create guest user with access to both clients
+      const multiClientGuest = await User.create({
+        email: 'multiguest@company.com',
+        passwordHash: 'Password123!',
+        role: 'guest',
+        clientIds: [client._id, secondClient._id],
+      });
+
+      const multiGuestToken = generateJWT({
+        userId: multiClientGuest._id.toString(),
+        email: multiClientGuest.email,
+        role: multiClientGuest.role,
+        clientIds: [client._id.toString(), secondClient._id.toString()],
+      });
+
+      // Should be able to access first client's migration
+      const response1 = await request(app)
+        .get(`/api/migrations/${migration._id}`)
+        .set('Authorization', `Bearer ${multiGuestToken}`)
+        .expect(200);
+
+      expect(response1.body.success).toBe(true);
+      expect(response1.body.migration._id).toBe(migration._id.toString());
+
+      // Should be able to access second client's migration
+      const response2 = await request(app)
+        .get(`/api/migrations/${secondMigration._id}`)
+        .set('Authorization', `Bearer ${multiGuestToken}`)
+        .expect(200);
+
+      expect(response2.body.success).toBe(true);
+      expect(response2.body.migration._id).toBe(secondMigration._id.toString());
+    });
+
     it('should deny access to other client migrations', async () => {
       const otherClient = await Client.create({
         name: 'Other Client',
@@ -277,14 +371,14 @@ describe('Migration Routes', () => {
         email: 'guest2@company.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: otherClient._id,
+        clientIds: [otherClient._id],
       });
 
       const otherToken = generateJWT({
         userId: otherGuest._id.toString(),
         email: otherGuest.email,
         role: otherGuest.role,
-        clientId: otherGuest.clientId.toString(),
+        clientIds: [otherGuest.clientIds[0].toString()],
       });
 
       const response = await request(app)
@@ -400,14 +494,14 @@ describe('Migration Routes', () => {
         email: 'guest3@company.com',
         passwordHash: 'Password123!',
         role: 'guest',
-        clientId: otherClient._id,
+        clientIds: [otherClient._id],
       });
 
       const otherToken = generateJWT({
         userId: otherGuest._id.toString(),
         email: otherGuest.email,
         role: otherGuest.role,
-        clientId: otherGuest.clientId.toString(),
+        clientIds: [otherGuest.clientIds[0].toString()],
       });
 
       const updates = {
@@ -900,7 +994,7 @@ describe('Migration Routes', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.migration.questions[0].helpText).toBeUndefined();
-      expect(response.body.migration.questions[0].metadata).toEqual({});
+      expect(response.body.migration.questions[0].metadata.infoTooltip).toBeUndefined();
     });
   });
 });
