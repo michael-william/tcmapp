@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Cloud Migration Prerequisite Questions - Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 50%, #4616a8 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            overflow: visible;
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 100%);
+            color: white;
+            padding: 15px 40px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 0;
+        }
+
+        .header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .header .brand-logo {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header .header-text {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header .header-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header .header-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .header .header-stat .number {
+            font-size: 1.2em;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .header .header-stat .label {
+            font-size: 0.65em;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .header .brand-logo svg {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .header .brand-name {
+            font-size: 1.8em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            margin: 0;
+        }
+
+
+        .client-info-section {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .client-info-header {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .client-info-header::before {
+            content: '📋';
+            font-size: 1.2em;
+        }
+
+        .client-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .client-info-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .client-info-label {
+            color: #4a5568;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .client-info-input {
+            padding: 6px 8px;
+            border: 2px solid #e8ecf1;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .client-info-input:focus {
+            outline: none;
+            border-color: #6633ff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .progress-section {
+            padding: 6px 10px;
+            border-bottom: none;
+            position: sticky;
+            top: 90px;
+            background: white;
+            z-index: 99;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 6px 8px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow:
+                0 2px 6px rgba(0, 0, 0, 0.06),
+                0 0 0 1px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6633ff, #4616a8);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 6px 12px rgba(102, 51, 255, 0.15),
+                0 0 0 1px rgba(102, 51, 255, 0.1);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card .number {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            background: #e8ecf1;
+            height: 18px;
+            border-radius: 9px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) inset;
+            flex: 1;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ba00 0%, #008200 50%, #008200 100%);
+            background-size: 200% 100%;
+            animation: progressShimmer 2s ease-in-out infinite;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 186, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes progressShimmer {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 0%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .controls {
+            padding: 12px 20px;
+            background: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 6px 9px 6px 35px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 10px center;
+            background-color: #f8f9fa;
+        }
+
+        .controls input[type="text"]:focus {
+            outline: none;
+            border-color: #6633ff;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .controls select {
+            padding: 6px 9px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-size: 0.95em;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .controls select:hover {
+            border-color: #6633ff;
+            background: white;
+        }
+
+        .controls select:focus {
+            outline: none;
+            border-color: #6633ff;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .controls button {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(102, 51, 255, 0.3);
+        }
+
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 51, 255, 0.4);
+        }
+
+        .controls button:active {
+            transform: translateY(0);
+        }
+
+        .content {
+            padding: 15px 20px;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: #f1f3f5;
+            border-radius: 10px;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 100%);
+            border-radius: 10px;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #4616a8 0%, #4616a8 100%);
+        }
+
+        .section {
+            margin-bottom: 15px;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #6633ff 0%, #4616a8 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 0;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(102, 51, 255, 0.25);
+        }
+
+        .section-header.completed {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.25);
+        }
+
+        .section-header.completed:hover {
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.35);
+        }
+
+        .section-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 51, 255, 0.35);
+        }
+
+        .section-header.completed:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.35);
+        }
+
+        .section-header:active {
+            transform: translateY(0);
+        }
+
+        .section-header-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .section-toggle {
+            font-size: 1.3em;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .section-header h2 {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+
+        .section-progress {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-content {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: visible;
+        }
+
+        .section-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-bottom: 6px;
+            align-items: stretch;
+            overflow: visible;
+        }
+
+        .question-item {
+            background: white;
+            padding: 6px 11px;
+            border-radius: 14px;
+            border: 2px solid #e8ecf1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            position: relative;
+            overflow: visible;
+            min-height: 48px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        .question-item:has(.info-icon:hover) {
+            z-index: 10002;
+        }
+
+        .question-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6633ff, #4616a8);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .question-item:hover {
+            border-color: #6633ff;
+            box-shadow: 0 4px 16px rgba(102, 51, 255, 0.15);
+            transform: translateX(4px);
+        }
+
+        .question-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .question-item.completed {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-color: #2196F3;
+        }
+
+        .question-item.completed::before {
+            background: linear-gradient(90deg, #2196F3, #1976D2);
+            transform: scaleX(1);
+        }
+
+        .question-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: #6633ff;
+            transition: transform 0.2s ease;
+        }
+
+        .question-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .question-content {
+            flex: 1;
+        }
+
+        .question-text {
+            color: #2d3748;
+            line-height: 1.6;
+            font-size: 0.98em;
+            font-weight: 500;
+        }
+
+        .question-item.completed .question-text {
+            color: #4a5568;
+        }
+
+        .timestamp {
+            color: #2196F3;
+            font-size: 0.82em;
+            margin-top: 6px;
+            font-style: italic;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timestamp::before {
+            content: '✓';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #4caf50;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: rgba(102, 51, 255, 0.1);
+            color: #6633ff;
+            border-radius: 50%;
+            border: 1px solid rgba(102, 51, 255, 0.3);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: help;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .info-icon:hover {
+            background: rgba(102, 51, 255, 0.15);
+            border-color: #6633ff;
+            z-index: 10001;
+        }
+
+        .info-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 400;
+            white-space: nowrap;
+            z-index: 10000;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+
+        .info-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2d3748;
+        }
+
+        .info-icon:hover .info-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .detail-input-container,
+        .date-input-container,
+        .dropdown-container,
+        .radio-container {
+            background: white;
+            padding: 6px 11px;
+            margin-bottom: 6px;
+            border-radius: 14px;
+            border: 2px solid #e8ecf1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            min-height: 48px;
+            box-sizing: border-box;
+        }
+
+        .detail-input-container:hover,
+        .date-input-container:hover,
+        .dropdown-container:hover,
+        .radio-container:hover {
+            border-color: #6633ff;
+            box-shadow: 0 4px 16px rgba(102, 51, 255, 0.1);
+        }
+
+        .detail-label,
+        .date-label,
+        .dropdown-label,
+        .radio-label {
+            color: #2d3748;
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .date-input-container,
+        .dropdown-container,
+        .radio-container {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .date-label,
+        .dropdown-label,
+        .radio-label {
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .detail-textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 7px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95em;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .detail-textarea:focus {
+            outline: none;
+            border-color: #6633ff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .date-input {
+            max-width: 200px;
+            padding: 6px 8px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            font-weight: 500;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #6633ff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .dropdown-select {
+            width: 200px;
+            padding: 6px 8px;
+            border: 2px solid #e8ecf1;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95em;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: #6633ff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 51, 255, 0.1);
+        }
+
+        .radio-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #6633ff;
+            transition: transform 0.2s ease;
+        }
+
+        .radio-option input[type="radio"]:hover {
+            transform: scale(1.1);
+        }
+
+        .radio-option label {
+            font-size: 0.95em;
+            color: #2d3748;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .export-section {
+            padding: 25px 40px;
+            background: linear-gradient(to top, #f8f9fa, #ffffff);
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .export-btn:active {
+            transform: translateY(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .empty-state h2 {
+            font-size: 1.8em;
+            margin-bottom: 12px;
+            color: #6633ff;
+            font-weight: 800;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 16px;
+            }
+
+            .header {
+                padding: 20px 25px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .header .brand-logo img {
+                height: 50px;
+            }
+
+            .client-info-section,
+            .progress-section,
+            .controls,
+            .content,
+            .export-section {
+                padding: 20px 25px;
+            }
+
+            .client-info-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .progress-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls input[type="text"],
+            .controls select,
+            .controls button {
+                width: 100%;
+            }
+
+            .content {
+                max-height: none;
+            }
+
+            .questions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                padding: 14px 18px;
+            }
+
+            .question-item {
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="brand-logo">
+                    <img src="IWstacked-%23ffffff.png" alt="InterWorks" style="height: 60px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));">
+                </div>
+                <div class="header-text">
+                    <h1>Tableau Cloud Migration</h1>
+                    <p>Prerequisite Questions Checklist</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="number" id="totalQuestions">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="header-stat">
+                    <div class="number" id="answeredQuestions">0</div>
+                    <div class="label">Answered</div>
+                </div>
+                <div class="header-stat">
+                    <div class="number" id="remainingQuestions">0</div>
+                    <div class="label">Remaining</div>
+                </div>
+                <div class="header-stat">
+                    <div class="number" id="percentComplete">0%</div>
+                    <div class="label">Complete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+        </div>
+
+        <div class="client-info-section">
+            <div class="client-info-header">Client Information</div>
+            <div class="client-info-grid">
+                <div class="client-info-field">
+                    <label class="client-info-label">Client Name</label>
+                    <input type="text" class="client-info-input" id="clientName" placeholder="Enter client name">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Region</label>
+                    <input type="text" class="client-info-input" id="region" placeholder="Enter region">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Tableau Server Version</label>
+                    <input type="text" class="client-info-input" id="serverVersion" placeholder="e.g., 2023.3.1">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Tableau Server URL</label>
+                    <input type="text" class="client-info-input" id="serverUrl" placeholder="https://tableau.company.com">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Project Kick Off Date</label>
+                    <input type="date" class="client-info-input" id="kickoffDate">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Primary Client Contact</label>
+                    <input type="text" class="client-info-input" id="primaryContact" placeholder="Name and email">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Agreed Meeting Cadence</label>
+                    <input type="text" class="client-info-input" id="meetingCadence" placeholder="e.g., Weekly on Tuesdays at 10am">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Expected Go-Live Date</label>
+                    <input type="date" class="client-info-input" id="goLiveDate">
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search questions...">
+            <select id="sectionFilter">
+                <option value="">All Sections</option>
+            </select>
+            <select id="statusFilter">
+                <option value="all">All Questions</option>
+                <option value="pending">Unanswered Only</option>
+                <option value="completed">Answered Only</option>
+            </select>
+            <button onclick="clearAllData()">Clear All</button>
+        </div>
+
+        <div class="content" id="questionContainer">
+            <!-- Questions will be loaded here -->
+        </div>
+
+        <div class="content" style="margin-top: 20px;">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Additional Information</h2>
+                </div>
+                <div class="section-content" style="display: block;">
+                    <textarea id="additionalNotes"
+                              class="detail-textarea"
+                              style="width: 100%; min-height: 150px; padding: 12px; font-size: 14px; border: 1px solid #e8ecf1; border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
+                              placeholder="Enter any additional details, notes, or information that wasn't covered in the sections above..."
+                              oninput="saveAdditionalNotes()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <button class="export-btn" onclick="exportToPDF()">📄 Export (PDF)</button>
+        </div>
+    </div>
+
+    <script>
+        let allQuestions = [{"section": "Security", "question": "SecOps are aware of the migration and have signed this off? Confirm", "completed": false, "timestamp": null}, {"section": "Security", "question": "Has data connectivity and access to data sources been confirmed?", "completed": false, "timestamp": null}, {"section": "Security", "question": "Provide detail of the expected connections", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Communications", "question": "Has an internal communication strategy been confirmed?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Communication assistance offered?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Have resources been requested and assigned internally?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Are your developers aware of a potential change freeze?", "completed": false, "timestamp": null}, {"section": "Stakeholders", "question": "Provide a list of stakeholders and available resources for migration", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Access & Connectivity", "question": "How is Interworks connecting to your Tableau Server?", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Access & Connectivity", "question": "Has the jumpbox been built to a required specification?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Has access been provided to IW Consultants?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Has PowerShell been enabled with Admin rights?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Confirm file transfer methods", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Access & Connectivity", "question": "Is Tableau Desktop available on the Jumpbox?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Tool installed on Jumpbox?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Server and Cloud PATS generated and connectivity confirmed?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Are PAT tokens enabled on Tableau Server?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Is Tableau Repository readonly access enabled?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Has the Runbook been installed and an overview provided?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Is there a time delay for client to review Runbook?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Expected Date for Runbook review completion", "completed": false, "timestamp": null, "isDateInput": true, "selectedDate": ""}, {"section": "Tableau Server", "question": "Has any housekeeping taken place?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Any initial project exclusions to be made aware of initially?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Server", "question": "Do all users have a valid email address?", "completed": false, "timestamp": null}, {"section": "Pre Flight Checks", "question": "Is Row Level Security used extensively in Workbooks?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Pre Flight Checks", "question": "Are you aware of any URL actions that may be present?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Pre Flight Checks", "question": "Are you aware of any fonts that are non web conformant?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Pre Flight Checks", "question": "Pre flight checks will identify the above. Any RLS or URL Actions will need to be updated post migration by power users/developers. Please confirm.", "completed": false, "timestamp": null, "isFullWidth": true}, {"section": "Pre Flight Checks", "question": "Pre flight checks performed and delivered to client", "completed": false, "timestamp": null, "isDateInput": true, "selectedDate": ""}, {"section": "Pre Flight Checks", "question": "Has client reviewed Pre flight checks documentation?", "completed": false, "timestamp": null}, {"section": "Pre Flight Checks", "question": "Do we expect any delay on starting the migration based on the pre flight checks?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": "", "hasConditionalDate": true, "conditionalDate": ""}, {"section": "Tableau Cloud", "question": "Has the Tableau/Salesforce paperwork been signed?", "completed": false, "timestamp": null, "hasConditionalInput": true, "conditionalText": ""}, {"section": "Tableau Cloud", "question": "Confirm Tableau Cloud SKU type", "completed": false, "timestamp": null, "isDropdown": true, "selectedOption": "", "dropdownOptions": ["", "Standard", "Enterprise", "Tableau +"]}, {"section": "Tableau Cloud", "question": "Number of Expected Sites", "completed": false, "timestamp": null, "isDropdown": true, "selectedOption": "", "dropdownOptions": ["", "1", "2", "3", "4", "5", "+5"]}, {"section": "Tableau Cloud", "question": "Has Authentication method been confirmed?", "completed": false, "timestamp": null, "hasConditionalInput": true, "conditionalText": ""}, {"section": "Tableau Cloud", "question": "If SSO - Is app built and applied?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": "", "yesNoOptions": ["Yes", "N/A"]}, {"section": "Tableau Cloud", "question": "Is any conditional access expected?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Is SCIM being implemented?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Are the user groups on the authentication app built?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Group Remapping required?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Any project hierarchy adjustments", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Have InterWorks engineers been provided access to Tableau Server as Site Admin Creators?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Are you expecting to use Custom Domains in Tableau Cloud?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Cloud", "question": "Additional notes for Tableau Cloud", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Tableau Bridge", "question": "Do you require the use of Tableau Bridge?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Bridge", "question": "Have the Bridge Servers been requested and built?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Tableau Bridge", "question": "If No - Expected turnaround/Date", "completed": false, "timestamp": null, "isDateInput": true, "selectedDate": ""}, {"section": "Tableau Bridge", "question": "Has any testing been done?", "completed": false, "timestamp": null}, {"section": "Tableau Bridge", "question": "Is the Bridge client running in service mode?", "completed": false, "timestamp": null}, {"section": "Tableau Bridge", "question": "Will the bridge server be accessed via a service account?", "completed": false, "timestamp": null}, {"section": "Tableau Bridge", "question": "Will the data sources be using Windows Auth?", "completed": false, "timestamp": null}, {"section": "Tableau Bridge", "question": "Flatfiles will require a full UNC filepath when using Bridge. Confirm", "completed": false, "timestamp": null}, {"section": "Cloud Data Sources", "question": "Is Private Connect required?", "completed": false, "timestamp": null}, {"section": "Cloud Data Sources", "question": "Is IP whitelisting required and completed?", "completed": false, "timestamp": null}, {"section": "Cloud Data Sources", "question": "What authentication is used to Cloud Data Sources", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}];
+        let filteredQuestions = [];
+        let expandedSections = new Set();
+        let detailTextDebounceTimers = {};
+
+        function saveClientInfo() {
+            const clientInfo = {
+                clientName: document.getElementById('clientName').value,
+                region: document.getElementById('region').value,
+                serverVersion: document.getElementById('serverVersion').value,
+                serverUrl: document.getElementById('serverUrl').value,
+                kickoffDate: document.getElementById('kickoffDate').value,
+                primaryContact: document.getElementById('primaryContact').value,
+                meetingCadence: document.getElementById('meetingCadence').value,
+                goLiveDate: document.getElementById('goLiveDate').value
+            };
+            localStorage.setItem('tableauMigrationClientInfoPro', JSON.stringify(clientInfo));
+        }
+
+        function loadClientInfo() {
+            const savedInfo = localStorage.getItem('tableauMigrationClientInfoPro');
+            if (savedInfo) {
+                const clientInfo = JSON.parse(savedInfo);
+                document.getElementById('clientName').value = clientInfo.clientName || '';
+                document.getElementById('region').value = clientInfo.region || '';
+                document.getElementById('serverVersion').value = clientInfo.serverVersion || '';
+                document.getElementById('serverUrl').value = clientInfo.serverUrl || '';
+                document.getElementById('kickoffDate').value = clientInfo.kickoffDate || '';
+                document.getElementById('primaryContact').value = clientInfo.primaryContact || '';
+                document.getElementById('meetingCadence').value = clientInfo.meetingCadence || '';
+                document.getElementById('goLiveDate').value = clientInfo.goLiveDate || '';
+            }
+            loadAdditionalNotes();
+        }
+
+        function saveAdditionalNotes() {
+            const notes = document.getElementById('additionalNotes').value;
+            localStorage.setItem('tableauMigrationAdditionalNotes', notes);
+        }
+
+        function loadAdditionalNotes() {
+            const savedNotes = localStorage.getItem('tableauMigrationAdditionalNotes');
+            if (savedNotes) {
+                document.getElementById('additionalNotes').value = savedNotes;
+            }
+        }
+
+        function loadQuestions() {
+            const savedProgress = localStorage.getItem('tableauMigrationQuestionsPro');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                allQuestions.forEach((question, index) => {
+                    if (progress[index]) {
+                        question.completed = progress[index].completed;
+                        question.timestamp = progress[index].timestamp;
+                        if (question.isTextInput && progress[index].detailText !== undefined) {
+                            question.detailText = progress[index].detailText;
+                        }
+                        if (question.isDateInput && progress[index].selectedDate !== undefined) {
+                            question.selectedDate = progress[index].selectedDate;
+                        }
+                        if (question.isDropdown && progress[index].selectedOption !== undefined) {
+                            question.selectedOption = progress[index].selectedOption;
+                        }
+                        if (question.isYesNo && progress[index].yesNoAnswer !== undefined) {
+                            question.yesNoAnswer = progress[index].yesNoAnswer;
+                        }
+                        if (question.hasConditionalInput && progress[index].conditionalText !== undefined) {
+                            question.conditionalText = progress[index].conditionalText;
+                        }
+                        if (question.hasConditionalDate && progress[index].conditionalDate !== undefined) {
+                            question.conditionalDate = progress[index].conditionalDate;
+                        }
+                    }
+                });
+            }
+
+            populateSectionFilter();
+            filterQuestions();
+            updateStats();
+            loadClientInfo();
+        }
+
+        function populateSectionFilter() {
+            const sectionFilter = document.getElementById('sectionFilter');
+            const sections = [...new Set(allQuestions.map(q => q.section).filter(s => s))];
+
+            sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionFilter.appendChild(option);
+            });
+        }
+
+        function filterQuestions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sectionFilter = document.getElementById('sectionFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredQuestions = allQuestions.filter(question => {
+                const matchesSearch = !searchTerm ||
+                    question.question.toLowerCase().includes(searchTerm) ||
+                    (question.section && question.section.toLowerCase().includes(searchTerm));
+
+                const matchesSection = !sectionFilter || question.section === sectionFilter;
+
+                const matchesStatus = statusFilter === 'all' ||
+                    (statusFilter === 'pending' && !question.completed) ||
+                    (statusFilter === 'completed' && question.completed);
+
+                return matchesSearch && matchesSection && matchesStatus;
+            });
+
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '';
+
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h2>No questions found</h2><p>Try adjusting your filters</p></div>';
+                return;
+            }
+
+            const sections = {};
+            filteredQuestions.forEach(question => {
+                const section = question.section || 'Other';
+                if (!sections[section]) sections[section] = [];
+                sections[section].push(question);
+            });
+
+            Object.keys(sections).forEach((section, sectionIndex) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+
+                const sectionAnswered = filteredQuestions.filter(q => q.section === section && q.completed).length;
+                const sectionTotal = filteredQuestions.filter(q => q.section === section).length;
+                const isSectionCompleted = sectionTotal > 0 && sectionAnswered === sectionTotal;
+
+                const sectionId = `section-${sectionIndex}`;
+                const isExpanded = expandedSections.has(sectionId);
+
+                sectionDiv.innerHTML = `
+                    <div class="section-header ${isSectionCompleted ? 'completed' : ''}" onclick="toggleSection('${sectionId}', event)">
+                        <div class="section-header-content">
+                            <span class="section-toggle ${isExpanded ? '' : 'collapsed'}" id="toggle-${sectionId}">▼</span>
+                            <h2>${section}</h2>
+                        </div>
+                        <div class="section-progress">${sectionAnswered}/${sectionTotal}</div>
+                    </div>
+                    <div class="section-content ${isExpanded ? '' : 'collapsed'}" id="${sectionId}"></div>
+                `;
+
+                // Get the content container
+                container.appendChild(sectionDiv);
+                const contentDiv = document.getElementById(sectionId);
+
+                // Create grid container for questions
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'questions-grid';
+
+                sections[section].forEach(question => {
+                    const questionIndex = allQuestions.indexOf(question);
+
+                    // Hide Tableau Bridge questions if the first question is answered "No"
+                    if (section === 'Tableau Bridge' && !question.question.includes('Do you require the use of Tableau Bridge?')) {
+                        const firstBridgeQuestion = allQuestions.find(q => q.section === 'Tableau Bridge' && q.question.includes('Do you require the use of Tableau Bridge?'));
+                        if (firstBridgeQuestion && firstBridgeQuestion.yesNoAnswer === 'No') {
+                            return; // Skip rendering this question
+                        }
+                    }
+
+                    // Add divider before question if flagged
+                    if (question.isDividerBefore) {
+                        const dividerDiv = document.createElement('div');
+                        dividerDiv.style.gridColumn = '1 / -1';
+                        dividerDiv.style.borderTop = '1px solid #e8ecf1';
+                        dividerDiv.style.margin = '15px 0';
+                        gridDiv.appendChild(dividerDiv);
+                    }
+
+                    // Special handling for date input questions
+                    if (question.isDateInput) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'date-input-container';
+
+                        dateDiv.innerHTML = `
+                            <label class="date-label">${question.question}</label>
+                            <input type="date"
+                                   class="date-input"
+                                   value="${question.selectedDate || ''}"
+                                   onchange="updateSelectedDate(${questionIndex}, this.value)">
+                        `;
+                        gridDiv.appendChild(dateDiv);
+                        return;
+                    }
+
+                    // Special handling for dropdown questions
+                    if (question.isDropdown) {
+                        const dropdownDiv = document.createElement('div');
+                        dropdownDiv.className = 'dropdown-container';
+
+                        const optionsHtml = question.dropdownOptions.map(option =>
+                            `<option value="${option}" ${question.selectedOption === option ? 'selected' : ''}>${option || 'Select...'}</option>`
+                        ).join('');
+
+                        dropdownDiv.innerHTML = `
+                            <label class="dropdown-label">${question.question}</label>
+                            <select class="dropdown-select" onchange="updateDropdownSelection(${questionIndex}, this.value)">
+                                ${optionsHtml}
+                            </select>
+                        `;
+                        gridDiv.appendChild(dropdownDiv);
+                        return;
+                    }
+
+                    // Special handling for yes/no radio questions
+                    if (question.isYesNo) {
+                        const radioDiv = document.createElement('div');
+                        radioDiv.className = 'radio-container';
+
+                        // Use custom options if provided, otherwise default to Yes/No
+                        const options = question.yesNoOptions || ['Yes', 'No'];
+                        const optionsHtml = options.map((option, idx) => {
+                            const optionId = option.toLowerCase().replace(/\//g, '_');
+                            return `
+                                <div class="radio-option">
+                                    <input type="radio"
+                                           id="${optionId}_${questionIndex}"
+                                           name="yesno_${questionIndex}"
+                                           value="${option}"
+                                           ${question.yesNoAnswer === option ? 'checked' : ''}
+                                           onchange="updateYesNoAnswer(${questionIndex}, '${option}')">
+                                    <label for="${optionId}_${questionIndex}">${option}</label>
+                                </div>
+                            `;
+                        }).join('');
+
+                        // Add info icon for specific questions
+                        const radioInfoIcon = question.question.includes('Group Remapping required')
+                            ? '<span class="info-icon">i<span class="info-tooltip">Are the groups currently on Tableau Server being retained or are new groups required</span></span>'
+                            : '';
+
+                        radioDiv.innerHTML = `
+                    <label class="radio-label question-text">${question.question}</label>
+                            ${radioInfoIcon}
+                            <div class="radio-options">
+                                ${optionsHtml}
+                            </div>
+                        `;
+                        gridDiv.appendChild(radioDiv);
+
+                        // Add conditional date field if question has hasConditionalDate and answer is "Yes"
+                        if (question.hasConditionalDate && question.yesNoAnswer === 'Yes') {
+                            const conditionalDateDiv = document.createElement('div');
+                            conditionalDateDiv.className = 'date-input-container';
+                            conditionalDateDiv.innerHTML = `
+                                <label class="date-label">Expected migration start date</label>
+                                <input type="date"
+                                       class="date-input"
+                                       value="${question.conditionalDate || ''}"
+                                       onchange="updateConditionalDate(${questionIndex}, this.value)">
+                            `;
+                            gridDiv.appendChild(conditionalDateDiv);
+                        }
+
+                        return;
+                    }
+
+                    // Special handling for text input questions - full width
+                    if (question.isTextInput) {
+                        const detailDiv = document.createElement('div');
+                        detailDiv.className = 'detail-input-container';
+                        detailDiv.style.gridColumn = '1 / -1'; // Span full width
+                        if (question.completed) {
+                            detailDiv.classList.add('completed');
+                        }
+
+                        // Determine label text and placeholder based on question
+                        let labelText = 'What file transfer methods are available between InterWorks and the client?';
+                        let placeholderText = 'Client SFTP, InterWorks Box option or another method';
+                        if (question.question.toLowerCase().includes('stakeholder')) {
+                            labelText = 'Provide a list of stakeholders and available resources for migration:';
+                            placeholderText = 'Provide a list of Stakeholders and Power Users/ Server Administrators that will be involved in testing and validation.';
+                        }
+                        if (question.section === 'Security' && question.question.includes('expected connections')) {
+                            labelText = 'Provide detail of the expected connections';
+                            placeholderText = 'Bridge/Cloud connectivity?';
+                        }
+                        if (question.question.includes('Additional notes for Tableau Cloud')) {
+                            labelText = 'Define Group Mapping plans, Project mapping (Site name as top level Project) etc ...';
+                        }
+                        if (question.question.includes('How is Interworks connecting to your Tableau Server')) {
+                            labelText = 'Input details on the expected way InterWorks is connecting to your Tableau Server. Via Jumpbox etc';
+                            placeholderText = 'e.g., VPN, Jumpbox, Direct access, etc.';
+                        }
+                        if (question.question.includes('What authentication is used to Cloud Data Sources')) {
+                            labelText = 'What authentication is used to Cloud Data Sources';
+                            placeholderText = 'e.g., OAuth, Service Account, Database credentials, etc.';
+                        }
+
+                        // Add info icon for file transfer methods question
+                        const textInputInfoIcon = question.question.includes('Confirm file transfer methods')
+                            ? '<span class="info-icon">i<span class="info-tooltip">InterWorks will need to transfer code and documents across to and from the client jumpbox</span></span>'
+                            : '';
+
+                        detailDiv.innerHTML = `
+                            <label class="detail-label">${labelText} ${textInputInfoIcon}</label>
+                            <textarea class="detail-textarea"
+                                      placeholder="${placeholderText}"
+                                      oninput="updateDetailText(${questionIndex}, this.value)">${question.detailText || ''}</textarea>
+                        `;
+                        gridDiv.appendChild(detailDiv);
+                        return;
+                    }
+
+                    // Special handling for full-width questions with centered content
+                    if (question.isFullWidth) {
+                        const fullWidthDiv = document.createElement('div');
+                        fullWidthDiv.className = `question-item ${question.completed ? 'completed' : ''}`;
+                        fullWidthDiv.style.gridColumn = '1 / -1';
+                        fullWidthDiv.style.justifyContent = 'center';
+                        fullWidthDiv.style.alignItems = 'center';
+
+                        // Add background color for Pre flight checks question
+                        if (question.question.includes('Pre flight checks')) {
+                            fullWidthDiv.style.backgroundColor = '#fff3cd';
+                            fullWidthDiv.style.borderColor = '#ffc107';
+                        }
+
+                        fullWidthDiv.innerHTML = `
+                            <div class="question-content" style="text-align: center;">
+                                <div class="question-text">${question.question}</div>
+                                ${question.timestamp ? `<div class="timestamp">Answered: ${question.timestamp}</div>` : ''}
+                            </div>
+                            <input type="checkbox"
+                                   class="question-checkbox"
+                                   ${question.completed ? 'checked' : ''}
+                                   onchange="toggleQuestion(${questionIndex})">
+                        `;
+                        gridDiv.appendChild(fullWidthDiv);
+                        return;
+                    }
+
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = `question-item ${question.completed ? 'completed' : ''}`;
+
+                    // Set specific height for Salesforce paperwork question (only if it doesn't have conditional input)
+                    if (question.question.includes('Tableau/Salesforce paperwork') && !question.hasConditionalInput) {
+                        questionDiv.style.height = '47.99px';
+                    }
+
+                    // Add info icon for specific questions
+                    const infoIcon = question.question.includes('internal communication strategy')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Has the wording and audience been formally agreed</span></span>'
+                        : question.question.includes('Communication assistance offered')
+                        ? '<span class="info-icon">i<span class="info-tooltip">InterWorks can provide a Communication Strategy document with examples</span></span>'
+                        : question.question.includes('resources been requested and assigned internally')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Internal Power Users should be made available during the migration process should any issues or updates arise. Additional, Users should also be made available for internal testing purposes once assets have been moved</span></span>'
+                        : question.question.includes('developers aware of a potential change freeze')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Change freeze to be confirmed during Asset migration</span></span>'
+                        : question.question.includes('Tableau/Salesforce paperwork')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Is Tableau Cloud Paperwork completed with Cloud Manager available ready for Sites to be created?</span></span>'
+                        : question.question.includes('Group Remapping required')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Are the groups currently on Tableau Server being retained or are new groups required</span></span>'
+                        : question.question.includes('Are PAT tokens enabled on Tableau Server')
+                        ? '<span class="info-icon">i<span class="info-tooltip">PAT tokens allow programmatic access to Tableau Server. These may be turned off</span></span>'
+                        : question.question.includes('Is Tableau Repository readonly access enabled')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Required for Runbook. Password is also required</span></span>'
+                        : question.question.includes('Has any housekeeping taken place')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Housekeeping is a process where old or stale content is archived or removed to ensure all content is valid and up to date</span></span>'
+                        : question.question.includes('Has the Runbook been installed and an overview provided')
+                        ? '<span class="info-icon">i<span class="info-tooltip">The Runbook is an overview of all assets to be migrated that provides relationship detail, Users can select what assets are to be migrated or not migrated</span></span>'
+                        : question.question.includes('Is there a time delay for client to review Runbook')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Client can spend time to reduce migration content or if housekeeping has been carried out, then we can migrate all assets</span></span>'
+                        : question.question.includes('Has the jumpbox been built to a required specification')
+                        ? '<span class="info-icon">i<span class="info-tooltip">Ideally 8 Core, 32GB RAM with disk space over the current filestore size. TCMA can provide estimated volume necessary</span></span>'
+                        : '';
+
+                    questionDiv.innerHTML = `
+                        <div class="question-content">
+                            <div class="question-text">${question.question}</div>
+                            ${question.timestamp ? `<div class="timestamp">Answered: ${question.timestamp}</div>` : ''}
+                        </div>
+                        ${infoIcon}
+                        <input type="checkbox"
+                               class="question-checkbox"
+                               ${question.completed ? 'checked' : ''}
+                               onchange="toggleQuestion(${questionIndex})">
+                    `;
+
+                    gridDiv.appendChild(questionDiv);
+
+                    // Add conditional text input if the question has one (always show, but disabled when not completed)
+                    if (question.hasConditionalInput) {
+                        const conditionalDiv = document.createElement('div');
+                        conditionalDiv.className = 'question-item';
+                        conditionalDiv.style.borderColor = question.completed ? '#6633ff' : '#e8ecf1';
+                        conditionalDiv.style.opacity = question.completed ? '1' : '0.5';
+
+                        // Determine placeholder based on question
+                        const placeholder = question.question.includes('Tableau/Salesforce paperwork')
+                            ? 'Tableau Cloud Manager URL'
+                            : 'Enter authentication details...';
+
+                        conditionalDiv.innerHTML = `
+                            <input type="text"
+                                   class="client-info-input"
+                                   style="width: 100%; margin: 0;"
+                                   placeholder="${placeholder}"
+                                   value="${question.conditionalText || ''}"
+                                   ${question.completed ? '' : 'disabled'}
+                                   oninput="updateConditionalText(${questionIndex}, this.value)">
+                        `;
+                        gridDiv.appendChild(conditionalDiv);
+                    }
+                });
+
+                contentDiv.appendChild(gridDiv);
+            });
+        }
+
+        function toggleSection(sectionId, event) {
+            // Prevent toggling if click came from inside the section content
+            if (event && event.target.closest('.section-content')) {
+                return;
+            }
+
+            const contentDiv = document.getElementById(sectionId);
+            const toggleIcon = document.getElementById(`toggle-${sectionId}`);
+
+            contentDiv.classList.toggle('collapsed');
+            toggleIcon.classList.toggle('collapsed');
+
+            // Track the expanded state
+            if (expandedSections.has(sectionId)) {
+                expandedSections.delete(sectionId);
+            } else {
+                expandedSections.add(sectionId);
+            }
+        }
+
+        function toggleQuestion(index) {
+            const question = allQuestions[index];
+
+            // If unchecking (currently completed), show confirmation dialog
+            if (question.completed) {
+                if (!confirm('Are you sure you want this unselected?')) {
+                    // User clicked "No", revert the checkbox state
+                    filterQuestions();
+                    return;
+                }
+            }
+
+            question.completed = !question.completed;
+
+            if (question.completed) {
+                const now = new Date();
+                question.timestamp = now.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } else {
+                question.timestamp = null;
+            }
+
+            saveProgress();
+            filterQuestions();
+            updateStats();
+        }
+
+        function updateDetailText(index, value) {
+            const question = allQuestions[index];
+            question.detailText = value;
+
+            // Clear existing timer for this field
+            if (detailTextDebounceTimers[index]) {
+                clearTimeout(detailTextDebounceTimers[index]);
+            }
+
+            // Debounce the save/update operations
+            detailTextDebounceTimers[index] = setTimeout(() => {
+                // Auto-complete when text is entered, auto-uncomplete when text is removed
+                const hasText = value.trim().length > 0;
+                if (hasText && !question.completed) {
+                    question.completed = true;
+                    const now = new Date();
+                    question.timestamp = now.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                } else if (!hasText && question.completed) {
+                    question.completed = false;
+                    question.timestamp = null;
+                }
+
+                saveProgress();
+                filterQuestions();
+                updateStats();
+            }, 300); // Wait 300ms after last keystroke before saving
+        }
+
+        function updateSelectedDate(index, value) {
+            allQuestions[index].selectedDate = value;
+            saveProgress();
+        }
+
+        function updateConditionalDate(index, value) {
+            allQuestions[index].conditionalDate = value;
+            saveProgress();
+        }
+
+        function updateDropdownSelection(index, value) {
+            const question = allQuestions[index];
+            question.selectedOption = value;
+
+            // Auto-complete when an option is selected, auto-uncomplete when blank
+            if (value && value.trim() !== '') {
+                if (!question.completed) {
+                    question.completed = true;
+                    const now = new Date();
+                    question.timestamp = now.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+            } else {
+                question.completed = false;
+                question.timestamp = null;
+            }
+
+            saveProgress();
+            filterQuestions();
+            updateStats();
+        }
+
+        function updateYesNoAnswer(index, value) {
+            const question = allQuestions[index];
+            question.yesNoAnswer = value;
+
+            // Auto-complete when an option is selected
+            if (!question.completed) {
+                question.completed = true;
+                const now = new Date();
+                question.timestamp = now.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+
+            // Special handling for Tableau Bridge - mark all other Bridge questions as completed if "No" is selected
+            if (question.section === 'Tableau Bridge' && question.question.includes('Do you require the use of Tableau Bridge?') && value === 'No') {
+                allQuestions.forEach(q => {
+                    if (q.section === 'Tableau Bridge' && !q.question.includes('Do you require the use of Tableau Bridge?')) {
+                        q.completed = true;
+                        if (!q.timestamp) {
+                            q.timestamp = new Date().toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                        }
+                    }
+                });
+            }
+
+            // If "Yes" is selected, unmark the other Bridge questions
+            if (question.section === 'Tableau Bridge' && question.question.includes('Do you require the use of Tableau Bridge?') && value === 'Yes') {
+                allQuestions.forEach(q => {
+                    if (q.section === 'Tableau Bridge' && !q.question.includes('Do you require the use of Tableau Bridge?')) {
+                        q.completed = false;
+                        q.timestamp = null;
+                    }
+                });
+            }
+
+            saveProgress();
+            filterQuestions();
+            updateStats();
+        }
+
+        function updateConditionalText(index, value) {
+            allQuestions[index].conditionalText = value;
+            saveProgress();
+        }
+
+        function saveProgress() {
+            const progress = allQuestions.map(question => {
+                const data = {
+                    completed: question.completed,
+                    timestamp: question.timestamp
+                };
+                if (question.isTextInput) {
+                    data.detailText = question.detailText || '';
+                }
+                if (question.isDateInput) {
+                    data.selectedDate = question.selectedDate || '';
+                }
+                if (question.isDropdown) {
+                    data.selectedOption = question.selectedOption || '';
+                }
+                if (question.isYesNo) {
+                    data.yesNoAnswer = question.yesNoAnswer || '';
+                }
+                if (question.hasConditionalInput) {
+                    data.conditionalText = question.conditionalText || '';
+                }
+                if (question.hasConditionalDate) {
+                    data.conditionalDate = question.conditionalDate || '';
+                }
+                return data;
+            });
+            localStorage.setItem('tableauMigrationQuestionsPro', JSON.stringify(progress));
+        }
+
+        function updateStats() {
+            const total = allQuestions.length;
+            const answered = allQuestions.filter(q => q.completed).length;
+            const remaining = total - answered;
+            const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('answeredQuestions').textContent = answered;
+            document.getElementById('remainingQuestions').textContent = remaining;
+            document.getElementById('percentComplete').textContent = percent + '%';
+
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all answers and client information? This cannot be undone.')) {
+                localStorage.removeItem('tableauMigrationQuestionsPro');
+                localStorage.removeItem('tableauMigrationClientInfoPro');
+                allQuestions.forEach(question => {
+                    question.completed = false;
+                    question.timestamp = null;
+                });
+                document.getElementById('clientName').value = '';
+                document.getElementById('region').value = '';
+                document.getElementById('serverVersion').value = '';
+                document.getElementById('serverUrl').value = '';
+                document.getElementById('kickoffDate').value = '';
+                document.getElementById('primaryContact').value = '';
+                document.getElementById('meetingCadence').value = '';
+                document.getElementById('goLiveDate').value = '';
+                filterQuestions();
+                updateStats();
+            }
+        }
+
+        function exportToJSON() {
+            const clientInfo = {
+                clientName: document.getElementById('clientName').value,
+                region: document.getElementById('region').value,
+                serverVersion: document.getElementById('serverVersion').value,
+                serverUrl: document.getElementById('serverUrl').value,
+                kickoffDate: document.getElementById('kickoffDate').value,
+                primaryContact: document.getElementById('primaryContact').value,
+                meetingCadence: document.getElementById('meetingCadence').value,
+                goLiveDate: document.getElementById('goLiveDate').value
+            };
+
+            const exportData = {
+                clientInformation: clientInfo,
+                additionalNotes: document.getElementById('additionalNotes').value,
+                questions: allQuestions.map((question, index) => {
+                    const data = {
+                        id: index + 1,
+                        section: question.section,
+                        question: question.question,
+                        answered: question.completed,
+                        timestamp: question.timestamp
+                    };
+                    if (question.isTextInput) {
+                        data.detailText = question.detailText || '';
+                    }
+                    if (question.isDateInput) {
+                        data.selectedDate = question.selectedDate || '';
+                    }
+                    if (question.isDropdown) {
+                        data.selectedOption = question.selectedOption || '';
+                    }
+                    if (question.isYesNo) {
+                        data.yesNoAnswer = question.yesNoAnswer || '';
+                    }
+                    if (question.hasConditionalInput) {
+                        data.conditionalText = question.conditionalText || '';
+                    }
+                    return data;
+                })
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tableau-migration-questions-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToCSV() {
+            const clientInfo = [
+                ['CLIENT INFORMATION'],
+                ['Client Name', document.getElementById('clientName').value],
+                ['Region', document.getElementById('region').value],
+                ['Tableau Server Version', document.getElementById('serverVersion').value],
+                ['Tableau Server URL', document.getElementById('serverUrl').value],
+                ['Project Kick Off Date', document.getElementById('kickoffDate').value],
+                ['Primary Client Contact', document.getElementById('primaryContact').value],
+                ['Agreed Meeting Cadence', document.getElementById('meetingCadence').value],
+                ['Expected Go-Live Date', document.getElementById('goLiveDate').value],
+                [''],
+                ['ADDITIONAL NOTES'],
+                ['', `"${(document.getElementById('additionalNotes').value || '').replace(/"/g, '""')}"`],
+                [''],
+                ['QUESTIONS']
+            ];
+
+            const headers = ['ID', 'Section', 'Question', 'Answered', 'Timestamp', 'Detail', 'Selected Date', 'Selected Option', 'Yes/No Answer', 'Conditional Text'];
+            const rows = allQuestions.map((question, index) => [
+                index + 1,
+                `"${(question.section || '').replace(/"/g, '""')}"`,
+                `"${question.question.replace(/"/g, '""')}"`,
+                question.completed ? 'Yes' : 'No',
+                question.timestamp || '',
+                question.isTextInput ? `"${(question.detailText || '').replace(/"/g, '""')}"` : '',
+                question.isDateInput ? (question.selectedDate || '') : '',
+                question.isDropdown ? (question.selectedOption || '') : '',
+                question.isYesNo ? (question.yesNoAnswer || '') : '',
+                question.hasConditionalInput ? `"${(question.conditionalText || '').replace(/"/g, '""')}"` : ''
+            ]);
+
+            const csv = [
+                ...clientInfo.map(r => r.join(',')),
+                headers.join(','),
+                ...rows.map(r => r.join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tableau-migration-questions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
+            const maxWidth = pageWidth - (margin * 2);
+            let yPosition = margin;
+
+            // Helper function to add new page if needed
+            function checkPageBreak(heightNeeded) {
+                if (yPosition + heightNeeded > pageHeight - margin) {
+                    doc.addPage();
+                    yPosition = margin;
+                    return true;
+                }
+                return false;
+            }
+
+            // Helper function to wrap text
+            function addWrappedText(text, x, y, maxWidth, fontSize, isBold = false) {
+                doc.setFontSize(fontSize);
+                doc.setFont(undefined, isBold ? 'bold' : 'normal');
+                const lines = doc.splitTextToSize(text, maxWidth);
+                lines.forEach(line => {
+                    checkPageBreak(fontSize * 0.5);
+                    doc.text(line, x, y);
+                    y += fontSize * 0.5;
+                });
+                return y;
+            }
+
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(102, 51, 255);
+            doc.text('Tableau Cloud Migration Checklist', margin, yPosition);
+            yPosition += 12;
+
+            // Date
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition);
+            yPosition += 10;
+
+            // Client Information Section
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text('Client Information', margin, yPosition);
+            yPosition += 8;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+
+            const clientInfo = [
+                ['Client Name', document.getElementById('clientName').value],
+                ['Region', document.getElementById('region').value],
+                ['Tableau Server Version', document.getElementById('serverVersion').value],
+                ['Tableau Server URL', document.getElementById('serverUrl').value],
+                ['Project Kick Off Date', document.getElementById('kickoffDate').value],
+                ['Primary Client Contact', document.getElementById('primaryContact').value],
+                ['Agreed Meeting Cadence', document.getElementById('meetingCadence').value],
+                ['Expected Go-Live Date', document.getElementById('goLiveDate').value]
+            ];
+
+            clientInfo.forEach(([label, value]) => {
+                if (value) {
+                    checkPageBreak(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${label}:`, margin, yPosition);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(value, margin + 50, yPosition);
+                    yPosition += 6;
+                }
+            });
+
+            yPosition += 5;
+
+            // Questions by Section
+            const sections = {};
+            allQuestions.forEach(q => {
+                if (!sections[q.section]) sections[q.section] = [];
+                sections[q.section].push(q);
+            });
+
+            Object.keys(sections).forEach(sectionName => {
+                checkPageBreak(15);
+
+                // Section Header
+                doc.setFillColor(102, 51, 255);
+                doc.rect(margin, yPosition - 5, maxWidth, 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text(sectionName, margin + 2, yPosition);
+                yPosition += 10;
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+
+                sections[sectionName].forEach((question, index) => {
+                    checkPageBreak(20);
+
+                    // Question number and text
+                    doc.setFont(undefined, 'bold');
+                    const questionNum = `${index + 1}.`;
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(questionNum, margin, yPosition);
+
+                    const questionLines = doc.splitTextToSize(question.question, maxWidth - 10);
+                    questionLines.forEach((line, lineIndex) => {
+                        if (lineIndex > 0) checkPageBreak(5);
+                        doc.text(line, margin + 5, yPosition);
+                        yPosition += 5;
+                    });
+
+                    // Answer with green circle if completed
+                    doc.setFont(undefined, 'normal');
+                    let answer = question.completed ? 'Completed' : 'Not Completed';
+
+                    if (question.isYesNo && question.yesNoAnswer) {
+                        answer = question.yesNoAnswer;
+                    } else if (question.isDropdown && question.selectedOption) {
+                        answer = question.selectedOption;
+                    } else if (question.isDateInput && question.selectedDate) {
+                        answer = question.selectedDate;
+                    } else if (question.isTextInput && question.detailText) {
+                        answer = question.detailText;
+                    } else if (question.hasConditionalInput && question.conditionalText) {
+                        answer = question.conditionalText;
+                    }
+
+                    // Add small green circle beside completed answers
+                    if (question.completed) {
+                        doc.setFillColor(76, 175, 80); // Green color
+                        doc.circle(margin + 5.5, yPosition - 1.5, 1, 'F');
+                    }
+
+                    if (question.completed) {
+                        doc.setTextColor(33, 150, 243);
+                    } else {
+                        doc.setTextColor(150, 150, 150);
+                    }
+                    const answerLines = doc.splitTextToSize(answer, maxWidth - 10);
+                    answerLines.forEach((line, lineIndex) => {
+                        checkPageBreak(5);
+                        if (lineIndex === 0 && question.completed) {
+                            doc.text(line, margin + 8, yPosition);
+                        } else {
+                            doc.text(line, margin + 5, yPosition);
+                        }
+                        yPosition += 5;
+                    });
+
+                    doc.setTextColor(0, 0, 0);
+
+                    if (question.timestamp) {
+                        doc.setFontSize(8);
+                        doc.setTextColor(100, 100, 100);
+                        checkPageBreak(5);
+                        doc.text(`Answered: ${question.timestamp}`, margin + 5, yPosition);
+                        yPosition += 5;
+                        doc.setFontSize(10);
+                        doc.setTextColor(0, 0, 0);
+                    }
+
+                    yPosition += 3;
+                });
+
+                yPosition += 5;
+            });
+
+            // Additional Notes
+            const additionalNotes = document.getElementById('additionalNotes').value;
+            if (additionalNotes) {
+                checkPageBreak(15);
+                doc.setFillColor(102, 51, 255);
+                doc.rect(margin, yPosition - 5, maxWidth, 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('Additional Information', margin + 2, yPosition);
+                yPosition += 10;
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                const notesLines = doc.splitTextToSize(additionalNotes, maxWidth);
+                notesLines.forEach(line => {
+                    checkPageBreak(5);
+                    doc.text(line, margin, yPosition);
+                    yPosition += 5;
+                });
+            }
+
+            // Save the PDF with client name and date
+            const clientName = document.getElementById('clientName').value || 'Client';
+            const sanitizedClientName = clientName.replace(/[^a-z0-9]/gi, '_');
+            const dateStr = new Date().toISOString().split('T')[0];
+            doc.save(`${sanitizedClientName}_Tableau_Migration_Checklist_${dateStr}.pdf`);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterQuestions);
+        document.getElementById('sectionFilter').addEventListener('change', filterQuestions);
+        document.getElementById('statusFilter').addEventListener('change', filterQuestions);
+
+        // Add event listeners for client info fields
+        document.getElementById('clientName').addEventListener('input', saveClientInfo);
+        document.getElementById('region').addEventListener('input', saveClientInfo);
+        document.getElementById('serverVersion').addEventListener('input', saveClientInfo);
+        document.getElementById('serverUrl').addEventListener('input', saveClientInfo);
+        document.getElementById('kickoffDate').addEventListener('change', saveClientInfo);
+        document.getElementById('primaryContact').addEventListener('input', saveClientInfo);
+        document.getElementById('meetingCadence').addEventListener('input', saveClientInfo);
+        document.getElementById('goLiveDate').addEventListener('change', saveClientInfo);
+
+        loadQuestions();
+    </script>
+</body>
+</html>

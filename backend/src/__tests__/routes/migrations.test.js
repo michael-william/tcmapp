@@ -736,4 +736,171 @@ describe('Migration Routes', () => {
       expect(response.body.success).toBe(false);
     });
   });
+
+  describe('Question helpText transformation', () => {
+    beforeEach(async () => {
+      // Create a migration with a question that has infoTooltip
+      migration = await Migration.create({
+        clientId: client._id,
+        clientInfo: { clientName: 'Acme Corp' },
+        questions: [
+          {
+            id: 'q1',
+            section: 'Security',
+            questionText: 'Question with tooltip',
+            questionType: 'checkbox',
+            completed: false,
+            order: 1,
+            metadata: {
+              infoTooltip: 'This is a helpful tooltip',
+            },
+          },
+          {
+            id: 'q2',
+            section: 'Security',
+            questionText: 'Question without tooltip',
+            questionType: 'checkbox',
+            completed: false,
+            order: 2,
+            metadata: {},
+          },
+        ],
+        createdBy: 'consultant@interworks.com',
+      });
+    });
+
+    it('should transform metadata.infoTooltip to helpText on GET /api/migrations/:id', async () => {
+      const response = await request(app)
+        .get(`/api/migrations/${migration._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.migration.questions[0].helpText).toBe('This is a helpful tooltip');
+      expect(response.body.migration.questions[0].metadata.infoTooltip).toBe('This is a helpful tooltip');
+      expect(response.body.migration.questions[1].helpText).toBeUndefined();
+    });
+
+    it('should transform metadata.infoTooltip to helpText on GET /api/migrations', async () => {
+      const response = await request(app)
+        .get('/api/migrations')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      const migrationData = response.body.migrations.find((m) => m._id === migration._id.toString());
+      expect(migrationData.questions[0].helpText).toBe('This is a helpful tooltip');
+      expect(migrationData.questions[1].helpText).toBeUndefined();
+    });
+
+    it('should transform helpText to metadata.infoTooltip on PUT /api/migrations/:id', async () => {
+      const updatedQuestions = [
+        {
+          id: 'q1',
+          section: 'Security',
+          questionText: 'Updated question',
+          questionType: 'checkbox',
+          completed: false,
+          order: 1,
+          helpText: 'Updated tooltip text',
+        },
+      ];
+
+      const response = await request(app)
+        .put(`/api/migrations/${migration._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send({ questions: updatedQuestions })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Check database directly
+      const updatedMigration = await Migration.findById(migration._id);
+      expect(updatedMigration.questions[0].metadata.infoTooltip).toBe('Updated tooltip text');
+      expect(updatedMigration.questions[0].helpText).toBeUndefined();
+
+      // Check response has helpText
+      expect(response.body.migration.questions[0].helpText).toBe('Updated tooltip text');
+    });
+
+    it('should accept helpText when creating new questions', async () => {
+      const newQuestion = {
+        section: 'Communications',
+        questionText: 'New question with help',
+        questionType: 'checkbox',
+        helpText: 'Helpful information',
+      };
+
+      const response = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(newQuestion)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+
+      // Check database directly
+      const updatedMigration = await Migration.findById(migration._id);
+      const createdQuestion = updatedMigration.questions[updatedMigration.questions.length - 1];
+      expect(createdQuestion.metadata.infoTooltip).toBe('Helpful information');
+      expect(createdQuestion.helpText).toBeUndefined();
+
+      // Check response has helpText
+      const responseQuestion = response.body.migration.questions[response.body.migration.questions.length - 1];
+      expect(responseQuestion.helpText).toBe('Helpful information');
+    });
+
+    it('should accept helpText when updating questions', async () => {
+      const updates = {
+        questionText: 'Updated text',
+        helpText: 'New tooltip',
+      };
+
+      const response = await request(app)
+        .put(`/api/migrations/${migration._id}/questions/q2`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(updates)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Check database directly
+      const updatedMigration = await Migration.findById(migration._id);
+      const updatedQuestion = updatedMigration.questions.find((q) => q.id === 'q2');
+      expect(updatedQuestion.metadata.infoTooltip).toBe('New tooltip');
+      expect(updatedQuestion.helpText).toBeUndefined();
+
+      // Check response has helpText
+      const responseQuestion = response.body.migration.questions.find((q) => q.id === 'q2');
+      expect(responseQuestion.helpText).toBe('New tooltip');
+    });
+
+    it('should maintain backward compatibility with questions without tooltips', async () => {
+      // Create migration with no tooltips
+      const simpleMigration = await Migration.create({
+        clientId: client._id,
+        questions: [
+          {
+            id: 'q1',
+            section: 'Test',
+            questionText: 'Simple question',
+            questionType: 'checkbox',
+            completed: false,
+            order: 1,
+            metadata: {},
+          },
+        ],
+        createdBy: 'consultant@interworks.com',
+      });
+
+      const response = await request(app)
+        .get(`/api/migrations/${simpleMigration._id}`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.migration.questions[0].helpText).toBeUndefined();
+      expect(response.body.migration.questions[0].metadata).toEqual({});
+    });
+  });
 });

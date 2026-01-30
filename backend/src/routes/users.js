@@ -37,9 +37,11 @@ router.post(
       .normalizeEmail(),
     body('password').optional().isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').optional().trim(),
+    body('role').optional().isIn(['interworks', 'guest']).withMessage('Role must be interworks or guest'),
     body('clientId')
+      .if(body('role').equals('guest'))
       .isMongoId()
-      .withMessage('Valid client ID is required'),
+      .withMessage('Valid client ID is required for guest users'),
   ],
   async (req, res) => {
     try {
@@ -51,7 +53,7 @@ router.post(
         });
       }
 
-      const { email, name, clientId } = req.body;
+      const { email, name, clientId, role } = req.body;
       let { password } = req.body;
 
       // Check if user already exists
@@ -63,13 +65,15 @@ router.post(
         });
       }
 
-      // Validate that client exists
-      const client = await Client.findById(clientId);
-      if (!client) {
-        return res.status(404).json({
-          success: false,
-          message: 'Client not found. Please create the client first.',
-        });
+      // Validate that client exists (only for guest users or when clientId is provided)
+      if (role === 'guest' || (!role && clientId) || clientId) {
+        const client = await Client.findById(clientId);
+        if (!client) {
+          return res.status(404).json({
+            success: false,
+            message: 'Client not found. Please create the client first.',
+          });
+        }
       }
 
       // Generate password if not provided
@@ -78,18 +82,23 @@ router.post(
         password = generatePassword();
       }
 
-      // Create guest user
-      const user = await User.create({
+      // Create user with dynamic role
+      let user = await User.create({
         email,
         passwordHash: password,
         name,
-        role: 'guest',
-        clientId,
+        role: role || 'guest', // Default to guest for backward compatibility
+        ...(clientId && { clientId }), // Only include if provided
       });
+
+      // Populate clientId if it exists
+      if (user.clientId) {
+        user = await User.findById(user._id).populate('clientId', 'name email');
+      }
 
       res.status(201).json({
         success: true,
-        message: 'Guest user created successfully.',
+        message: `${role === 'interworks' ? 'InterWorks' : 'Guest'} user created successfully.`,
         user: user.toJSON(),
         ...(isPasswordGenerated && { generatedPassword: password }),
       });

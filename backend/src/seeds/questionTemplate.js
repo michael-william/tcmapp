@@ -44,7 +44,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 4,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Has the wording and audience been formally agreed',
+    },
   },
   {
     id: 'q5',
@@ -54,7 +56,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 5,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'InterWorks can provide a Communication Strategy document with examples',
+    },
   },
   {
     id: 'q6',
@@ -64,7 +68,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 6,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Internal Power Users should be made available during the migration process should any issues or updates arise. Additional, Users should also be made available for internal testing purposes once assets have been moved',
+    },
   },
   {
     id: 'q7',
@@ -74,7 +80,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 7,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Change freeze to be confirmed during Asset migration',
+    },
   },
   {
     id: 'q8',
@@ -104,7 +112,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 10,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Ideally 8 Core, 32GB RAM with disk space over the current filestore size. TCMA can provide estimated volume necessary',
+    },
   },
   {
     id: 'q11',
@@ -134,7 +144,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 13,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'InterWorks will need to transfer code and documents across to and from the client jumpbox',
+    },
   },
   {
     id: 'q14',
@@ -174,7 +186,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 17,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'PAT tokens allow programmatic access to Tableau Server. These may be turned off',
+    },
   },
   {
     id: 'q18',
@@ -184,7 +198,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 18,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Required for Runbook. Password is also required',
+    },
   },
   {
     id: 'q19',
@@ -194,7 +210,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 19,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'The Runbook is an overview of all assets to be migrated that provides relationship detail, Users can select what assets are to be migrated or not migrated',
+    },
   },
   {
     id: 'q20',
@@ -204,7 +222,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 20,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Client can spend time to reduce migration content or if housekeeping has been carried out, then we can migrate all assets',
+    },
   },
   {
     id: 'q21',
@@ -224,7 +244,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 22,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Housekeeping is a process where old or stale content is archived or removed to ensure all content is valid and up to date',
+    },
   },
   {
     id: 'q23',
@@ -336,6 +358,7 @@ const questionTemplate = [
     order: 32,
     metadata: {
       hasConditionalInput: true,
+      infoTooltip: 'Is Tableau Cloud Paperwork completed with Cloud Manager available ready for Sites to be created?',
     },
   },
   {
@@ -425,7 +448,9 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 40,
-    metadata: {},
+    metadata: {
+      infoTooltip: 'Are the groups currently on Tableau Server being retained or are new groups required',
+    },
   },
   {
     id: 'q41',

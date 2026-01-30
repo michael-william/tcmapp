@@ -103,10 +103,11 @@ describe('User Management Routes', () => {
       expect(response.body.generatedPassword.length).toBeGreaterThan(8);
     });
 
-    it('should fail without clientId', async () => {
+    it('should fail without clientId for guest users', async () => {
       const userData = {
         email: 'noclient@company.com',
         password: 'Password123!',
+        role: 'guest',
         // Missing clientId
       };
 
@@ -209,6 +210,117 @@ describe('User Management Routes', () => {
       };
 
       await request(app).post('/api/users').send(userData).expect(401);
+    });
+
+    it('should create InterWorks user without clientId', async () => {
+      const userData = {
+        email: 'newconsultant@interworks.com',
+        password: 'ConsultantPass123!',
+        name: 'New Consultant',
+        role: 'interworks',
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(userData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.email).toBe('newconsultant@interworks.com');
+      expect(response.body.user.role).toBe('interworks');
+      expect(response.body.user.clientId).toBeUndefined();
+    });
+
+    it('should create InterWorks user with optional clientId', async () => {
+      const userData = {
+        email: 'teamlead@interworks.com',
+        password: 'TeamPass123!',
+        name: 'Team Lead',
+        role: 'interworks',
+        clientId: client._id.toString(),
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(userData)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.user.email).toBe('teamlead@interworks.com');
+      expect(response.body.user.role).toBe('interworks');
+      expect(response.body.user.clientId).toBeDefined();
+    });
+
+    it('should create multiple InterWorks users for same client', async () => {
+      const user1Data = {
+        email: 'consultant1@interworks.com',
+        password: 'Pass123!',
+        name: 'Consultant 1',
+        role: 'interworks',
+        clientId: client._id.toString(),
+      };
+
+      const user2Data = {
+        email: 'consultant2@interworks.com',
+        password: 'Pass123!',
+        name: 'Consultant 2',
+        role: 'interworks',
+        clientId: client._id.toString(),
+      };
+
+      const response1 = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(user1Data)
+        .expect(201);
+
+      const response2 = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(user2Data)
+        .expect(201);
+
+      expect(response1.body.success).toBe(true);
+      expect(response2.body.success).toBe(true);
+      expect(response1.body.user.clientId._id).toBe(client._id.toString());
+      expect(response2.body.user.clientId._id).toBe(client._id.toString());
+    });
+
+    it('should reject invalid role values', async () => {
+      const userData = {
+        email: 'invalid@interworks.com',
+        password: 'Password123!',
+        name: 'Invalid Role',
+        role: 'admin', // Invalid role
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(userData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should still require clientId for guest users', async () => {
+      const userData = {
+        email: 'guestnoclient@company.com',
+        password: 'Password123!',
+        name: 'Guest Without Client',
+        role: 'guest',
+        // Missing clientId
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(userData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
     });
   });
 

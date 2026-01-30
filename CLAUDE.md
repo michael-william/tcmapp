@@ -1,4 +1,4 @@
-# CLAUDE.md - Tableau Migration Web Application
+# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -6,132 +6,141 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tableau Cloud Migration Prerequisite Questions - Web Application**
 
-A full-stack web application for managing Tableau Cloud migration projects. This application transforms a single-file HTML checklist into a collaborative tool with user authentication, database persistence, and customizable question templates.
-
-**Purpose**: Enable InterWorks consultants to create and manage migration checklists for multiple clients, with each client able to answer questions through a dedicated portal.
+A full-stack web application for managing Tableau Cloud migration projects. Enables InterWorks consultants to create and manage migration checklists for multiple clients, with each client answering questions through a dedicated portal.
 
 ## Tech Stack
 
 ### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
+- **Runtime**: Node.js + Express.js
 - **Database**: MongoDB (Mongoose ODM)
 - **Authentication**: JWT with bcrypt
 - **Testing**: Jest + Supertest + MongoDB Memory Server
 
 ### Frontend
-- **Framework**: React 18
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + shadcn/ui
+- **Framework**: React 18 + Vite
+- **Styling**: Tailwind CSS + shadcn/ui (Radix UI primitives)
 - **Routing**: React Router v6
 - **HTTP Client**: Axios
-- **Testing**: Vitest + React Testing Library + MSW
+- **Testing**: Vitest + React Testing Library + MSW (Mock Service Worker)
 
 ### Deployment
 - **Containerization**: Docker + Docker Compose
-- **Services**: Frontend (port 5173), Backend (port 5000), MongoDB (port 27017)
+- **Services**: Frontend (port 5173), Backend (port 3000), MongoDB (port 27017)
 
 ## Repository Structure
 
 ```
-tableau-migration-app/
+TCMApp/
 ├── backend/                    # Express API server
 │   ├── src/
 │   │   ├── models/            # Mongoose models (User, Migration)
-│   │   ├── routes/            # API endpoints (auth, migrations, users)
+│   │   ├── routes/            # API endpoints (auth, migrations, users, clients)
 │   │   ├── middleware/        # Auth middleware (JWT verification)
 │   │   ├── seeds/             # Default question template
 │   │   ├── config/            # Database configuration
-│   │   └── __tests__/         # Backend tests
+│   │   ├── scripts/           # Utility scripts
+│   │   ├── __tests__/         # Backend tests
+│   │   └── server.js          # Express app entry point
 │   ├── package.json
-│   ├── CLAUDE.md             # Backend-specific docs
-│   └── .env                  # Backend environment variables
+│   └── CLAUDE.md             # Backend-specific docs
 │
 ├── frontend/                   # React application
 │   ├── src/
 │   │   ├── components/        # React components (atomic design)
-│   │   │   ├── ui/           # Base shadcn/ui components
+│   │   │   ├── ui/           # shadcn/ui base components
 │   │   │   ├── atoms/        # Simple building blocks
 │   │   │   ├── molecules/    # Component combinations
 │   │   │   ├── organisms/    # Complex components
 │   │   │   └── templates/    # Page layouts
 │   │   ├── pages/            # Page components
-│   │   ├── lib/              # Utilities and helpers
-│   │   ├── hooks/            # Custom React hooks
+│   │   ├── lib/              # Utilities (api.js, utils.js)
+│   │   ├── hooks/            # Custom React hooks (useAuth, useMigration)
 │   │   └── __tests__/        # Frontend tests
+│   │       ├── mocks/        # MSW handlers
+│   │       ├── components/   # Component tests
+│   │       ├── pages/        # Page tests
+│   │       ├── test-utils.jsx
+│   │       └── testSetup.js
 │   ├── package.json
-│   ├── CLAUDE.md             # Frontend-specific docs
-│   └── vite.config.js
+│   └── CLAUDE.md             # Frontend-specific docs
 │
 ├── docker-compose.yml         # Container orchestration
 ├── .env.example              # Environment variables template
 ├── CLAUDE.md                 # This file
+├── README.md                 # Project overview and status
 └── tableau-migration-checklist-pro.html  # Original HTML prototype (reference)
 ```
 
-## How to Run the Application
+## Common Commands
 
-### Prerequisites
-- Docker and Docker Compose installed
-- Node.js 18+ (for local development without Docker)
-- MongoDB (for local development without Docker)
+### Development
 
-### Using Docker Compose (Recommended)
-
+**Using Docker Compose (Recommended):**
 ```bash
-# Start all services
+# Start all services (MongoDB, Backend, Frontend)
 docker-compose up --build
 
-# Access the application
+# Access:
 # Frontend: http://localhost:5173
-# Backend API: http://localhost:5000/api
+# Backend API: http://localhost:3000/api
 # MongoDB: mongodb://localhost:27017
 ```
 
-### Local Development (Without Docker)
+**Local Development (Without Docker):**
+
+Backend:
+```bash
+cd backend
+npm install
+npm run dev           # Starts on port 3000
+```
+
+Frontend:
+```bash
+cd frontend
+npm install
+npm run dev           # Starts on port 5173
+npm run build         # Production build
+npm run preview       # Preview production build
+```
+
+### Testing
 
 **Backend:**
 ```bash
 cd backend
-npm install
-npm run dev
+npm test              # Run all tests with coverage
+npm run test:watch    # Run tests in watch mode
 ```
 
 **Frontend:**
 ```bash
 cd frontend
-npm install
-npm run dev
-```
-
-## How to Run Tests
-
-### Backend Tests
-```bash
-cd backend
-npm install
-npm test              # Run all tests with coverage
-npm run test:watch    # Run tests in watch mode
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm install
 npm test              # Run all tests with coverage
 npm run test:watch    # Run tests in watch mode
 npm run test:ui       # Open Vitest UI
 ```
 
-### Run All Tests
+**Run a Single Test File:**
 ```bash
-# From project root
-cd backend && npm test && cd ../frontend && npm test
+# Backend
+cd backend && npm test -- User.test.js
+
+# Frontend
+cd frontend && npm test Login.test.jsx
+```
+
+### Database Seeds
+
+```bash
+cd backend
+npm run seed          # Seed question template
+npm run seed:users    # Seed test users
 ```
 
 ## Environment Variables
 
-Create `.env` files in the appropriate directories:
+Create `.env` files based on `.env.example`:
 
 **Backend `.env`:**
 ```
@@ -139,130 +148,165 @@ MONGODB_URI=mongodb://localhost:27017/tableau-migrations-dev
 JWT_SECRET=your-super-secure-random-jwt-secret
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
-PORT=5000
+PORT=3000
+FRONTEND_URL=http://localhost:5173
 ```
 
 **Frontend `.env`:**
 ```
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:3000/api
 ```
 
-See `.env.example` for a complete template.
+**Note:** Docker Compose uses port 3000 for backend (configured in docker-compose.yml).
 
-## Key Architectural Decisions
+## Key Architecture
 
-### Authentication Strategy
+### Authentication
 - JWT tokens stored in localStorage (frontend)
-- Token expiration: 7 days (configurable)
+- Token expiration: 7 days (configurable via JWT_EXPIRES_IN)
 - Password hashing: bcrypt with 10 salt rounds
-- Role-based access control: `interworks` and `client` roles
+- Role-based access control: `interworks` (admin) and `client` (limited access) roles
 
 ### Database Design
-- NoSQL (MongoDB) for flexible schema
-- Two main models: User and Migration
-- Migration contains embedded questions array (not separate collection)
-- Question template cloned on migration creation
+- MongoDB with Mongoose ODM
+- Two main models: **User** and **Migration**
+- Migration model contains embedded questions array (not a separate collection)
+- Question template is cloned from seed on migration creation
 
 ### Frontend Architecture
-- Atomic Design pattern for components
-- shadcn/ui for base component library
-- Tailwind CSS for styling with custom purple gradient theme (#6633ff, #4616a8)
-- Auto-save functionality with debouncing
+- **Atomic Design pattern**: ui → atoms → molecules → organisms → templates → pages
+- **shadcn/ui** for base component library (Radix UI primitives)
+- **Tailwind CSS** with custom purple gradient theme (#6633ff primary, #4616a8 dark)
+- Auto-save functionality with debouncing (1000ms)
 
 ### Testing Strategy
-- Backend: Jest + Supertest for integration tests, MongoDB Memory Server for isolation
-- Frontend: Vitest + React Testing Library for component tests, MSW for API mocking
+- **Backend**: Jest + Supertest for integration tests, MongoDB Memory Server for isolation
+- **Frontend**: Vitest + React Testing Library for component tests, MSW for API mocking
 - Coverage targets: 80%+ backend, 70%+ frontend
-- E2E tests: Playwright (optional, for critical flows)
 
-## Common Development Tasks
+## API Routes Overview
 
-### Add a New API Endpoint
-1. Define route in `backend/src/routes/`
-2. Add middleware if needed (auth, validation)
-3. Create test in `backend/src/__tests__/routes/`
-4. Run tests: `cd backend && npm test`
+All routes are prefixed with `/api`:
 
-### Add a New Component
-1. Create component in appropriate directory:
-   - Atoms: `frontend/src/components/atoms/`
-   - Molecules: `frontend/src/components/molecules/`
-   - Organisms: `frontend/src/components/organisms/`
-2. Create test in `frontend/src/__tests__/components/`
-3. Run tests: `cd frontend && npm test`
+### Authentication (`/api/auth`)
+- `POST /auth/register` - Register new user
+- `POST /auth/login` - Login and get JWT token
+- `GET /auth/me` - Get current user (requires auth)
 
-### Add a New Page
-1. Create page component in `frontend/src/pages/`
-2. Add route in main routing file
-3. Create test in `frontend/src/__tests__/pages/`
-4. Add MSW handlers in `frontend/src/__tests__/mocks/handlers.js`
+### Migrations (`/api/migrations`)
+- `POST /migrations` - Create migration (InterWorks only)
+- `GET /migrations` - List migrations (filtered by role)
+- `GET /migrations/:id` - Get single migration
+- `PUT /migrations/:id` - Update migration
+- `DELETE /migrations/:id` - Delete migration (InterWorks only)
+- `POST /migrations/:id/questions` - Add question (InterWorks only)
+- `PUT /migrations/:id/questions/:qid` - Edit question (InterWorks only)
+- `DELETE /migrations/:id/questions/:qid` - Delete question (InterWorks only)
+- `PUT /migrations/:id/questions/reorder` - Reorder questions (InterWorks only)
 
-### Seed Database with Questions
-```bash
-cd backend
-npm run seed
-```
+### Users (`/api/users`)
+- `POST /users` - Create client user (InterWorks only)
+- `GET /users` - List users (InterWorks only)
+- `DELETE /users/:id` - Delete user (InterWorks only)
 
-### Update Question Template
-Edit `backend/src/seeds/questionTemplate.js` with the 54 migration questions.
+### Clients (`/api/clients`)
+- See `backend/src/routes/clients.js` for client-specific routes
+
+**Authentication:** Use `Authorization: Bearer <token>` header for protected routes.
 
 ## User Roles and Permissions
 
 ### InterWorks Role
-- Create/delete migrations
+- Create/delete migrations and users
 - Customize questions per migration
-- Create/delete client users
 - View all migrations
-- Edit any migration
+- Full access to all features
 
 ### Client Role
 - View assigned migration only
 - Answer questions
 - Export PDF
-- Cannot customize questions
-- Cannot access other migrations
+- Cannot customize questions or access other migrations
 
-## Deployment
+## Data Models
 
-### Production Considerations
-- Use strong JWT_SECRET (generate with `openssl rand -base64 32`)
-- Enable HTTPS (use reverse proxy like Nginx with Let's Encrypt)
-- Set up MongoDB backups
-- Configure CORS for production domain
-- Add rate limiting on auth endpoints
-- Use environment variables for all secrets
-- Set NODE_ENV=production
-
-### Docker Compose Production
-```bash
-docker-compose -f docker-compose.prod.yml up -d
+### User Model
+```javascript
+{
+  email: String (required, unique, lowercase)
+  passwordHash: String (required, auto-hashed on save)
+  role: String (enum: ['interworks', 'client'], default: 'client')
+  name: String (optional)
+  createdAt: Date (auto)
+  updatedAt: Date (auto)
+}
 ```
 
-## Migration from Original HTML
-The original single-file HTML application (`tableau-migration-checklist-pro.html`) serves as the source of truth for:
-- Question structure and types (line 1104)
-- UI styling and design patterns
+### Migration Model
+```javascript
+{
+  clientEmail: String (required, ref to User.email)
+  clientInfo: {
+    clientName: String
+    region: String
+    serverVersion: String
+    serverUrl: String
+    kickoffDate: Date
+    primaryContact: String
+    meetingCadence: String
+    goLiveDate: Date
+  }
+  questions: [{
+    id: String (required, unique within migration)
+    section: String (required)
+    questionText: String (required)
+    questionType: String (enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo'])
+    options: [String] (for dropdown/yesNo types)
+    answer: Mixed (depends on questionType)
+    completed: Boolean (default: false)
+    timestamp: Date (when answered)
+    order: Number (display order)
+    metadata: {
+      isFullWidth: Boolean
+      hasConditionalInput: Boolean
+      hasConditionalDate: Boolean
+      conditionalText: String
+      conditionalDate: Date
+      infoTooltip: String
+    }
+  }]
+  additionalNotes: String
+  createdBy: String (ref to User.email)
+  createdAt: Date (auto)
+  updatedAt: Date (auto)
+}
+```
+
+## Frontend Component Hierarchy
+
+**Atomic Design Pattern:**
+- **ui/**: Base shadcn/ui components (Button, Input, Card, Checkbox, Select, etc.)
+- **atoms/**: Simple building blocks (InfoTooltip, SectionBadge, ProgressBar)
+- **molecules/**: Component combinations (QuestionCheckbox, QuestionTextInput, QuestionDropdown, ClientInfoField)
+- **organisms/**: Complex components (Header, QuestionSection, MigrationCard, QuestionManagementModal)
+- **templates/**: Page layouts (AuthLayout, DashboardLayout, MigrationLayout)
+- **pages/**: Full pages (Login, Dashboard, MigrationChecklist, UserManagement)
+
+**Custom Hooks:**
+- `useAuth()` - Authentication state and functions (login, logout, user)
+- `useMigration(id)` - Fetch and manage migration data with auto-save
+
+## Reference HTML Prototype
+
+The original single-file HTML application (`tableau-migration-checklist-pro.html`) serves as the design reference for:
+- Question structure and types
+- UI styling and visual design
 - PDF export format
 - Question rendering logic
 
-## Support and Documentation
+## Additional Documentation
 
-For more detailed documentation:
-- Backend: See `backend/CLAUDE.md`
-- Frontend: See `frontend/CLAUDE.md`
-
-## Future Extensibility
-
-### Planned Features
-- Magic link authentication (passwordless login)
-- Email notifications
-- Migration status workflow (draft, in-progress, completed)
-- File attachments
-- Comments and collaboration
-- Activity log and audit trail
-- Analytics dashboard
-
-### Extension Points
-- User model ready for `loginToken` and `loginTokenExpiry` fields
-- Email service integration points prepared
-- Extensible question types via `questionType` enum
+For detailed API documentation, component APIs, testing patterns, and troubleshooting:
+- **Backend**: See `backend/CLAUDE.md`
+- **Frontend**: See `frontend/CLAUDE.md`
+- **Project Status**: See `README.md`

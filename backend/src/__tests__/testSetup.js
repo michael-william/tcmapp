@@ -5,6 +5,11 @@
  * It runs before all tests and tears down after all tests complete.
  */
 
+// Set JWT_SECRET for tests if not already set
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret-for-testing-only';
+}
+
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 

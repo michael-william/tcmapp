@@ -15,6 +15,34 @@ const questionTemplate = require('../seeds/questionTemplate');
 const router = express.Router();
 
 /**
+ * Transform question data for frontend
+ * Maps metadata.infoTooltip -> helpText
+ */
+const transformQuestionForFrontend = (question) => {
+  const transformed = question.toObject ? question.toObject() : { ...question };
+  if (transformed.metadata?.infoTooltip) {
+    transformed.helpText = transformed.metadata.infoTooltip;
+  }
+  return transformed;
+};
+
+/**
+ * Transform question data for backend
+ * Maps helpText -> metadata.infoTooltip
+ */
+const transformQuestionForBackend = (question) => {
+  const transformed = { ...question };
+  if (transformed.helpText) {
+    transformed.metadata = {
+      ...(transformed.metadata || {}),
+      infoTooltip: transformed.helpText,
+    };
+    delete transformed.helpText;
+  }
+  return transformed;
+};
+
+/**
  * POST /api/migrations
  * Create new migration (InterWorks only)
  */
@@ -101,8 +129,15 @@ router.get('/', requireAuth, async (req, res) => {
       migrations.map(async (migration) => {
         const fullMigration = await Migration.findById(migration._id);
         const progress = fullMigration.calculateProgress();
+        const migrationObj = migration.toObject();
+
+        // Transform questions if they exist
+        if (fullMigration.questions) {
+          migrationObj.questions = fullMigration.questions.map(transformQuestionForFrontend);
+        }
+
         return {
-          ...migration.toObject(),
+          ...migrationObj,
           progress,
         };
       })
@@ -154,11 +189,17 @@ router.get('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
     }
 
     const progress = migration.calculateProgress();
+    const migrationObj = migration.toObject();
+
+    // Transform questions for frontend
+    if (migrationObj.questions) {
+      migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+    }
 
     res.json({
       success: true,
       migration: {
-        ...migration.toObject(),
+        ...migrationObj,
         progress,
       },
     });
@@ -210,7 +251,8 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
     }
 
     if (questions) {
-      migration.questions = questions;
+      // Transform incoming questions from helpText to metadata.infoTooltip
+      migration.questions = questions.map(transformQuestionForBackend);
     }
 
     if (additionalNotes !== undefined) {
@@ -220,12 +262,18 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
     await migration.save();
 
     const progress = migration.calculateProgress();
+    const migrationObj = migration.toObject();
+
+    // Transform questions back to frontend format
+    if (migrationObj.questions) {
+      migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+    }
 
     res.json({
       success: true,
       message: 'Migration updated successfully.',
       migration: {
-        ...migration.toObject(),
+        ...migrationObj,
         progress,
       },
     });
@@ -335,10 +383,17 @@ router.put(
 
       await migration.save();
 
+      const migrationObj = migration.toObject();
+
+      // Transform questions for frontend
+      if (migrationObj.questions) {
+        migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+      }
+
       res.json({
         success: true,
         message: 'Questions reordered successfully.',
-        migration,
+        migration: migrationObj,
       });
     } catch (error) {
       console.error('Reorder questions error:', error);
@@ -385,7 +440,7 @@ router.post(
         });
       }
 
-      const { section, questionText, questionType, options, metadata } = req.body;
+      const { section, questionText, questionType, options, metadata, helpText } = req.body;
 
       // Generate new question ID
       const maxOrder = Math.max(...migration.questions.map((q) => q.order), 0);
@@ -403,13 +458,25 @@ router.post(
         metadata: metadata || {},
       };
 
+      // If helpText is provided, store it in metadata.infoTooltip
+      if (helpText) {
+        newQuestion.metadata.infoTooltip = helpText;
+      }
+
       migration.questions.push(newQuestion);
       await migration.save();
+
+      const migrationObj = migration.toObject();
+
+      // Transform questions for frontend
+      if (migrationObj.questions) {
+        migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+      }
 
       res.status(201).json({
         success: true,
         message: 'Question added successfully.',
-        migration,
+        migration: migrationObj,
       });
     } catch (error) {
       console.error('Add question error:', error);
@@ -475,12 +542,27 @@ router.put(
         }
       });
 
+      // If helpText is provided, store it in metadata.infoTooltip
+      if (req.body.helpText !== undefined) {
+        if (!migration.questions[questionIndex].metadata) {
+          migration.questions[questionIndex].metadata = {};
+        }
+        migration.questions[questionIndex].metadata.infoTooltip = req.body.helpText;
+      }
+
       await migration.save();
+
+      const migrationObj = migration.toObject();
+
+      // Transform questions for frontend
+      if (migrationObj.questions) {
+        migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+      }
 
       res.json({
         success: true,
         message: 'Question updated successfully.',
-        migration,
+        migration: migrationObj,
       });
     } catch (error) {
       console.error('Update question error:', error);
@@ -541,10 +623,17 @@ router.delete(
 
       await migration.save();
 
+      const migrationObj = migration.toObject();
+
+      // Transform questions for frontend
+      if (migrationObj.questions) {
+        migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
+      }
+
       res.json({
         success: true,
         message: 'Question deleted successfully.',
-        migration,
+        migration: migrationObj,
       });
     } catch (error) {
       console.error('Delete question error:', error);
