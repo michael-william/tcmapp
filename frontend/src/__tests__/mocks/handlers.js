@@ -6,7 +6,7 @@
 
 import { http, HttpResponse } from 'msw';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:3000/api';
 
 // Mock client data
 const mockClient = {
@@ -32,7 +32,7 @@ const mockGuestUser = {
   email: 'guest@example.com',
   name: 'Guest User',
   role: 'guest',
-  clientId: mockClient,
+  clientIds: [mockClient],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -565,9 +565,28 @@ export const handlers = [
       );
     }
 
+    const url = new URL(request.url);
+    const clientId = url.searchParams.get('clientId');
+    const role = url.searchParams.get('role');
+
+    let filteredUsers = [...users];
+
+    // Filter by clientId
+    if (clientId) {
+      filteredUsers = filteredUsers.filter(u =>
+        u.clientIds?.some(c => (c._id || c) === clientId) || u.role === 'interworks'
+      );
+    }
+
+    // Filter by role
+    if (role) {
+      filteredUsers = filteredUsers.filter(u => u.role === role);
+    }
+
     return HttpResponse.json({
       success: true,
-      users: users,
+      users: filteredUsers,
+      count: filteredUsers.length,
     });
   }),
 
@@ -599,11 +618,11 @@ export const handlers = [
     }
 
     // Validate based on role
-    if (body.role === 'guest' && !body.clientId) {
+    if (body.role === 'guest' && (!body.clientIds || body.clientIds.length === 0)) {
       return HttpResponse.json(
         {
           success: false,
-          message: 'Client ID is required for guest users.',
+          message: 'Guest users must be assigned to at least one client.',
         },
         { status: 400 }
       );
@@ -614,7 +633,9 @@ export const handlers = [
       name: body.name,
       email: body.email,
       role: body.role || 'guest',
-      ...(body.clientId && { clientId: body.clientId }),
+      ...(body.clientIds && body.clientIds.length > 0 && {
+        clientIds: body.clientIds.map(id => clients.find(c => c._id === id) || { _id: id })
+      }),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -629,6 +650,73 @@ export const handlers = [
       },
       { status: 201 }
     );
+  }),
+
+  // Users - Update
+  http.put(`${API_URL}/users/:id`, async ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const userIndex = users.findIndex((u) => u._id === params.id);
+
+    if (userIndex === -1) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'User not found.',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Validate based on role
+    if (body.role === 'guest' && (!body.clientIds || body.clientIds.length === 0)) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Guest users must be assigned to at least one client.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Update user
+    const updatedUser = {
+      ...users[userIndex],
+      name: body.name || users[userIndex].name,
+      email: body.email || users[userIndex].email,
+      role: body.role || users[userIndex].role,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Update clientIds if provided
+    if (body.clientIds !== undefined) {
+      if (body.clientIds.length > 0) {
+        updatedUser.clientIds = body.clientIds.map(id =>
+          clients.find(c => c._id === id) || { _id: id }
+        );
+      } else {
+        updatedUser.clientIds = [];
+      }
+    }
+
+    users[userIndex] = updatedUser;
+
+    return HttpResponse.json({
+      success: true,
+      message: 'User updated successfully.',
+      user: updatedUser,
+    });
   }),
 
   // Users - Delete
@@ -654,6 +742,22 @@ export const handlers = [
           message: 'User not found.',
         },
         { status: 404 }
+      );
+    }
+
+    const user = users[userIndex];
+    const url = new URL(request.url);
+    const forceDelete = url.searchParams.get('force') === 'true';
+
+    // Simulate InterWorks user with migrations (requires confirmation)
+    if (user.role === 'interworks' && user.email === 'test@interworks.com' && !forceDelete) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'This InterWorks user has created migrations. Deleting will reassign those migrations.',
+          requiresForce: true,
+        },
+        { status: 409 }
       );
     }
 

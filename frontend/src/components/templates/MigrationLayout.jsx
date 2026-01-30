@@ -15,6 +15,9 @@ export const MigrationLayout = ({
   completed = 0,
   total = 0,
   percentage = 0,
+  clientName,
+  guestContacts,
+  interworksContacts,
   onNavigate,
   pageHeader,
   className,
@@ -30,7 +33,14 @@ export const MigrationLayout = ({
         onNavigate={onNavigate}
       />
 
-      <ProgressSection completed={completed} total={total} percentage={percentage} />
+      <ProgressSection
+        completed={completed}
+        total={total}
+        percentage={percentage}
+        clientName={clientName}
+        guestContacts={guestContacts}
+        interworksContacts={interworksContacts}
+      />
 
       {pageHeader && (
         <div className="bg-white/80 backdrop-blur-lg border-b px-4 py-4 sticky top-[200px] z-30">

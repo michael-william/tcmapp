@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { useMigration } from '@/hooks/useMigration';
 import { toast } from '@/components/ui/Toast';
+import api from '@/lib/api';
 import { Loader2, Settings, ArrowLeft, Save } from 'lucide-react';
 
 export const MigrationChecklist = () => {
@@ -46,6 +47,7 @@ export const MigrationChecklist = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [collapsedSections, setCollapsedSections] = useState({});
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
+  const [contacts, setContacts] = useState({ guest: [], interworks: [] });
 
   // Navigation blocking state
   const [isNavigating, setIsNavigating] = useState(false);
@@ -81,6 +83,29 @@ export const MigrationChecklist = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [hasUnsavedChanges]);
+
+  // Fetch contacts when migration loads
+  useEffect(() => {
+    const fetchContacts = async () => {
+      if (!migration?.clientId) return;
+
+      try {
+        const clientId = migration.clientId._id || migration.clientId;
+        const response = await api.get(`/users?clientId=${clientId}`);
+        const users = response.data.users || [];
+
+        setContacts({
+          guest: users.filter(u => u.role === 'guest'),
+          interworks: users.filter(u => u.role === 'interworks'),
+        });
+      } catch (error) {
+        console.error('Failed to fetch contacts:', error);
+        // Fail silently - contacts are optional feature
+      }
+    };
+
+    fetchContacts();
+  }, [migration?.clientId]);
 
   // Group questions by section
   const questionsBySection = useMemo(() => {
@@ -333,6 +358,9 @@ export const MigrationChecklist = () => {
       completed={completed}
       total={total}
       percentage={percentage}
+      clientName={migration.clientInfo?.clientName}
+      guestContacts={contacts.guest}
+      interworksContacts={contacts.interworks}
       onNavigate={handleNavigation}
       pageHeader={pageHeader}
     >

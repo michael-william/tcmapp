@@ -6,9 +6,18 @@
 
 import React from 'react';
 import { ProgressBar } from '@/components/atoms/ProgressBar';
+import { ContactsList } from '@/components/molecules/ContactsList';
 import { cn } from '@/lib/utils';
 
-export const ProgressSection = ({ completed = 0, total = 0, percentage = 0, className }) => {
+export const ProgressSection = ({
+  completed = 0,
+  total = 0,
+  percentage = 0,
+  clientName,
+  guestContacts,
+  interworksContacts,
+  className
+}) => {
   return (
     <div
       className={cn(
@@ -17,8 +26,9 @@ export const ProgressSection = ({ completed = 0, total = 0, percentage = 0, clas
       )}
     >
       <div className="container mx-auto">
-        <div className="flex items-center justify-between mb-3">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
+          {/* Left: Progress stats */}
+          <div className="flex-1 min-w-[250px]">
             <h2 className="text-lg font-semibold text-foreground">
               Overall Progress
             </h2>
@@ -26,7 +36,18 @@ export const ProgressSection = ({ completed = 0, total = 0, percentage = 0, clas
               {completed} of {total} questions completed
             </p>
           </div>
+
+          {/* Right: Contacts */}
+          {clientName && (
+            <ContactsList
+              clientName={clientName}
+              guestContacts={guestContacts}
+              interworksContacts={interworksContacts}
+            />
+          )}
         </div>
+
+        {/* Full width progress bar */}
         <ProgressBar value={percentage} showPercentage={true} />
       </div>
     </div>
