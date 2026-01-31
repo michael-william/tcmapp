@@ -15,10 +15,15 @@ ENV NODE_ENV=$NODE_ENV
 
 RUN npm run build
 
-# Stage 2: Serve with Nginx
+# Stage 2: Production stage
 FROM nginx:alpine
+
+# Copy the build output
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# COPY TO TEMPLATES FOLDER INSTEAD
+# The Nginx image will run envsubst on files in this folder
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
