@@ -2,7 +2,7 @@
 FROM node:18-alpine
 
 # Set working directory
-WORKDIR /backend
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
