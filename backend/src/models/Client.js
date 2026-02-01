@@ -29,7 +29,6 @@ const clientSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
-clientSchema.index({ email: 1 });
 clientSchema.index({ name: 1 });
 
 const Client = mongoose.model('Client', clientSchema);
