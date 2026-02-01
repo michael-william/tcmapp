@@ -40,8 +40,36 @@ connectDB();
 
 // Middleware
 app.use(helmet()); // Security headers
+
+// CORS configuration for Railway deployment
+const corsOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : ['http://localhost:5173'];
+
+console.log('CORS enabled for origins:', corsOrigins);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    // Check if origin matches any allowed origin
+    const isAllowed = corsOrigins.some(allowedOrigin => {
+      // Support wildcard matching for Railway preview deployments
+      if (allowedOrigin.includes('*')) {
+        const pattern = new RegExp('^' + allowedOrigin.replace(/\*/g, '.*') + '$');
+        return pattern.test(origin);
+      }
+      return allowedOrigin === origin;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

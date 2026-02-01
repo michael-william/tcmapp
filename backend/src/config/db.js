@@ -12,9 +12,22 @@ const mongoose = require('mongoose');
  */
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tableau-migrations-dev');
+    // Validate MONGODB_URI in production
+    if (!process.env.MONGODB_URI && process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: MONGODB_URI environment variable is required in production');
+    }
 
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/tableau-migrations-dev';
+
+    // Log connection attempt (mask credentials)
+    console.log(`Attempting MongoDB connection to: ${mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//[CREDENTIALS]@')}`);
+
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 75000,
+    });
+
+    console.log(`MongoDB connected successfully to: ${conn.connection.host}`);
 
     // Handle connection events
     mongoose.connection.on('error', (err) => {
