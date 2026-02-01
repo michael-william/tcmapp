@@ -18,12 +18,13 @@ RUN npm run build
 # Stage 2: Production stage
 FROM nginx:alpine
 
-# Copy the build output
+# 1. Manually set a default or ensure the ENV is recognized
+ENV VITE_API_URL=${VITE_API_URL}
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# COPY TO TEMPLATES FOLDER INSTEAD
-# The Nginx image will run envsubst on files in this folder
+# 2. Copy the template
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# 3. Explicitly run envsubst before starting Nginx to be 100% sure
+CMD ["/bin/sh", "-c", "envsubst '${VITE_API_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

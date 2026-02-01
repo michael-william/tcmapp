@@ -8,13 +8,15 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy API requests to the backend
     location /api {
-        proxy_pass ${VITE_API_URL}; # This will be replaced by the real URL
+        # This is the only one we want envsubst to touch
+        proxy_pass ${VITE_API_URL}; 
+        
+        # Add backslashes before the $ signs for Nginx's own variables
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
     }
 }
