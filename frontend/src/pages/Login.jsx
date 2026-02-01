@@ -110,7 +110,7 @@ export const Login = () => {
             <p className="text-xs font-semibold text-muted-foreground mb-2">
               Demo Credentials:
             </p>
-            <div className="text-xs space-y-1">
+            {/* <div className="text-xs space-y-1">
               <p>
                 <span className="font-medium">InterWorks:</span>{' '}
                 admin@interworks.com / admin123
@@ -119,7 +119,7 @@ export const Login = () => {
                 <span className="font-medium">Client:</span>{' '}
                 client@example.com / client123
               </p>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
