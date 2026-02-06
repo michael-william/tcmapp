@@ -15,8 +15,8 @@ import axios from 'axios';
 // });
 
 const api = axios.create({
-  // Use a relative path so the Nginx proxy handles the routing
-  baseURL: import.meta.env.PROD ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api'),
+  // Always use the VITE_API_URL environment variable (set at build time)
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

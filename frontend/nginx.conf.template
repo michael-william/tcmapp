@@ -7,16 +7,4 @@ server {
         index index.html index.htm;
         try_files $uri $uri/ /index.html;
     }
-
-    location /api {
-        # This is the only one we want envsubst to touch
-        proxy_pass ${VITE_API_URL}; 
-        
-        # Add backslashes before the $ signs for Nginx's own variables
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-    }
 }

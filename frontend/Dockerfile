@@ -18,16 +18,10 @@ RUN npm run build
 # Stage 2: Production stage
 FROM nginx:alpine
 
-# Redeclare ARG so it's available in this stage
-ARG VITE_API_URL
-
-# Set as ENV for runtime use by envsubst
-ENV VITE_API_URL=${VITE_API_URL}
-
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the template
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+# Copy the nginx config (no envsubst needed)
+COPY nginx.conf.template /etc/nginx/conf.d/default.conf
 
-# Run envsubst before starting Nginx
-CMD ["/bin/sh", "-c", "envsubst '${VITE_API_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
