@@ -139,6 +139,7 @@ router.get('/', requireAuth, async (req, res) => {
         return {
           ...migrationObj,
           progress,
+          hasManagement: !!fullMigration.managementModule?.enabled,
         };
       })
     );
@@ -648,6 +649,347 @@ router.delete(
       res.status(500).json({
         success: false,
         message: 'Failed to delete question.',
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/migrations/:id/management/enable
+ * Enable management module (InterWorks only, one-time)
+ */
+router.post(
+  '/:id/management/enable',
+  requireAuth,
+  requireInterWorks,
+  [param('id').isMongoId().withMessage('Valid migration ID is required')],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+        });
+      }
+
+      const migration = await Migration.findById(req.params.id);
+
+      if (!migration) {
+        return res.status(404).json({
+          success: false,
+          message: 'Migration not found.',
+        });
+      }
+
+      // Check if already enabled
+      if (migration.managementModule?.enabled) {
+        return res.status(400).json({
+          success: false,
+          message: 'Management module is already enabled for this migration.',
+        });
+      }
+
+      // Enable management module
+      migration.managementModule = {
+        enabled: true,
+        createdAt: new Date(),
+        createdBy: req.user.email,
+        weeklyNotes: [],
+      };
+
+      await migration.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Migration Management created successfully - You can now track weekly progress and add recap notes.',
+        migration,
+      });
+    } catch (error) {
+      console.error('Enable management module error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to enable management module.',
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/migrations/:id/management
+ * Get management data (both roles, filtered by access)
+ */
+router.get(
+  '/:id/management',
+  requireAuth,
+  [param('id').isMongoId().withMessage('Valid migration ID is required')],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+        });
+      }
+
+      const migration = await Migration.findById(req.params.id).populate('clientId');
+
+      if (!migration) {
+        return res.status(404).json({
+          success: false,
+          message: 'Migration not found.',
+        });
+      }
+
+      // Access control: client users can only view their assigned migration
+      if (req.user.role === 'client') {
+        if (migration.clientId._id.toString() !== req.user.clientId.toString()) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access denied. You can only view migrations for your assigned clients.',
+          });
+        }
+      }
+
+      // Check if management module is enabled
+      if (!migration.managementModule?.enabled) {
+        return res.status(404).json({
+          success: false,
+          message: 'Management module is not enabled for this migration.',
+        });
+      }
+
+      // Calculate progress
+      const progress = migration.calculateProgress();
+
+      // Prepare response data
+      const managementData = {
+        clientInfo: migration.clientInfo,
+        progress,
+        weeklyNotes: migration.managementModule.weeklyNotes || [],
+        createdAt: migration.managementModule.createdAt,
+        createdBy: migration.managementModule.createdBy,
+      };
+
+      res.status(200).json({
+        success: true,
+        management: managementData,
+      });
+    } catch (error) {
+      console.error('Get management data error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve management data.',
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/migrations/:id/management/notes
+ * Add weekly note (InterWorks only)
+ */
+router.post(
+  '/:id/management/notes',
+  requireAuth,
+  requireInterWorks,
+  [
+    param('id').isMongoId().withMessage('Valid migration ID is required'),
+    body('content').notEmpty().trim().withMessage('Note content is required'),
+    body('date').optional().isISO8601().withMessage('Valid date is required'),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+        });
+      }
+
+      const migration = await Migration.findById(req.params.id);
+
+      if (!migration) {
+        return res.status(404).json({
+          success: false,
+          message: 'Migration not found.',
+        });
+      }
+
+      // Check if management module is enabled
+      if (!migration.managementModule?.enabled) {
+        return res.status(404).json({
+          success: false,
+          message: 'Management module is not enabled for this migration.',
+        });
+      }
+
+      const { content, date } = req.body;
+
+      // Add new note
+      const newNote = {
+        date: date ? new Date(date) : new Date(),
+        content,
+        createdBy: req.user.email,
+        createdAt: new Date(),
+      };
+
+      migration.managementModule.weeklyNotes.push(newNote);
+      await migration.save();
+
+      res.status(201).json({
+        success: true,
+        message: 'Weekly note added successfully',
+        note: migration.managementModule.weeklyNotes[migration.managementModule.weeklyNotes.length - 1],
+      });
+    } catch (error) {
+      console.error('Add weekly note error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add weekly note.',
+      });
+    }
+  }
+);
+
+/**
+ * PUT /api/migrations/:id/management/notes/:noteId
+ * Edit note (InterWorks only)
+ */
+router.put(
+  '/:id/management/notes/:noteId',
+  requireAuth,
+  requireInterWorks,
+  [
+    param('id').isMongoId().withMessage('Valid migration ID is required'),
+    param('noteId').isMongoId().withMessage('Valid note ID is required'),
+    body('content').optional().trim().notEmpty().withMessage('Note content cannot be empty'),
+    body('date').optional().isISO8601().withMessage('Valid date is required'),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+        });
+      }
+
+      const migration = await Migration.findById(req.params.id);
+
+      if (!migration) {
+        return res.status(404).json({
+          success: false,
+          message: 'Migration not found.',
+        });
+      }
+
+      // Check if management module is enabled
+      if (!migration.managementModule?.enabled) {
+        return res.status(404).json({
+          success: false,
+          message: 'Management module is not enabled for this migration.',
+        });
+      }
+
+      // Find the note
+      const note = migration.managementModule.weeklyNotes.id(req.params.noteId);
+
+      if (!note) {
+        return res.status(404).json({
+          success: false,
+          message: 'Note not found.',
+        });
+      }
+
+      const { content, date } = req.body;
+
+      // Update note fields
+      if (content !== undefined) note.content = content;
+      if (date !== undefined) note.date = new Date(date);
+      note.updatedAt = new Date();
+
+      await migration.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Note updated successfully',
+        note,
+      });
+    } catch (error) {
+      console.error('Edit note error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update note.',
+      });
+    }
+  }
+);
+
+/**
+ * DELETE /api/migrations/:id/management/notes/:noteId
+ * Delete note (InterWorks only)
+ */
+router.delete(
+  '/:id/management/notes/:noteId',
+  requireAuth,
+  requireInterWorks,
+  [
+    param('id').isMongoId().withMessage('Valid migration ID is required'),
+    param('noteId').isMongoId().withMessage('Valid note ID is required'),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array(),
+        });
+      }
+
+      const migration = await Migration.findById(req.params.id);
+
+      if (!migration) {
+        return res.status(404).json({
+          success: false,
+          message: 'Migration not found.',
+        });
+      }
+
+      // Check if management module is enabled
+      if (!migration.managementModule?.enabled) {
+        return res.status(404).json({
+          success: false,
+          message: 'Management module is not enabled for this migration.',
+        });
+      }
+
+      // Find and remove the note using pull
+      const noteExists = migration.managementModule.weeklyNotes.id(req.params.noteId);
+
+      if (!noteExists) {
+        return res.status(404).json({
+          success: false,
+          message: 'Note not found.',
+        });
+      }
+
+      migration.managementModule.weeklyNotes.pull(req.params.noteId);
+      await migration.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Note deleted successfully',
+      });
+    } catch (error) {
+      console.error('Delete note error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete note.',
       });
     }
   }

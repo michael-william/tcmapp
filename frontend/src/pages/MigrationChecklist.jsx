@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMigration } from '@/hooks/useMigration';
 import { toast } from '@/components/ui/Toast';
 import api from '@/lib/api';
-import { Loader2, Settings, ArrowLeft, Save } from 'lucide-react';
+import { Loader2, Settings, ArrowLeft, Save, Plus, BarChart3 } from 'lucide-react';
 
 export const MigrationChecklist = () => {
   const { id } = useParams();
@@ -48,6 +48,8 @@ export const MigrationChecklist = () => {
   const [collapsedSections, setCollapsedSections] = useState({});
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
   const [contacts, setContacts] = useState({ guest: [], interworks: [] });
+  const [hasManagement, setHasManagement] = useState(false);
+  const [enablingManagement, setEnablingManagement] = useState(false);
 
   // Navigation blocking state
   const [isNavigating, setIsNavigating] = useState(false);
@@ -83,6 +85,13 @@ export const MigrationChecklist = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [hasUnsavedChanges]);
+
+  // Check if management module is enabled
+  useEffect(() => {
+    if (migration) {
+      setHasManagement(!!migration.hasManagement);
+    }
+  }, [migration]);
 
   // Fetch contacts when migration loads
   useEffect(() => {
@@ -213,6 +222,29 @@ export const MigrationChecklist = () => {
     }
   };
 
+  // Enable management module
+  const handleEnableManagement = async () => {
+    try {
+      setEnablingManagement(true);
+      const response = await api.post(`/migrations/${id}/management/enable`);
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setHasManagement(true);
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to enable management module';
+      toast.error(errorMessage);
+    } finally {
+      setEnablingManagement(false);
+    }
+  };
+
+  // Navigate to management view
+  const handleViewManagement = () => {
+    handleNavigation(`/migration/${id}/management`);
+  };
+
   // Navigation handler
   const handleNavigation = (path) => {
     if (hasUnsavedChanges) {
@@ -336,6 +368,40 @@ export const MigrationChecklist = () => {
             </>
           )}
         </Button>
+
+        {isInterWorks && !hasManagement && (
+          <Button
+            variant="gradient"
+            size="sm"
+            onClick={handleEnableManagement}
+            disabled={enablingManagement}
+            className="gap-2"
+          >
+            {enablingManagement ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Create Migration Management
+              </>
+            )}
+          </Button>
+        )}
+
+        {isInterWorks && hasManagement && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewManagement}
+            className="gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            View Management
+          </Button>
+        )}
 
         {isInterWorks && (
           <Button

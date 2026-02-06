@@ -82,6 +82,47 @@ const migrationSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    managementModule: {
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      createdAt: Date,
+      createdBy: {
+        type: String,
+        lowercase: true,
+        trim: true,
+      },
+      weeklyNotes: [
+        {
+          _id: {
+            type: mongoose.Schema.Types.ObjectId,
+            auto: true,
+          },
+          date: {
+            type: Date,
+            required: true,
+            default: Date.now,
+          },
+          content: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          createdBy: {
+            type: String,
+            required: true,
+            lowercase: true,
+            trim: true,
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+          updatedAt: Date,
+        },
+      ],
+    },
   },
   {
     timestamps: true,
@@ -91,6 +132,7 @@ const migrationSchema = new mongoose.Schema(
 // Index for faster queries
 migrationSchema.index({ clientId: 1 });
 migrationSchema.index({ createdBy: 1 });
+migrationSchema.index({ 'managementModule.enabled': 1, clientId: 1 });
 
 // Method to calculate progress
 migrationSchema.methods.calculateProgress = function () {

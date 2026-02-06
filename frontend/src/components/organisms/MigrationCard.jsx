@@ -5,14 +5,14 @@
  */
 
 import React from 'react';
-import { Eye, Trash2, Calendar } from 'lucide-react';
+import { Eye, Trash2, Calendar, BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Progress } from '@/components/ui/Progress';
 import { cn } from '@/lib/utils';
 
-export const MigrationCard = ({ migration, onView, onDelete, isInterWorks = false, className }) => {
+export const MigrationCard = ({ migration, onView, onViewManagement, onDelete, isInterWorks = false, className }) => {
   if (!migration) return null;
 
   const { clientInfo, progress } = migration;
@@ -62,14 +62,21 @@ export const MigrationCard = ({ migration, onView, onDelete, isInterWorks = fals
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Button variant="default" size="sm" onClick={onView} className="flex-1 gap-2">
+        <div className="flex flex-col gap-2 pt-2">
+          <Button variant="default" size="sm" onClick={onView} className="w-full gap-2">
             <Eye className="h-4 w-4" />
             View Checklist
           </Button>
+          {migration.hasManagement && (
+            <Button variant="outline" size="sm" onClick={onViewManagement} className="w-full gap-2">
+              <BarChart3 className="h-4 w-4" />
+              View Management
+            </Button>
+          )}
           {isInterWorks && (
-            <Button variant="outline" size="sm" onClick={onDelete}>
+            <Button variant="destructive" size="sm" onClick={onDelete} className="w-full gap-2">
               <Trash2 className="h-4 w-4" />
+              Delete
             </Button>
           )}
         </div>

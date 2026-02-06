@@ -13,6 +13,7 @@ import { TooltipProvider } from './components/ui/Tooltip';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { MigrationChecklist } from './pages/MigrationChecklist';
+import { MigrationManagement } from './pages/MigrationManagement';
 import { UserManagement } from './pages/UserManagement';
 import { ClientManagement } from './pages/ClientManagement';
 
@@ -40,6 +41,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MigrationChecklist />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/migration/:id/management"
+              element={
+                <ProtectedRoute>
+                  <MigrationManagement />
                 </ProtectedRoute>
               }
             />
