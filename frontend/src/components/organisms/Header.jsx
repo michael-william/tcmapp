@@ -39,10 +39,10 @@ export const Header = ({ userName, role, onLogout, onNavigate, className }) => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">
-                Tableau Migration
+                InterWorks
               </h1>
               <p className="text-xs text-muted-foreground">
-                Cloud Migration Checklist
+                Tableau Cloud Migration
               </p>
             </div>
           </div>
@@ -76,7 +76,7 @@ export const Header = ({ userName, role, onLogout, onNavigate, className }) => {
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-muted-foreground" />
               <div className="hidden sm:block">
-                <p className="text-sm font-medium">{userName}</p>
+                <p className="text-sm font-medium text-primary">{userName}</p>
               </div>
               <Badge variant={role === 'interworks' ? 'default' : 'secondary'}>
                 {role === 'interworks' ? 'InterWorks' : 'Client'}
