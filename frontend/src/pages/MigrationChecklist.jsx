@@ -354,6 +354,7 @@ export const MigrationChecklist = () => {
         <Button
           onClick={handleSave}
           disabled={saving || !hasUnsavedChanges}
+          size="sm"
           className="gap-2"
         >
           {saving ? (
