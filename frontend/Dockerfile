@@ -26,8 +26,8 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy the nginx config (no envsubst needed)
-COPY nginx.conf.template /etc/nginx/conf.d/default.conf
+# Copy the nginx config from builder stage (no envsubst needed)
+COPY --from=builder /app/nginx.conf.template /etc/nginx/conf.d/default.conf
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
