@@ -32,7 +32,7 @@ export const QuestionDropdown = ({
         {question.helpText && <InfoTooltip content={question.helpText} />}
       </div>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={question._id} className="max-w-xs">
+        <SelectTrigger variant="primary" id={question._id} className="max-w-xs">
           <SelectValue placeholder="Select an option" />
         </SelectTrigger>
         <SelectContent>

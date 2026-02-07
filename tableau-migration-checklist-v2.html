@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Cloud Migration Prerequisite Questions - v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.95;
+        }
+
+        .progress-section {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 3px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .controls {
+            padding: 15px 30px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input[type="text"] {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .controls input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 25px 30px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .section-header:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .section-header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .section-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+
+        .section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .section-header h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .section-progress {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .section-content {
+            transition: all 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        .section-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+        }
+
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .question-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .question-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+        }
+
+        .question-item.completed {
+            background: #f0f9ff;
+            border-color: #4caf50;
+        }
+
+        .question-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .question-content {
+            flex: 1;
+        }
+
+        .question-text {
+            color: #333;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .question-item.completed .question-text {
+            color: #666;
+        }
+
+        .timestamp {
+            color: #dc3545;
+            font-size: 0.8em;
+            margin-top: 5px;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .detail-input-container {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .detail-label {
+            color: #333;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .detail-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .detail-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .date-input-container {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .date-label {
+            color: #333;
+            font-size: 0.95em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .date-input {
+            max-width: 180px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9em;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .dropdown-container {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .dropdown-label {
+            color: #333;
+            font-size: 0.95em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .dropdown-select {
+            max-width: 400px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .radio-container {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .radio-label {
+            color: #333;
+            font-size: 0.95em;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .radio-options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            font-size: 0.9em;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .export-section {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .progress-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls input[type="text"],
+            .controls select,
+            .controls button {
+                width: 100%;
+            }
+
+            .content {
+                max-height: none;
+            }
+
+            .questions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Tableau Cloud Migration</h1>
+            <p>Prerequisite Questions Checklist</p>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-stats">
+                <div class="stat-card">
+                    <div class="number" id="totalQuestions">0</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="answeredQuestions">0</div>
+                    <div class="label">Answered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="remainingQuestions">0</div>
+                    <div class="label">Remaining</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="percentComplete">0%</div>
+                    <div class="label">Complete</div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search questions...">
+            <select id="sectionFilter">
+                <option value="">All Sections</option>
+            </select>
+            <select id="statusFilter">
+                <option value="all">All Questions</option>
+                <option value="pending">Unanswered Only</option>
+                <option value="completed">Answered Only</option>
+            </select>
+            <button onclick="clearAllData()">Clear All</button>
+        </div>
+
+        <div class="content" id="questionContainer">
+            <!-- Questions will be loaded here -->
+        </div>
+
+        <div class="export-section">
+            <button class="export-btn" onclick="exportToJSON()">📥 Export (JSON)</button>
+            <button class="export-btn" onclick="exportToCSV()">📊 Export (CSV)</button>
+        </div>
+    </div>
+
+    <script>
+        let allQuestions = [{"section": "Security", "question": "Is SecOps aware of this migration and signed off?", "completed": false, "timestamp": null}, {"section": "Security", "question": "Has data connectivity and access to data sources been confirmed?", "completed": false, "timestamp": null}, {"section": "Security", "question": "Provide detail below", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Communications", "question": "Has an internal communication strategy been confirmed?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Does the client require communication assistance?", "completed": false, "timestamp": null, "isYesNo": true, "yesNoAnswer": ""}, {"section": "Communications", "question": "Have resources been requested and assigned internally?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Are your developers aware of a potential change freeze?", "completed": false, "timestamp": null}, {"section": "Communications", "question": "Expected Go-Live date?", "completed": false, "timestamp": null, "isDateInput": true, "selectedDate": ""}, {"section": "Stakeholders", "question": "Provide a list of stakeholders and available resources for migration", "completed": false, "timestamp": null, "isTextInput": true, "detailText": ""}, {"section": "Tableau Cloud", "question": "Has the Tableau/Salesforce paperwork been signed?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Confirm Tableau Cloud SKU type", "completed": false, "timestamp": null, "isDropdown": true, "selectedOption": "", "dropdownOptions": ["", "Standard", "Enterprise", "Tableau +"]}, {"section": "Tableau Cloud", "question": "Authentication confirmed?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Is any conditional access expected?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "If SSO - Is app built and applied?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Is SCIM being implemented?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Are all groups built?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Any Group Remapping required and communicated to IW yet?", "completed": false, "timestamp": null}, {"section": "Tableau Cloud", "question": "Confirm Project Migration", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Are PAT tokens enabled on Tableau Server?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Is Tableau Repository readonly access enabled?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Has the Runbook been installed and an overview provided?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Is there a time delay for client to review Runbook?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Expected Date for Runbook review completion", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Has any housekeeping taken place?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Any initial project exclusions to be made aware of initially?", "completed": false, "timestamp": null}, {"section": "Tableau Server", "question": "Do all users have valid email addresses assigned to their Tableau Server user?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Are you aware of any Row Level Security currently used within Tableau Workbooks?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Are you aware of any URL actions that may be present?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Confirm acknowledgement", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "How is Interworks connecting to your Tableau Server?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Has the jumpbox been built to a required specification?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Has access been provided to IW Consultants?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Has PowerShell been enabled with Admin rights?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Have file transfer methods been confirmed?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Confirm file transfer methods", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Is Tableau Desktop available on the Jumpbox?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Tool installed on Jumpbox?", "completed": false, "timestamp": null}, {"section": "Access & Connectivity", "question": "Server and Cloud PATS generated and connectivity confirmed?", "completed": false, "timestamp": null}, {"section": "Cloud Data Sources", "question": "Is Private Connect required?", "completed": false, "timestamp": null}, {"section": "Cloud Data Sources", "question": "Is IP whitelisting required and completed?", "completed": false, "timestamp": null}];
+        let filteredQuestions = [];
+
+        function loadQuestions() {
+            const savedProgress = localStorage.getItem('tableauMigrationQuestionsV2');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                allQuestions.forEach((question, index) => {
+                    if (progress[index]) {
+                        question.completed = progress[index].completed;
+                        question.timestamp = progress[index].timestamp;
+                        if (question.isTextInput && progress[index].detailText !== undefined) {
+                            question.detailText = progress[index].detailText;
+                        }
+                        if (question.isDateInput && progress[index].selectedDate !== undefined) {
+                            question.selectedDate = progress[index].selectedDate;
+                        }
+                        if (question.isDropdown && progress[index].selectedOption !== undefined) {
+                            question.selectedOption = progress[index].selectedOption;
+                        }
+                        if (question.isYesNo && progress[index].yesNoAnswer !== undefined) {
+                            question.yesNoAnswer = progress[index].yesNoAnswer;
+                        }
+                    }
+                });
+            }
+
+            populateSectionFilter();
+            filterQuestions();
+            updateStats();
+        }
+
+        function populateSectionFilter() {
+            const sectionFilter = document.getElementById('sectionFilter');
+            const sections = [...new Set(allQuestions.map(q => q.section).filter(s => s))];
+
+            sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionFilter.appendChild(option);
+            });
+        }
+
+        function filterQuestions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sectionFilter = document.getElementById('sectionFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredQuestions = allQuestions.filter(question => {
+                const matchesSearch = !searchTerm ||
+                    question.question.toLowerCase().includes(searchTerm) ||
+                    (question.section && question.section.toLowerCase().includes(searchTerm));
+
+                const matchesSection = !sectionFilter || question.section === sectionFilter;
+
+                const matchesStatus = statusFilter === 'all' ||
+                    (statusFilter === 'pending' && !question.completed) ||
+                    (statusFilter === 'completed' && question.completed);
+
+                return matchesSearch && matchesSection && matchesStatus;
+            });
+
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '';
+
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h2>No questions found</h2><p>Try adjusting your filters</p></div>';
+                return;
+            }
+
+            const sections = {};
+            filteredQuestions.forEach(question => {
+                const section = question.section || 'Other';
+                if (!sections[section]) sections[section] = [];
+                sections[section].push(question);
+            });
+
+            Object.keys(sections).forEach((section, sectionIndex) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+
+                const sectionAnswered = filteredQuestions.filter(q => q.section === section && q.completed).length;
+                const sectionTotal = filteredQuestions.filter(q => q.section === section).length;
+
+                const sectionId = `section-${sectionIndex}`;
+
+                sectionDiv.innerHTML = `
+                    <div class="section-header" onclick="toggleSection('${sectionId}')">
+                        <div class="section-header-content">
+                            <span class="section-toggle collapsed" id="toggle-${sectionId}">▼</span>
+                            <h2>${section}</h2>
+                        </div>
+                        <div class="section-progress">${sectionAnswered}/${sectionTotal}</div>
+                    </div>
+                    <div class="section-content collapsed" id="${sectionId}"></div>
+                `;
+
+                // Get the content container
+                container.appendChild(sectionDiv);
+                const contentDiv = document.getElementById(sectionId);
+
+                // Create grid container for questions
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'questions-grid';
+
+                sections[section].forEach(question => {
+                    const questionIndex = allQuestions.indexOf(question);
+
+                    // Special handling for date input questions - full width
+                    if (question.isDateInput) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'date-input-container';
+                        dateDiv.style.gridColumn = '1 / -1'; // Span full width
+
+                        dateDiv.innerHTML = `
+                            <label class="date-label">${question.question}</label>
+                            <input type="date"
+                                   class="date-input"
+                                   value="${question.selectedDate || ''}"
+                                   onchange="updateSelectedDate(${questionIndex}, this.value)">
+                        `;
+                        gridDiv.appendChild(dateDiv);
+                        return;
+                    }
+
+                    // Special handling for dropdown questions - full width
+                    if (question.isDropdown) {
+                        const dropdownDiv = document.createElement('div');
+                        dropdownDiv.className = 'dropdown-container';
+                        dropdownDiv.style.gridColumn = '1 / -1'; // Span full width
+
+                        const optionsHtml = question.dropdownOptions.map(option =>
+                            `<option value="${option}" ${question.selectedOption === option ? 'selected' : ''}>${option || 'Select...'}</option>`
+                        ).join('');
+
+                        dropdownDiv.innerHTML = `
+                            <label class="dropdown-label">${question.question}</label>
+                            <select class="dropdown-select" onchange="updateDropdownSelection(${questionIndex}, this.value)">
+                                ${optionsHtml}
+                            </select>
+                        `;
+                        gridDiv.appendChild(dropdownDiv);
+                        return;
+                    }
+
+                    // Special handling for yes/no radio questions - full width
+                    if (question.isYesNo) {
+                        const radioDiv = document.createElement('div');
+                        radioDiv.className = 'radio-container';
+                        radioDiv.style.gridColumn = '1 / -1'; // Span full width
+
+                        radioDiv.innerHTML = `
+                            <label class="radio-label">${question.question}</label>
+                            <div class="radio-options">
+                                <div class="radio-option">
+                                    <input type="radio"
+                                           id="yes_${questionIndex}"
+                                           name="yesno_${questionIndex}"
+                                           value="Yes"
+                                           ${question.yesNoAnswer === 'Yes' ? 'checked' : ''}
+                                           onchange="updateYesNoAnswer(${questionIndex}, 'Yes')">
+                                    <label for="yes_${questionIndex}">Yes</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio"
+                                           id="no_${questionIndex}"
+                                           name="yesno_${questionIndex}"
+                                           value="No"
+                                           ${question.yesNoAnswer === 'No' ? 'checked' : ''}
+                                           onchange="updateYesNoAnswer(${questionIndex}, 'No')">
+                                    <label for="no_${questionIndex}">No</label>
+                                </div>
+                            </div>
+                        `;
+                        gridDiv.appendChild(radioDiv);
+                        return;
+                    }
+
+                    // Special handling for text input questions - full width
+                    if (question.isTextInput) {
+                        const detailDiv = document.createElement('div');
+                        detailDiv.className = 'detail-input-container';
+                        detailDiv.style.gridColumn = '1 / -1'; // Span full width
+
+                        // Determine label text based on question
+                        let labelText = 'Please provide detail:';
+                        if (question.question.toLowerCase().includes('stakeholder')) {
+                            labelText = 'Provide a list of stakeholders and available resources for migration:';
+                        }
+
+                        detailDiv.innerHTML = `
+                            <label class="detail-label">${labelText}</label>
+                            <textarea class="detail-textarea"
+                                      placeholder="Enter details here..."
+                                      oninput="updateDetailText(${questionIndex}, this.value)">${question.detailText || ''}</textarea>
+                        `;
+                        gridDiv.appendChild(detailDiv);
+                        return;
+                    }
+
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = `question-item ${question.completed ? 'completed' : ''}`;
+
+                    questionDiv.innerHTML = `
+                        <input type="checkbox"
+                               class="question-checkbox"
+                               ${question.completed ? 'checked' : ''}
+                               onchange="toggleQuestion(${questionIndex})">
+                        <div class="question-content">
+                            <div class="question-text">${question.question}</div>
+                            ${question.timestamp ? `<div class="timestamp">Answered: ${question.timestamp}</div>` : ''}
+                        </div>
+                    `;
+
+                    gridDiv.appendChild(questionDiv);
+                });
+
+                contentDiv.appendChild(gridDiv);
+            });
+        }
+
+        function toggleSection(sectionId) {
+            const contentDiv = document.getElementById(sectionId);
+            const toggleIcon = document.getElementById(`toggle-${sectionId}`);
+
+            contentDiv.classList.toggle('collapsed');
+            toggleIcon.classList.toggle('collapsed');
+        }
+
+        function toggleQuestion(index) {
+            const question = allQuestions[index];
+            question.completed = !question.completed;
+
+            if (question.completed) {
+                const now = new Date();
+                question.timestamp = now.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            } else {
+                question.timestamp = null;
+            }
+
+            saveProgress();
+            filterQuestions();
+            updateStats();
+        }
+
+        function updateDetailText(index, value) {
+            allQuestions[index].detailText = value;
+            saveProgress();
+        }
+
+        function updateSelectedDate(index, value) {
+            allQuestions[index].selectedDate = value;
+            saveProgress();
+        }
+
+        function updateDropdownSelection(index, value) {
+            allQuestions[index].selectedOption = value;
+            saveProgress();
+        }
+
+        function updateYesNoAnswer(index, value) {
+            allQuestions[index].yesNoAnswer = value;
+            saveProgress();
+        }
+
+        function saveProgress() {
+            const progress = allQuestions.map(question => {
+                const data = {
+                    completed: question.completed,
+                    timestamp: question.timestamp
+                };
+                if (question.isTextInput) {
+                    data.detailText = question.detailText || '';
+                }
+                if (question.isDateInput) {
+                    data.selectedDate = question.selectedDate || '';
+                }
+                if (question.isDropdown) {
+                    data.selectedOption = question.selectedOption || '';
+                }
+                if (question.isYesNo) {
+                    data.yesNoAnswer = question.yesNoAnswer || '';
+                }
+                return data;
+            });
+            localStorage.setItem('tableauMigrationQuestionsV2', JSON.stringify(progress));
+        }
+
+        function updateStats() {
+            const total = allQuestions.length;
+            const answered = allQuestions.filter(q => q.completed).length;
+            const remaining = total - answered;
+            const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('answeredQuestions').textContent = answered;
+            document.getElementById('remainingQuestions').textContent = remaining;
+            document.getElementById('percentComplete').textContent = percent + '%';
+
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all answers? This cannot be undone.')) {
+                localStorage.removeItem('tableauMigrationQuestionsV2');
+                allQuestions.forEach(question => {
+                    question.completed = false;
+                    question.timestamp = null;
+                });
+                filterQuestions();
+                updateStats();
+            }
+        }
+
+        function exportToJSON() {
+            const exportData = allQuestions.map((question, index) => {
+                const data = {
+                    id: index + 1,
+                    section: question.section,
+                    question: question.question,
+                    answered: question.completed,
+                    timestamp: question.timestamp
+                };
+                if (question.isTextInput) {
+                    data.detailText = question.detailText || '';
+                }
+                if (question.isDateInput) {
+                    data.selectedDate = question.selectedDate || '';
+                }
+                if (question.isDropdown) {
+                    data.selectedOption = question.selectedOption || '';
+                }
+                if (question.isYesNo) {
+                    data.yesNoAnswer = question.yesNoAnswer || '';
+                }
+                return data;
+            });
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tableau-migration-questions-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToCSV() {
+            const headers = ['ID', 'Section', 'Question', 'Answered', 'Timestamp', 'Detail', 'Selected Date', 'Selected Option', 'Yes/No Answer'];
+            const rows = allQuestions.map((question, index) => [
+                index + 1,
+                `"${(question.section || '').replace(/"/g, '""')}"`,
+                `"${question.question.replace(/"/g, '""')}"`,
+                question.completed ? 'Yes' : 'No',
+                question.timestamp || '',
+                question.isTextInput ? `"${(question.detailText || '').replace(/"/g, '""')}"` : '',
+                question.isDateInput ? (question.selectedDate || '') : '',
+                question.isDropdown ? (question.selectedOption || '') : '',
+                question.isYesNo ? (question.yesNoAnswer || '') : ''
+            ]);
+
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tableau-migration-questions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterQuestions);
+        document.getElementById('sectionFilter').addEventListener('change', filterQuestions);
+        document.getElementById('statusFilter').addEventListener('change', filterQuestions);
+
+        loadQuestions();
+    </script>
+</body>
+</html>

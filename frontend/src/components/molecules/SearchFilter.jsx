@@ -24,6 +24,7 @@ export const SearchFilter = ({
   selectedStatus = 'all',
   onStatusChange,
   sections = [],
+  size = 'default',
   className,
 }) => {
   return (
@@ -43,7 +44,13 @@ export const SearchFilter = ({
       {/* Section filter */}
       {sections.length > 0 && (
         <Select value={selectedSection} onValueChange={onSectionChange}>
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger
+            variant="primary"
+            className={cn(
+              'w-full sm:w-[200px]',
+              size === 'sm' ? 'h-8' : 'h-10'
+            )}
+          >
             <SelectValue placeholder="All sections" />
           </SelectTrigger>
           <SelectContent>
@@ -59,7 +66,13 @@ export const SearchFilter = ({
 
       {/* Status filter */}
       <Select value={selectedStatus} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger
+          variant="primary"
+          className={cn(
+            'w-full sm:w-[180px]',
+            size === 'sm' ? 'h-8' : 'h-10'
+          )}
+        >
           <SelectValue placeholder="All status" />
         </SelectTrigger>
         <SelectContent>

@@ -105,8 +105,9 @@ export const MultiClientSelector = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={cn(
-          'flex h-auto min-h-[2.5rem] w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2',
-          'text-sm ring-offset-background',
+          'flex h-auto min-h-[2.5rem] w-full items-center justify-between rounded-md border border-primary px-3 py-2',
+          'bg-primary hover:bg-primary-dark text-white',
+          'text-sm transition-colors',
           'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
           'disabled:cursor-not-allowed disabled:opacity-50',
           isOpen && 'ring-2 ring-primary ring-offset-2'
@@ -114,7 +115,7 @@ export const MultiClientSelector = ({
       >
         <div className="flex flex-wrap gap-2 flex-1">
           {selectedClients.length === 0 ? (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="text-white/70">{placeholder}</span>
           ) : (
             selectedClients.map(client => (
               <Badge
@@ -135,7 +136,7 @@ export const MultiClientSelector = ({
           )}
         </div>
         <ChevronDown className={cn(
-          'h-4 w-4 opacity-50 transition-transform ml-2 flex-shrink-0',
+          'h-4 w-4 text-white transition-transform ml-2 flex-shrink-0',
           isOpen && 'transform rotate-180'
         )} />
       </button>

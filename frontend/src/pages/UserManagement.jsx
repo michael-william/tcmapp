@@ -243,8 +243,8 @@ export const UserManagement = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-3xl font-bold text-white">User Management</h1>
+            <p className="text-white/70 mt-1">
               Manage guest users and permissions
             </p>
           </div>

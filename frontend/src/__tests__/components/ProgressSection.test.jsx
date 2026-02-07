@@ -10,7 +10,7 @@ import { ProgressSection } from '@/components/organisms/ProgressSection';
 describe('ProgressSection Component', () => {
   it('renders progress title', () => {
     render(<ProgressSection completed={10} total={50} percentage={20} />);
-    expect(screen.getByText('Overall Progress')).toBeInTheDocument();
+    expect(screen.getByText('Pre-requisite Progress')).toBeInTheDocument();
   });
 
   it('displays completed and total questions', () => {

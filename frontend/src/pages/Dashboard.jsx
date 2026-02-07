@@ -178,10 +178,10 @@ export const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-3xl font-bold text-white">
               {isInterWorks ? 'All Migrations' : 'Your Migrations'}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-white/70 mt-1">
               {isInterWorks
                 ? 'Manage client migration projects'
                 : 'View and update your migration checklists'}
@@ -256,7 +256,7 @@ export const Dashboard = () => {
                 id="client"
                 value={selectedClientId}
                 onChange={(e) => setSelectedClientId(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className="w-full px-3 py-2 border border-primary rounded-md bg-primary text-white hover:bg-primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 disabled={createLoading}
               >
                 {clients.map((client) => (

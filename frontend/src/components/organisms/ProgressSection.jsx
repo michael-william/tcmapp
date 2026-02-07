@@ -30,7 +30,7 @@ export const ProgressSection = ({
           {/* Left: Progress stats */}
           <div className="flex-1 min-w-[250px]">
             <h2 className="text-lg font-semibold text-foreground">
-              Overall Progress
+              Pre-requisite Progress
             </h2>
             <p className="text-sm text-muted-foreground">
               {completed} of {total} questions completed

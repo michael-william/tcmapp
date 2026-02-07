@@ -27,14 +27,15 @@ export const SaveStatus = ({ saving, lastSaved, error, hasUnsavedChanges, onRetr
     );
   }
 
-  if (hasUnsavedChanges) {
-    return (
-      <div className="flex items-center gap-2 text-xs text-warning mt-1">
-        <AlertCircle className="h-3 w-3" />
-        <span>Unsaved changes</span>
-      </div>
-    );
-  }
+  // Removed "Unsaved changes" indicator
+  // if (hasUnsavedChanges) {
+  //   return (
+  //     <div className="flex items-center gap-2 text-xs text-warning mt-1">
+  //       <AlertCircle className="h-3 w-3" />
+  //       <span>Unsaved changes</span>
+  //     </div>
+  //   );
+  // }
 
   if (lastSaved) {
     return (
