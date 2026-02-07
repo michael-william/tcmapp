@@ -21,7 +21,7 @@ export const DashboardLayout = ({ children, className }) => {
       />
 
       <main className={cn('container mx-auto px-4 py-8', className)}>
-        <div className="glass-container bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl">
+        <div className="glass-container bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl">
           {children}
         </div>
       </main>

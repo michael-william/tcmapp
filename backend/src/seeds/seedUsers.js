@@ -7,28 +7,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const Client = require('../models/Client');
 const { connectDB } = require('../config/db');
-
-const users = [
-  {
-    email: 'admin@interworks.com',
-    passwordHash: 'admin123', // Will be hashed by User model pre-save hook
-    name: 'Admin User',
-    role: 'interworks',
-  },
-  {
-    email: 'consultant@interworks.com',
-    passwordHash: 'consultant123',
-    name: 'Test Consultant',
-    role: 'interworks',
-  },
-  {
-    email: 'client@example.com',
-    passwordHash: 'client123',
-    name: 'Test Client',
-    role: 'client',
-  },
-];
 
 async function seedUsers() {
   try {
@@ -37,21 +17,54 @@ async function seedUsers() {
 
     console.log('Seeding users...');
 
-    // Clear existing users
+    // Clear existing users and clients
     await User.deleteMany({});
-    console.log('Cleared existing users');
+    await Client.deleteMany({});
+    console.log('Cleared existing users and clients');
 
-    // Create users
-    for (const userData of users) {
+    // Create InterWorks users (no client required)
+    const interworksUsers = [
+      {
+        email: 'admin@interworks.com',
+        passwordHash: 'admin123', // Will be hashed by User model pre-save hook
+        name: 'Admin User',
+        role: 'interworks',
+      },
+      {
+        email: 'consultant@interworks.com',
+        passwordHash: 'consultant123',
+        name: 'Test Consultant',
+        role: 'interworks',
+      },
+    ];
+
+    for (const userData of interworksUsers) {
       const user = await User.create(userData);
       console.log(`✓ Created user: ${user.email} (${user.role})`);
     }
+
+    // Create a test client company
+    const testClient = await Client.create({
+      name: 'Acme Corporation',
+      email: 'contact@acme.com',
+    });
+    console.log(`✓ Created client: ${testClient.name}`);
+
+    // Create guest user associated with the client
+    const guestUser = await User.create({
+      email: 'guest@acme.com',
+      passwordHash: 'guest123',
+      name: 'Guest User',
+      role: 'guest',
+      clientIds: [testClient._id],
+    });
+    console.log(`✓ Created user: ${guestUser.email} (${guestUser.role})`);
 
     console.log('\nSeed completed successfully!');
     console.log('\nTest Credentials:');
     console.log('  Admin:      admin@interworks.com / admin123');
     console.log('  Consultant: consultant@interworks.com / consultant123');
-    console.log('  Client:     client@example.com / client123');
+    console.log('  Guest:      guest@acme.com / guest123');
 
     process.exit(0);
   } catch (error) {

@@ -16,6 +16,7 @@ export const QuestionSection = ({
   section,
   questions = [],
   onQuestionChange,
+  onQuestionBlur,
   isCollapsed = false,
   onToggle,
   className,
@@ -53,7 +54,11 @@ export const QuestionSection = ({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {questions.map((question) => (
                   <div key={question._id} className="p-4 rounded-lg border bg-card">
-                    <QuestionItem question={question} onChange={onQuestionChange} />
+                    <QuestionItem
+                      question={question}
+                      onChange={onQuestionChange}
+                      onBlur={onQuestionBlur}
+                    />
                   </div>
                 ))}
               </div>

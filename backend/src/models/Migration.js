@@ -21,7 +21,7 @@ const questionSchema = new mongoose.Schema({
   },
   questionType: {
     type: String,
-    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo'],
+    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo', 'numberInput'],
     default: 'checkbox',
   },
   options: [String], // For dropdown and yesNo types
@@ -51,6 +51,10 @@ const questionSchema = new mongoose.Schema({
     conditionalText: String,
     conditionalDate: Date,
     infoTooltip: String,
+    dependsOn: String,
+    skuLimits: mongoose.Schema.Types.Mixed,
+    min: Number,
+    max: Number,
   },
 });
 

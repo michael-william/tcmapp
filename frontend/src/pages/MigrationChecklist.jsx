@@ -4,7 +4,7 @@
  * Main checklist page with all questions, search, and export.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MigrationLayout } from '@/components/templates/MigrationLayout';
 import { ClientInfoSection } from '@/components/organisms/ClientInfoSection';
@@ -14,6 +14,8 @@ import { SearchFilter } from '@/components/molecules/SearchFilter';
 import { QuestionManagementModal } from '@/components/organisms/QuestionManagementModal';
 import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
+import { SiteLimitWarningModal } from '@/components/organisms/SiteLimitWarningModal';
+import { SkuRequiredModal } from '@/components/organisms/SkuRequiredModal';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
@@ -55,6 +57,16 @@ export const MigrationChecklist = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
+  // Site limit validation state
+  const [siteLimitWarning, setSiteLimitWarning] = useState({
+    isOpen: false,
+    skuType: '',
+    maxSites: 0,
+    enteredValue: 0,
+    questionId: null,
+  });
+  const [skuRequiredModal, setSkuRequiredModal] = useState(false);
 
   // Show error toast when save fails
   useEffect(() => {
@@ -183,10 +195,55 @@ export const MigrationChecklist = () => {
     return { completed: completedCount, total: totalCount, percentage: pct };
   }, [migration]);
 
+  // Validate site limits for Q34
+  const validateSitesLimit = useCallback((questionId) => {
+    const question = migration?.questions?.find((q) => q._id === questionId);
+    if (!question || question.order !== 34) return; // Only validate Q34
+
+    const q33 = migration?.questions?.find((q) => q.order === 33); // SKU type
+    const skuType = q33?.answer;
+
+    // Check if SKU is selected
+    if (!skuType || skuType === '') {
+      setSkuRequiredModal(true);
+      // Clear the sites value
+      updateQuestion(questionId, { answer: null, completed: false });
+      return;
+    }
+
+    // Get limits from metadata
+    const skuLimits = question.metadata?.skuLimits || {
+      'Standard': 3,
+      'Enterprise': 10,
+      'Tableau +': 50,
+    };
+
+    const maxSites = skuLimits[skuType];
+    const enteredValue = question.answer;
+
+    // Validate against limit
+    if (enteredValue && enteredValue > maxSites) {
+      setSiteLimitWarning({
+        isOpen: true,
+        skuType,
+        maxSites,
+        enteredValue,
+        questionId,
+      });
+      // Reset to max allowed
+      updateQuestion(questionId, { answer: maxSites, completed: true });
+    }
+  }, [migration, updateQuestion]);
+
   // Handle question change
   const handleQuestionChange = (questionId, updates) => {
     updateQuestion(questionId, updates);
   };
+
+  // Handle question blur (for validation)
+  const handleQuestionBlur = useCallback((questionId) => {
+    validateSitesLimit(questionId);
+  }, [validateSitesLimit]);
 
   // Handle client info change
   const handleClientInfoChange = (field, value) => {
@@ -469,6 +526,7 @@ export const MigrationChecklist = () => {
                 section={section}
                 questions={questions}
                 onQuestionChange={handleQuestionChange}
+                onQuestionBlur={handleQuestionBlur}
                 isCollapsed={collapsedSections[section]}
                 onToggle={() => toggleSection(section)}
               />
@@ -497,6 +555,21 @@ export const MigrationChecklist = () => {
         onDiscard={handleDiscardChanges}
         onSave={handleSaveAndNavigate}
         saving={isNavigating}
+      />
+
+      {/* Site Limit Warning Modal */}
+      <SiteLimitWarningModal
+        isOpen={siteLimitWarning.isOpen}
+        onClose={() => setSiteLimitWarning({ ...siteLimitWarning, isOpen: false })}
+        skuType={siteLimitWarning.skuType}
+        maxSites={siteLimitWarning.maxSites}
+        enteredValue={siteLimitWarning.enteredValue}
+      />
+
+      {/* SKU Required Modal */}
+      <SkuRequiredModal
+        isOpen={skuRequiredModal}
+        onClose={() => setSkuRequiredModal(false)}
       />
     </MigrationLayout>
   );
