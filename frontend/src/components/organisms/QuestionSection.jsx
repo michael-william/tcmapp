@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { ChevronDown } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/Card';
 import { SectionBadge } from '@/components/atoms/SectionBadge';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/Collapsible';
 import { QuestionItem } from './QuestionItem';
@@ -24,36 +24,43 @@ export const QuestionSection = ({
   const totalCount = questions.length;
 
   return (
-    <Card className={cn('animate-fadeIn', className)}>
+    <div className={cn('animate-fadeIn', className)}>
       <Collapsible open={!isCollapsed} onOpenChange={onToggle}>
-        <CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
-          <CollapsibleTrigger className="w-full">
+        <CollapsibleTrigger asChild>
+          <div className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white px-[18px] py-3 rounded-t-lg cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg mb-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {isCollapsed ? (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                )}
-                <h3 className="text-xl font-semibold">{section}</h3>
-                <SectionBadge completed={completedCount} total={totalCount} />
+              <div className="flex items-center gap-3">
+                <ChevronDown
+                  className={cn(
+                    "h-5 w-5 text-white transition-transform duration-300",
+                    isCollapsed && "rotate-[-90deg]"
+                  )}
+                />
+                <h3 className="text-lg font-semibold">{section}</h3>
               </div>
+              <SectionBadge
+                variant="whiteTransparent"
+                completed={completedCount}
+                total={totalCount}
+              />
             </div>
-          </CollapsibleTrigger>
-        </CardHeader>
+          </div>
+        </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {questions.map((question) => (
-                <div key={question._id} className="p-4 rounded-lg border bg-card">
-                  <QuestionItem question={question} onChange={onQuestionChange} />
-                </div>
-              ))}
-            </div>
-          </CardContent>
+          <Card className="rounded-t-none border-t-0 shadow-sm">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {questions.map((question) => (
+                  <div key={question._id} className="p-4 rounded-lg border bg-card">
+                    <QuestionItem question={question} onChange={onQuestionChange} />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </CollapsibleContent>
       </Collapsible>
-    </Card>
+    </div>
   );
 };

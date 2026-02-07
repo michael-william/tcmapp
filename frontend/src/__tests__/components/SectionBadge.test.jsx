@@ -46,4 +46,27 @@ describe('SectionBadge Component', () => {
     const badge = screen.getByText('1/5');
     expect(badge).toHaveClass('font-mono');
   });
+
+  it('renders whiteTransparent variant with correct styling', () => {
+    render(<SectionBadge completed={8} total={12} variant="whiteTransparent" />);
+    const badge = screen.getByText('8/12');
+    expect(badge).toHaveClass('bg-white/30');
+    expect(badge).toHaveClass('text-white');
+    expect(badge).toHaveClass('font-semibold');
+    expect(badge).toHaveClass('rounded-xl');
+  });
+
+  it('whiteTransparent variant does not apply complete styling', () => {
+    render(<SectionBadge completed={10} total={10} variant="whiteTransparent" />);
+    const badge = screen.getByText('10/10');
+    expect(badge).toHaveClass('bg-white/30');
+    expect(badge).not.toHaveClass('bg-green-600');
+  });
+
+  it('applies custom className with whiteTransparent variant', () => {
+    render(<SectionBadge completed={5} total={10} variant="whiteTransparent" className="custom-class" />);
+    const badge = screen.getByText('5/10');
+    expect(badge).toHaveClass('custom-class');
+    expect(badge).toHaveClass('bg-white/30');
+  });
 });

@@ -41,22 +41,28 @@ describe('QuestionSection Component', () => {
     expect(screen.getByText('Question 2')).toBeInTheDocument();
   });
 
-  it('shows expanded icon when not collapsed', () => {
+  it('shows chevron without rotation when expanded', () => {
     const { container } = render(
       <QuestionSection section="Security" questions={mockQuestions} isCollapsed={false} />
     );
-    // ChevronDown should be present
-    const chevronDown = container.querySelector('svg');
-    expect(chevronDown).toBeInTheDocument();
+    // ChevronDown should be present without rotation
+    const chevron = container.querySelector('svg');
+    expect(chevron).toBeInTheDocument();
+    // The svg itself should not have the rotation class when expanded
+    const classList = chevron.getAttribute('class') || '';
+    expect(classList).not.toContain('rotate-[-90deg]');
   });
 
-  it('shows collapsed icon when collapsed', () => {
+  it('shows rotated chevron when collapsed', () => {
     const { container } = render(
       <QuestionSection section="Security" questions={mockQuestions} isCollapsed={true} />
     );
-    // ChevronRight should be present
-    const chevronRight = container.querySelector('svg');
-    expect(chevronRight).toBeInTheDocument();
+    // ChevronDown should be present with rotation
+    const chevron = container.querySelector('svg');
+    expect(chevron).toBeInTheDocument();
+    // The svg should have the rotation class when collapsed
+    const classList = chevron.getAttribute('class') || '';
+    expect(classList).toContain('rotate-[-90deg]');
   });
 
   it('calls onToggle when header is clicked', async () => {
@@ -103,8 +109,28 @@ describe('QuestionSection Component', () => {
     const { container } = render(
       <QuestionSection section="Security" questions={[]} className="custom-class" />
     );
-    const card = container.querySelector('.custom-class');
-    expect(card).toBeInTheDocument();
+    const wrapper = container.querySelector('.custom-class');
+    expect(wrapper).toBeInTheDocument();
+  });
+
+  it('renders with gradient header styling', () => {
+    const { container } = render(
+      <QuestionSection section="Security" questions={mockQuestions} />
+    );
+    // Check for gradient classes
+    const gradientHeader = container.querySelector('.from-\\[\\#667eea\\]');
+    expect(gradientHeader).toBeInTheDocument();
+    expect(gradientHeader).toHaveClass('to-[#764ba2]');
+    expect(gradientHeader).toHaveClass('text-white');
+  });
+
+  it('uses whiteTransparent variant for progress badge', () => {
+    render(<QuestionSection section="Security" questions={mockQuestions} />);
+    const badge = screen.getByText('1/2');
+    expect(badge).toBeInTheDocument();
+    // Badge should have the white transparent styling
+    expect(badge).toHaveClass('bg-white/30');
+    expect(badge).toHaveClass('text-white');
   });
 
   it('calculates completed count correctly', () => {
