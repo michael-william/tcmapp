@@ -1,9 +1,9 @@
 # Stage 1: Build
 FROM node:18-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
-COPY . .
+COPY frontend/ .
 
 # Railway provides variables at build time. We must declare them here:
 ARG VITE_API_URL
@@ -27,7 +27,7 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy the nginx config (no envsubst needed)
-COPY nginx.conf.template /etc/nginx/conf.d/default.conf
+COPY frontend/nginx.conf.template /etc/nginx/conf.d/default.conf
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
