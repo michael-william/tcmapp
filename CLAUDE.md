@@ -64,7 +64,8 @@ TCMApp/
 │   ├── package.json
 │   └── CLAUDE.md             # Frontend-specific docs
 │
-├── docker-compose.yml         # Container orchestration
+├── docker-compose.yml         # Container orchestration (base config)
+├── docker-compose.dev.yml    # Dev environment overrides (dev branch only)
 ├── .env.example              # Environment variables template
 ├── CLAUDE.md                 # This file
 ├── README.md                 # Project overview and status
@@ -75,16 +76,39 @@ TCMApp/
 
 ### Development
 
-**Using Docker Compose (Recommended):**
+**Using Docker Compose - Development Environment (dev branch):**
 ```bash
-# Start all services (MongoDB, Backend, Frontend)
+# Switch to dev branch and start with dev configuration
+git checkout dev
+docker-compose down
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Access:
+# Frontend: http://localhost:5173
+# Backend API: http://localhost:3000/api
+# MongoDB: mongodb://localhost:27017
+# Database: tableau-migrations-dev (isolated from production)
+```
+
+**Using Docker Compose - Production Environment (main branch):**
+```bash
+# Switch to main branch and start with production configuration
+git checkout main
+docker-compose down
 docker-compose up --build
 
 # Access:
 # Frontend: http://localhost:5173
 # Backend API: http://localhost:3000/api
 # MongoDB: mongodb://localhost:27017
+# Database: tableau-migrations (production data)
 ```
+
+**Environment Isolation:**
+- **Dev branch**: Uses `tableau-migrations-dev` database with `mongodb_data_dev` volume
+- **Main branch**: Uses `tableau-migrations` database with `mongodb_data` volume
+- Complete data isolation - switching branches switches databases automatically
+- Railway deployment uses main branch only and its own managed MongoDB
 
 **Local Development (Without Docker):**
 
