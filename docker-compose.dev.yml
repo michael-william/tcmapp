@@ -1,0 +1,34 @@
+# Docker Compose override file for development environment
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# This file provides:
+# - Separate development database (tableau-migrations-dev)
+# - Isolated Docker volume (mongodb_data_dev)
+# - Development-specific environment variables
+#
+# IMPORTANT: This file should only exist on the dev branch.
+# Never merge to main to keep Railway deployment unaffected.
+
+services:
+  mongodb:
+    environment:
+      - MONGO_INITDB_DATABASE=tableau-migrations-dev
+    volumes:
+      - mongodb_data_dev:/data/db
+
+  backend:
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/tableau-migrations-dev
+      - JWT_SECRET=dev-jwt-secret-change-in-production
+      - JWT_EXPIRES_IN=7d
+      - FRONTEND_URL=http://localhost:5173
+
+  frontend:
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+
+volumes:
+  mongodb_data_dev:
+    driver: local

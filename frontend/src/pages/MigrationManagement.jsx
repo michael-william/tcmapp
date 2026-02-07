@@ -45,12 +45,9 @@ export const MigrationManagement = () => {
           Dashboard
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Migration Management
+          <h1 className="text-2xl font-bold text-primary">
+            {management?.clientInfo?.clientName || 'Migration Management'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {management?.clientInfo?.clientName || 'Loading...'}
-          </p>
         </div>
       </div>
       <Button

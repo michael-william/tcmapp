@@ -89,7 +89,7 @@ export const ClientSelector = ({
         </Label>
       )}
       <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger>
+        <SelectTrigger variant="primary">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

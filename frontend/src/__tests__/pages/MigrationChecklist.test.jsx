@@ -61,7 +61,7 @@ describe('MigrationChecklist Page', () => {
     renderChecklist();
 
     await waitFor(() => {
-      expect(screen.getByText('Overall Progress')).toBeInTheDocument();
+      expect(screen.getByText('Pre-requisite Progress')).toBeInTheDocument();
     });
   });
 

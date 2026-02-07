@@ -11,7 +11,7 @@ export const AuthLayout = ({ children, className }) => {
   return (
     <div
       className={cn(
-        'min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-primary-light/5 to-primary-dark/10 p-4',
+        'min-h-screen flex items-center justify-center p-4',
         className
       )}
     >

@@ -25,7 +25,7 @@ export const MigrationLayout = ({
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary-light/5">
+    <div className="min-h-screen">
       <Header
         userName={user?.name || 'User'}
         role={user?.role || 'client'}
@@ -51,7 +51,9 @@ export const MigrationLayout = ({
       )}
 
       <main className={cn('container mx-auto px-4 py-8', className)}>
-        {children}
+        <div className="glass-container bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl">
+          {children}
+        </div>
       </main>
     </div>
   );

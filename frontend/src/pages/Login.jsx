@@ -52,7 +52,7 @@ export const Login = () => {
 
   return (
     <AuthLayout>
-      <Card className="animate-fadeIn">
+      <Card className="animate-fadeIn bg-white/10 backdrop-blur-md border-white/20 shadow-xl">
         <CardHeader>
           <CardTitle className="text-center">Sign In</CardTitle>
         </CardHeader>

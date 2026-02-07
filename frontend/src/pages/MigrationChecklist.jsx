@@ -327,7 +327,7 @@ export const MigrationChecklist = () => {
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-primary">
             {migration.clientInfo?.clientName || 'Migration Checklist'}
           </h1>
           <SaveStatus
@@ -346,6 +346,7 @@ export const MigrationChecklist = () => {
           selectedStatus={selectedStatus}
           onStatusChange={setSelectedStatus}
           sections={sections}
+          size="sm"
         />
       </div>
 

@@ -66,6 +66,85 @@ npm install
 npm run dev           # Starts on port 5173
 ```
 
+## 🔄 Environment Workflows
+
+This project uses separate Git branches for development and production environments with isolated databases.
+
+### Development Environment (dev branch)
+
+**Switch to development:**
+```bash
+git checkout dev
+docker-compose down  # Stop any running containers
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+**Access:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000/api
+- Database: `tableau-migrations-dev` (isolated volume)
+
+**Use for:**
+- Testing new features
+- Schema changes
+- Creating test data
+- Experimenting without affecting production data
+
+### Production Environment (main branch)
+
+**Switch to production:**
+```bash
+git checkout main
+docker-compose down  # Stop any running containers
+docker-compose up --build
+```
+
+**Access:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000/api
+- Database: `tableau-migrations` (production volume)
+
+**Use for:**
+- Final testing before deployment
+- Production-like local environment
+- Validating releases
+
+### Database Isolation
+
+Each environment has its own database and Docker volume:
+
+| Environment | Branch | Database Name | Docker Volume |
+|------------|--------|---------------|---------------|
+| Development | `dev` | `tableau-migrations-dev` | `mongodb_data_dev` |
+| Production | `main` | `tableau-migrations` | `mongodb_data` |
+
+**Benefits:**
+- ✅ Complete data isolation between environments
+- ✅ Safe testing without affecting production data
+- ✅ Easy environment switching with Git branches
+- ✅ Railway deployment unaffected (uses main branch only)
+
+### Railway Deployment
+
+**Important:** Railway auto-deploys from the `main` branch only.
+
+- Railway uses its own managed MongoDB instance (not local Docker)
+- `docker-compose.dev.yml` exists only on `dev` branch and never gets deployed
+- Main branch `docker-compose.yml` remains unchanged and Railway-compatible
+- Push to `main` triggers automatic Railway deployment
+
+**Workflow for deploying features:**
+```bash
+# 1. Develop on dev branch
+git checkout dev
+# ... make changes, test locally ...
+
+# 2. Merge to main when ready
+git checkout main
+git merge dev
+git push origin main  # Railway auto-deploys
+```
+
 ## 📚 Documentation
 
 - **[Root CLAUDE.md](./CLAUDE.md)** - Project overview, architecture, and how to run
