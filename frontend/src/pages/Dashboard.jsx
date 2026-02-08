@@ -154,12 +154,7 @@ export const Dashboard = () => {
 
   // View migration
   const handleViewMigration = (migrationId) => {
-    navigate(`/migration/${migrationId}`);
-  };
-
-  // View management
-  const handleViewManagement = (migrationId) => {
-    navigate(`/migration/${migrationId}/management`);
+    navigate(`/migration/${migrationId}/overview`);
   };
 
   if (loading) {
@@ -233,7 +228,6 @@ export const Dashboard = () => {
                 key={migration._id}
                 migration={migration}
                 onView={() => handleViewMigration(migration._id)}
-                onViewManagement={() => handleViewManagement(migration._id)}
                 onDelete={() => handleDeleteMigration(migration._id)}
                 isInterWorks={isInterWorks}
               />

@@ -12,6 +12,7 @@ import { Toaster } from './components/ui/Toast';
 import { TooltipProvider } from './components/ui/Tooltip';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { MigrationOverview } from './pages/MigrationOverview';
 import { MigrationChecklist } from './pages/MigrationChecklist';
 import { MigrationManagement } from './pages/MigrationManagement';
 import { UserManagement } from './pages/UserManagement';
@@ -32,6 +33,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/migration/:id/overview"
+              element={
+                <ProtectedRoute>
+                  <MigrationOverview />
                 </ProtectedRoute>
               }
             />
