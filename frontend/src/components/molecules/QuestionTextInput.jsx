@@ -15,9 +15,11 @@ export const QuestionTextInput = ({
   value = '',
   onChange,
   onBlur,
+  disabled = false,
   className,
 }) => {
   const handleChange = (e) => {
+    if (disabled) return;
     onChange?.(e.target.value);
   };
 
@@ -36,7 +38,8 @@ export const QuestionTextInput = ({
         onBlur={onBlur}
         placeholder="Enter your answer..."
         rows={3}
-        className="resize-none"
+        className={cn('resize-none', disabled && 'cursor-not-allowed')}
+        disabled={disabled}
       />
     </div>
   );

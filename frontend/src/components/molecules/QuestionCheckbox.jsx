@@ -15,9 +15,11 @@ export const QuestionCheckbox = ({
   checked = false,
   onCheckedChange,
   timestamp,
+  disabled = false,
   className,
 }) => {
   const handleChange = (newChecked) => {
+    if (disabled) return;
     onCheckedChange?.(newChecked);
   };
 
@@ -27,19 +29,23 @@ export const QuestionCheckbox = ({
         id={question._id}
         checked={checked}
         onCheckedChange={handleChange}
-        className="mt-1"
+        disabled={disabled}
+        className={cn('mt-1', disabled && 'cursor-not-allowed')}
       />
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <Label
             htmlFor={question._id}
-            className="text-base font-normal cursor-pointer"
+            className={cn(
+              'text-base font-normal',
+              disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+            )}
           >
             {question.questionText}
           </Label>
           {question.helpText && <InfoTooltip content={question.helpText} />}
         </div>
-        {checked && timestamp && (
+        {checked && timestamp && !disabled && (
           <p className="text-xs text-muted-foreground mt-1">
             Completed: {new Date(timestamp).toLocaleDateString()}
           </p>

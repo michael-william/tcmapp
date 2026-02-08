@@ -11,15 +11,20 @@ import { QuestionDateInput } from '@/components/molecules/QuestionDateInput';
 import { QuestionDropdown } from '@/components/molecules/QuestionDropdown';
 import { QuestionYesNo } from '@/components/molecules/QuestionYesNo';
 import { QuestionNumberInput } from '@/components/molecules/QuestionNumberInput';
+import { cn } from '@/lib/utils';
 
 export const QuestionItem = ({ question, onChange, onBlur }) => {
   if (!question) return null;
 
+  const isDisabled = !!question.metadata?.disabledBy;
+
   const handleChange = (value) => {
+    if (isDisabled) return; // Prevent changes
     onChange?.(question._id, { answer: value, completed: !!value });
   };
 
   const handleCheckboxChange = (checked) => {
+    if (isDisabled) return; // Prevent changes
     onChange?.(question._id, {
       completed: checked,
       completedAt: checked ? new Date().toISOString() : null,
@@ -27,36 +32,61 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
   };
 
   const handleConditionalChange = (field, value) => {
+    if (isDisabled) return; // Prevent changes
     onChange?.(question._id, { [field]: value });
   };
 
   switch (question.questionType) {
     case 'checkbox':
       return (
-        <QuestionCheckbox
-          question={question}
-          checked={question.completed || false}
-          onCheckedChange={handleCheckboxChange}
-          timestamp={question.completedAt}
-        />
+        <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
+          <QuestionCheckbox
+            question={question}
+            checked={question.completed || false}
+            onCheckedChange={handleCheckboxChange}
+            timestamp={question.completedAt}
+            disabled={isDisabled}
+          />
+          {isDisabled && (
+            <p className="text-xs text-muted-foreground mt-1 ml-9">
+              Not applicable - Bridge is not required
+            </p>
+          )}
+        </div>
       );
 
     case 'textInput':
       return (
-        <QuestionTextInput
-          question={question}
-          value={question.answer || ''}
-          onChange={handleChange}
-        />
+        <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
+          <QuestionTextInput
+            question={question}
+            value={question.answer || ''}
+            onChange={handleChange}
+            disabled={isDisabled}
+          />
+          {isDisabled && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Not applicable - Bridge is not required
+            </p>
+          )}
+        </div>
       );
 
     case 'dateInput':
       return (
-        <QuestionDateInput
-          question={question}
-          value={question.answer || ''}
-          onChange={handleChange}
-        />
+        <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
+          <QuestionDateInput
+            question={question}
+            value={question.answer || ''}
+            onChange={handleChange}
+            disabled={isDisabled}
+          />
+          {isDisabled && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Not applicable - Bridge is not required
+            </p>
+          )}
+        </div>
       );
 
     case 'dropdown':
@@ -83,18 +113,26 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
 
     case 'yesNo':
       return (
-        <QuestionYesNo
-          question={question}
-          value={question.answer || ''}
-          onChange={handleChange}
-          options={question.options || ['Yes', 'No']}
-          showConditionalDate={question.showConditionalDate}
-          showConditionalInput={question.showConditionalInput}
-          conditionalDateValue={question.conditionalDate || ''}
-          conditionalInputValue={question.conditionalInput || ''}
-          onConditionalDateChange={(value) => handleConditionalChange('conditionalDate', value)}
-          onConditionalInputChange={(value) => handleConditionalChange('conditionalInput', value)}
-        />
+        <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
+          <QuestionYesNo
+            question={question}
+            value={question.answer || ''}
+            onChange={handleChange}
+            options={question.options || ['Yes', 'No']}
+            showConditionalDate={question.showConditionalDate}
+            showConditionalInput={question.showConditionalInput}
+            conditionalDateValue={question.conditionalDate || ''}
+            conditionalInputValue={question.conditionalInput || ''}
+            onConditionalDateChange={(value) => handleConditionalChange('conditionalDate', value)}
+            onConditionalInputChange={(value) => handleConditionalChange('conditionalInput', value)}
+            disabled={isDisabled}
+          />
+          {isDisabled && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Not applicable - Bridge is not required
+            </p>
+          )}
+        </div>
       );
 
     default:

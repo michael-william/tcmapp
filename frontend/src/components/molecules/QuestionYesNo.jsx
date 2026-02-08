@@ -22,9 +22,11 @@ export const QuestionYesNo = ({
   conditionalInputValue = '',
   onConditionalDateChange,
   onConditionalInputChange,
+  disabled = false,
   className,
 }) => {
   const handleValueChange = (newValue) => {
+    if (disabled) return;
     onChange?.(newValue);
   };
 
@@ -35,13 +37,25 @@ export const QuestionYesNo = ({
         {question.helpText && <InfoTooltip content={question.helpText} />}
       </div>
 
-      <RadioGroup value={value} onValueChange={handleValueChange} className="flex gap-4">
+      <RadioGroup
+        value={value}
+        onValueChange={handleValueChange}
+        className="flex gap-4"
+        disabled={disabled}
+      >
         {options.map((option) => (
           <div key={option} className="flex items-center space-x-2">
-            <RadioGroupItem value={option} id={`${question._id}-${option}`} />
+            <RadioGroupItem
+              value={option}
+              id={`${question._id}-${option}`}
+              disabled={disabled}
+            />
             <Label
               htmlFor={`${question._id}-${option}`}
-              className="font-normal cursor-pointer"
+              className={cn(
+                'font-normal',
+                disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+              )}
             >
               {option}
             </Label>
@@ -50,7 +64,7 @@ export const QuestionYesNo = ({
       </RadioGroup>
 
       {/* Conditional date input */}
-      {showConditionalDate && value === options[0] && (
+      {showConditionalDate && value === options[0] && !disabled && (
         <div className="ml-6 mt-2">
           <Label htmlFor={`${question._id}-date`} className="text-sm">
             When?
@@ -61,12 +75,13 @@ export const QuestionYesNo = ({
             value={conditionalDateValue}
             onChange={(e) => onConditionalDateChange?.(e.target.value)}
             className="mt-1 max-w-xs"
+            disabled={disabled}
           />
         </div>
       )}
 
       {/* Conditional text input */}
-      {showConditionalInput && value === options[0] && (
+      {showConditionalInput && value === options[0] && !disabled && (
         <div className="ml-6 mt-2">
           <Label htmlFor={`${question._id}-input`} className="text-sm">
             Please specify:
@@ -78,6 +93,7 @@ export const QuestionYesNo = ({
             onChange={(e) => onConditionalInputChange?.(e.target.value)}
             placeholder="Enter details..."
             className="mt-1"
+            disabled={disabled}
           />
         </div>
       )}

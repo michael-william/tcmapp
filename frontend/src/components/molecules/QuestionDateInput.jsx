@@ -14,9 +14,11 @@ export const QuestionDateInput = ({
   question,
   value = '',
   onChange,
+  disabled = false,
   className,
 }) => {
   const handleChange = (e) => {
+    if (disabled) return;
     onChange?.(e.target.value);
   };
 
@@ -33,7 +35,8 @@ export const QuestionDateInput = ({
         type="date"
         value={value}
         onChange={handleChange}
-        className="max-w-xs"
+        className={cn('max-w-xs', disabled && 'cursor-not-allowed')}
+        disabled={disabled}
       />
     </div>
   );
