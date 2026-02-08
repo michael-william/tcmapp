@@ -41,7 +41,7 @@ describe('Migration Model', () => {
 
       expect(migration.clientId.toString()).toBe(client._id.toString());
       expect(migration.clientInfo.clientName).toBe('Acme Corp');
-      expect(migration.questions).toHaveLength(55); // 55 questions in template
+      expect(migration.questions).toHaveLength(61); // 61 questions in template
       expect(migration.createdBy).toBe('consultant@interworks.com');
       expect(migration.createdAt).toBeDefined();
       expect(migration.updatedAt).toBeDefined();
@@ -341,8 +341,8 @@ describe('Migration Model', () => {
   });
 
   describe('Question Template', () => {
-    it('should have 55 questions in template', () => {
-      expect(questionTemplate).toHaveLength(55);
+    it('should have 61 questions in template', () => {
+      expect(questionTemplate).toHaveLength(61);
     });
 
     it('should have all required fields in each question', () => {

@@ -1,7 +1,7 @@
 /**
  * Question Template
  *
- * Default 54 questions for Tableau Cloud migration projects.
+ * Default 61 questions for Tableau Cloud migration projects.
  * Sourced from tableau-migration-checklist-pro.html
  */
 
@@ -617,4 +617,85 @@ const questionTemplate = [
   },
 ];
 
-module.exports = questionTemplate;
+// Define the new section notes questions
+const notesQuestions = {
+  communications: {
+    id: 'q56',
+    section: 'Communications',
+    questionText: 'Additional notes for Communications',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 8,
+    metadata: {},
+  },
+  accessConnectivity: {
+    id: 'q57',
+    section: 'Access & Connectivity',
+    questionText: 'Additional notes for Access & Connectivity',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 17,
+    metadata: {},
+  },
+  tableauServer: {
+    id: 'q58',
+    section: 'Tableau Server',
+    questionText: 'Additional notes for Tableau Server',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 25,
+    metadata: {},
+  },
+  preFlightChecks: {
+    id: 'q59',
+    section: 'Pre Flight Checks',
+    questionText: 'Additional notes for Pre Flight Checks',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 32,
+    metadata: {},
+  },
+  tableauBridge: {
+    id: 'q60',
+    section: 'Tableau Bridge',
+    questionText: 'Additional notes for Tableau Bridge',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 53,
+    metadata: {},
+  },
+  cloudDataSources: {
+    id: 'q61',
+    section: 'Cloud Data Sources',
+    questionText: 'Additional notes for Cloud Data Sources',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 61,
+    metadata: {},
+  },
+};
+
+// Insert questions in reverse order to avoid index shifts
+let updatedQuestions = [...questionTemplate];
+
+// Insert from LAST to FIRST
+updatedQuestions.splice(55, 0, notesQuestions.cloudDataSources);  // After q55 (index 54)
+updatedQuestions.splice(52, 0, notesQuestions.tableauBridge);     // After q52 (index 51)
+updatedQuestions.splice(31, 0, notesQuestions.preFlightChecks);   // After q31 (index 30)
+updatedQuestions.splice(24, 0, notesQuestions.tableauServer);     // After q24 (index 23)
+updatedQuestions.splice(16, 0, notesQuestions.accessConnectivity); // After q16 (index 15)
+updatedQuestions.splice(7, 0, notesQuestions.communications);      // After q7 (index 6)
+
+// Renumber all order fields sequentially (1-61)
+updatedQuestions = updatedQuestions.map((question, index) => ({
+  ...question,
+  order: index + 1,
+}));
+
+module.exports = updatedQuestions;

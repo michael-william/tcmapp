@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMigration } from '@/hooks/useMigration';
 import { toast } from '@/components/ui/Toast';
 import api from '@/lib/api';
+import { generateMigrationPDF } from '@/lib/pdfExport';
 import { Loader2, Settings, ArrowLeft, Save, Plus, BarChart3 } from 'lucide-react';
 
 export const MigrationChecklist = () => {
@@ -260,9 +261,15 @@ export const MigrationChecklist = () => {
 
   // Export to PDF
   const handleExport = async () => {
-    // TODO: Implement PDF export with jsPDF
-    console.log('Exporting migration:', migration);
-    alert('PDF export will be implemented with jsPDF');
+    try {
+      await generateMigrationPDF(migration);
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      toast.error('Failed to export PDF', {
+        description: error.message || 'An error occurred during export'
+      });
+    }
   };
 
   // Add new question
@@ -444,7 +451,7 @@ export const MigrationChecklist = () => {
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                Create Migration Management
+                Create Management
               </>
             )}
           </Button>
@@ -470,7 +477,7 @@ export const MigrationChecklist = () => {
             className="gap-2"
           >
             <Settings className="h-4 w-4" />
-            Manage Questions
+            Add Topics
           </Button>
         )}
       </div>
