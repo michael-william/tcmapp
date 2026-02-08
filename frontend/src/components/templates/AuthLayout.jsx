@@ -21,7 +21,7 @@ export const AuthLayout = ({ children, className }) => {
           <div className="inline-flex h-16 w-16 rounded-xl bg-gradient-to-r from-primary to-primary-dark items-center justify-center mb-4">
             <span className="text-white font-bold text-3xl">T</span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Tableau Migration
           </h1>
           <p className="text-muted-foreground">Cloud Migration Checklist</p>
