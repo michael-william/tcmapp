@@ -30,7 +30,7 @@ export const SelectTrigger = React.forwardRef(
           'transition-colors',
           isPrimary
             ? 'bg-primary hover:bg-primary-dark text-primary-foreground border-primary'
-            : 'border border-input bg-background ring-offset-background placeholder:text-muted-foreground',
+            : 'border border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground',
           className
         )}
         {...props}
