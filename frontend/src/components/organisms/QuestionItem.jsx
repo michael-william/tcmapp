@@ -10,8 +10,9 @@ import { QuestionTextInput } from '@/components/molecules/QuestionTextInput';
 import { QuestionDateInput } from '@/components/molecules/QuestionDateInput';
 import { QuestionDropdown } from '@/components/molecules/QuestionDropdown';
 import { QuestionYesNo } from '@/components/molecules/QuestionYesNo';
+import { QuestionNumberInput } from '@/components/molecules/QuestionNumberInput';
 
-export const QuestionItem = ({ question, onChange }) => {
+export const QuestionItem = ({ question, onChange, onBlur }) => {
   if (!question) return null;
 
   const handleChange = (value) => {
@@ -65,6 +66,18 @@ export const QuestionItem = ({ question, onChange }) => {
           options={question.options || []}
           value={question.answer || ''}
           onChange={handleChange}
+        />
+      );
+
+    case 'numberInput':
+      return (
+        <QuestionNumberInput
+          question={question}
+          value={question.answer || 1}
+          onChange={handleChange}
+          onBlur={() => onBlur?.(question._id)}
+          min={question.metadata?.min || 1}
+          max={question.metadata?.max}
         />
       );
 

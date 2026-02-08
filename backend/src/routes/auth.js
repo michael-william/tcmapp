@@ -29,8 +29,8 @@ router.post(
     body('name').optional().trim(),
     body('role')
       .optional()
-      .isIn(['interworks', 'client'])
-      .withMessage('Role must be either interworks or client'),
+      .isIn(['interworks', 'guest'])
+      .withMessage('Role must be either interworks or guest'),
   ],
   async (req, res) => {
     try {
@@ -59,7 +59,7 @@ router.post(
         email,
         passwordHash: password,
         name,
-        role: role || 'client',
+        role: role || 'guest',
       });
 
       // Generate JWT

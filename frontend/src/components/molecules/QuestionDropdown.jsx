@@ -36,11 +36,13 @@ export const QuestionDropdown = ({
           <SelectValue placeholder="Select an option" />
         </SelectTrigger>
         <SelectContent>
-          {options.map((option, index) => (
-            <SelectItem key={index} value={option}>
-              {option}
-            </SelectItem>
-          ))}
+          {options
+            .filter((option) => option !== '') // Filter out empty strings
+            .map((option, index) => (
+              <SelectItem key={index} value={option}>
+                {option}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </div>

@@ -79,7 +79,7 @@ describe('Migration Routes', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.migration.clientId).toBe(client._id.toString());
-      expect(response.body.migration.questions).toHaveLength(55);
+      expect(response.body.migration.questions).toHaveLength(61);
       expect(response.body.migration.createdBy).toBe('consultant@interworks.com');
     });
 
