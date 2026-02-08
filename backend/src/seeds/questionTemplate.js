@@ -523,7 +523,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 46,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q47',
@@ -533,7 +533,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 47,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q48',
@@ -543,7 +543,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 48,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q49',
@@ -553,7 +553,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 49,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q50',
@@ -563,7 +563,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 50,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q51',
@@ -573,7 +573,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 51,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q52',
@@ -583,7 +583,7 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 52,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   {
     id: 'q53',
@@ -667,7 +667,7 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 53,
-    metadata: {},
+    metadata: { dependsOn: 'q45' },
   },
   cloudDataSources: {
     id: 'q61',

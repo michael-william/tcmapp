@@ -95,6 +95,16 @@ function formatTimestamp(timestamp) {
  * @returns {string} - Formatted answer
  */
 function formatAnswer(question) {
+  // Check if question is disabled (N/A state)
+  if (question.metadata?.disabledBy) {
+    return 'N/A';
+  }
+
+  // Handle explicit N/A answers
+  if (question.answer === 'N/A') {
+    return 'N/A';
+  }
+
   if (!question.completed) {
     return 'Not Completed';
   }

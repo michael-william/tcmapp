@@ -16,6 +16,7 @@ import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
 import { SiteLimitWarningModal } from '@/components/organisms/SiteLimitWarningModal';
 import { SkuRequiredModal } from '@/components/organisms/SkuRequiredModal';
+import { BridgeConditionalModal } from '@/components/organisms/BridgeConditionalModal';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
@@ -68,6 +69,13 @@ export const MigrationChecklist = () => {
     questionId: null,
   });
   const [skuRequiredModal, setSkuRequiredModal] = useState(false);
+
+  // Bridge conditional logic state
+  const [bridgeConditionalModal, setBridgeConditionalModal] = useState({
+    isOpen: false,
+    hasExistingAnswers: false,
+    newValue: null,
+  });
 
   // Show error toast when save fails
   useEffect(() => {
@@ -196,6 +204,19 @@ export const MigrationChecklist = () => {
     return { completed: completedCount, total: totalCount, percentage: pct };
   }, [migration]);
 
+  // Helper function to get N/A value based on question type
+  const getNAValue = (questionType) => {
+    switch (questionType) {
+      case 'yesNo':
+      case 'textInput':
+        return 'N/A';
+      case 'dateInput':
+      case 'checkbox':
+      default:
+        return null;
+    }
+  };
+
   // Validate site limits for Q34
   const validateSitesLimit = useCallback((questionId) => {
     const question = migration?.questions?.find((q) => q._id === questionId);
@@ -236,8 +257,84 @@ export const MigrationChecklist = () => {
     }
   }, [migration, updateQuestion]);
 
+  // Handle Bridge conditional logic
+  const handleBridgeConditionalLogic = useCallback((bridgeAnswer, skipModal = false) => {
+    if (!bridgeAnswer) return;
+
+    // Define dependent question IDs (works for all migrations)
+    const dependentQuestionIds = ['q46', 'q47', 'q48', 'q49', 'q50', 'q51', 'q52', 'q60'];
+
+    const dependentQuestions = migration?.questions?.filter(
+      q => dependentQuestionIds.includes(q.id)
+    ) || [];
+
+    if (bridgeAnswer === 'No') {
+      // Check if any dependent questions have answers
+      const hasExistingAnswers = dependentQuestions.some(
+        q => q.answer !== null && q.answer !== '' && q.answer !== 'N/A'
+      );
+
+      if (hasExistingAnswers && !skipModal) {
+        // Show confirmation modal
+        setBridgeConditionalModal({
+          isOpen: true,
+          hasExistingAnswers: true,
+          newValue: 'No',
+        });
+        return;
+      }
+
+      // Disable and set N/A
+      dependentQuestions.forEach(q => {
+        const naValue = getNAValue(q.questionType);
+        updateQuestion(q._id, {
+          answer: naValue,
+          completed: false,
+          metadata: { ...q.metadata, disabledBy: 'q45' },
+        });
+      });
+    } else if (bridgeAnswer === 'Yes') {
+      // Re-enable questions (only if currently disabled by q45)
+      dependentQuestions.forEach(q => {
+        if (q.metadata?.disabledBy === 'q45') {
+          updateQuestion(q._id, {
+            answer: null,
+            completed: false,
+            metadata: { ...q.metadata, disabledBy: null },
+          });
+        }
+      });
+    }
+  }, [migration, updateQuestion]);
+
   // Handle question change
   const handleQuestionChange = (questionId, updates) => {
+    const question = migration?.questions?.find(q => q._id === questionId);
+
+    // Special handling for q45 (Bridge requirement)
+    if (question?.id === 'q45' && updates.answer === 'No') {
+      // Define dependent question IDs
+      const dependentQuestionIds = ['q46', 'q47', 'q48', 'q49', 'q50', 'q51', 'q52', 'q60'];
+
+      const dependentQuestions = migration?.questions?.filter(
+        q => dependentQuestionIds.includes(q.id)
+      ) || [];
+
+      const hasExistingAnswers = dependentQuestions.some(
+        q => q.answer !== null && q.answer !== '' && q.answer !== 'N/A'
+      );
+
+      if (hasExistingAnswers) {
+        // Show modal before updating
+        setBridgeConditionalModal({
+          isOpen: true,
+          hasExistingAnswers: true,
+          newValue: 'No',
+        });
+        return; // Don't update yet
+      }
+    }
+
     updateQuestion(questionId, updates);
   };
 
@@ -245,6 +342,39 @@ export const MigrationChecklist = () => {
   const handleQuestionBlur = useCallback((questionId) => {
     validateSitesLimit(questionId);
   }, [validateSitesLimit]);
+
+  // Get q45 answer value for monitoring
+  const q45Answer = useMemo(() => {
+    return migration?.questions?.find(q => q.id === 'q45')?.answer;
+  }, [migration?.questions]);
+
+  // Monitor q45 changes and apply conditional logic
+  useEffect(() => {
+    if (q45Answer) {
+      handleBridgeConditionalLogic(q45Answer);
+    }
+  }, [q45Answer, handleBridgeConditionalLogic]);
+
+  // Handle Bridge modal confirmation
+  const handleBridgeModalConfirm = () => {
+    const q45 = migration?.questions?.find(q => q.id === 'q45');
+
+    // Update q45 answer
+    updateQuestion(q45._id, {
+      answer: bridgeConditionalModal.newValue,
+      completed: true,
+    });
+
+    // Process conditional logic
+    handleBridgeConditionalLogic(bridgeConditionalModal.newValue, true);
+
+    // Close modal
+    setBridgeConditionalModal({ isOpen: false, hasExistingAnswers: false, newValue: null });
+  };
+
+  const handleBridgeModalCancel = () => {
+    setBridgeConditionalModal({ isOpen: false, hasExistingAnswers: false, newValue: null });
+  };
 
   // Handle client info change
   const handleClientInfoChange = (field, value) => {
@@ -577,6 +707,14 @@ export const MigrationChecklist = () => {
       <SkuRequiredModal
         isOpen={skuRequiredModal}
         onClose={() => setSkuRequiredModal(false)}
+      />
+
+      {/* Bridge Conditional Modal */}
+      <BridgeConditionalModal
+        isOpen={bridgeConditionalModal.isOpen}
+        onClose={handleBridgeModalCancel}
+        onConfirm={handleBridgeModalConfirm}
+        hasExistingAnswers={bridgeConditionalModal.hasExistingAnswers}
       />
     </MigrationLayout>
   );
