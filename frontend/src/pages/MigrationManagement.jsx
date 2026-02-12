@@ -135,10 +135,10 @@ export const MigrationManagement = () => {
     >
       <div className="space-y-6">
         {/* Checklist Overview Section */}
-        <ChecklistOverview
-          clientInfo={management.clientInfo}
-          progress={management.progress}
-        />
+          <ChecklistOverview
+            clientInfo={management.clientInfo}
+            progress={management.progress}
+          />
 
         {/* Weekly Notes Section */}
         <WeeklyNotesSection
