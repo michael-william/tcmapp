@@ -21,6 +21,12 @@ export const MigrationLayout = ({
   onNavigate,
   className,
 
+  // NEW: Management header (for management view)
+  managementHeader,
+
+  // NEW: Action toolbar (for management view, placed outside main content)
+  actionToolbar,
+
   // NEW: Add all the props needed by ProgressSection
   saving,
   lastSaved,
@@ -52,33 +58,46 @@ export const MigrationLayout = ({
         onNavigate={onNavigate}
       />
 
-      <ProgressSection
-        completed={completed}
-        total={total}
-        percentage={percentage}
-        clientName={clientName}
-        guestContacts={guestContacts}
-        interworksContacts={interworksContacts}
-        saving={saving}
-        lastSaved={lastSaved}
-        saveError={saveError}
-        hasUnsavedChanges={hasUnsavedChanges}
-        onRetry={onRetry}
-        selectedSection={selectedSection}
-        onSectionChange={onSectionChange}
-        selectedStatus={selectedStatus}
-        onStatusChange={onStatusChange}
-        sections={sections}
-        isInterWorks={isInterWorks}
-        hasManagement={hasManagement}
-        enablingManagement={enablingManagement}
-        migrationId={migrationId}
-        onSave={onSave}
-        onNavigate={onNavigate}
-        onEnableManagement={onEnableManagement}
-        onViewManagement={onViewManagement}
-        onOpenManagementModal={onOpenManagementModal}
-      />
+      {/* Management Header (Management view only) */}
+      {managementHeader && (
+        <div className="sticky top-[73px] z-30">
+          {managementHeader}
+        </div>
+      )}
+
+      {/* Progress Section (Checklist view only) */}
+      {!managementHeader && (
+        <ProgressSection
+          completed={completed}
+          total={total}
+          percentage={percentage}
+          clientName={clientName}
+          guestContacts={guestContacts}
+          interworksContacts={interworksContacts}
+          saving={saving}
+          lastSaved={lastSaved}
+          saveError={saveError}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onRetry={onRetry}
+          selectedSection={selectedSection}
+          onSectionChange={onSectionChange}
+          selectedStatus={selectedStatus}
+          onStatusChange={onStatusChange}
+          sections={sections}
+          isInterWorks={isInterWorks}
+          hasManagement={hasManagement}
+          enablingManagement={enablingManagement}
+          migrationId={migrationId}
+          onSave={onSave}
+          onNavigate={onNavigate}
+          onEnableManagement={onEnableManagement}
+          onViewManagement={onViewManagement}
+          onOpenManagementModal={onOpenManagementModal}
+        />
+      )}
+
+      {/* Action Toolbar (Management view only, below header) */}
+      {actionToolbar}
 
       <main className={cn('container mx-auto px-4 py-8', className)}>
         <div className="glass-container bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl max-w-[85%] mx-auto">
