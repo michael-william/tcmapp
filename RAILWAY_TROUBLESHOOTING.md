@@ -103,7 +103,7 @@ This appears to be an infrastructure issue with Railway's private networking DNS
 
 **Backend MONGODB_URI:**
 ```
-mongodb://mongo:HWvIaKOWvPJgJgcediNCpBGzsmReHtad@shinkansen.proxy.rlwy.net:58247
+mongodb://mongo:[PASSWORD_REDACTED]@shinkansen.proxy.rlwy.net:58247
 ```
 
 **Connection Method:**
@@ -226,8 +226,8 @@ railway variables --service backend --set VARIABLE_NAME='value'
 ### Working Backend Environment Variables
 
 ```
-MONGODB_URI=mongodb://mongo:HWvIaKOWvPJgJgcediNCpBGzsmReHtad@shinkansen.proxy.rlwy.net:58247
-JWT_SECRET=8a9f3b1e7d2c5a0b4e9f8d7c6b5a43210fedcba9876543210abcdef012345678
+MONGODB_URI=mongodb://mongo:[PASSWORD_REDACTED]@shinkansen.proxy.rlwy.net:58247
+JWT_SECRET=[SECRET_REDACTED]
 JWT_EXPIRES_IN=7d
 NODE_ENV=production
 PORT=5000

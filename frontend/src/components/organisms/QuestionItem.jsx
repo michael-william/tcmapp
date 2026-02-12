@@ -151,13 +151,14 @@ export const QuestionItem = ({ question, onChange }) => {
 
     case 'dropdown':
       const hasEmptyOptions = !question.options || question.options.length === 0;
-      const isDynamicDropdown = question.metadata?.dynamicOptions && question.metadata?.dependsOn;
+      const isDynamicDropdown = question.metadata?.dependsOn && question.metadata?.skuLimits;
 
       if (isDynamicDropdown && hasEmptyOptions) {
         // Show disabled state with message
         questionContent = (
           <div className="space-y-1">
             <QuestionDropdown
+              key={`${question._id}-${question.options?.length || 0}`}
               question={question}
               options={[]}
               value=""
@@ -172,6 +173,7 @@ export const QuestionItem = ({ question, onChange }) => {
       } else {
         questionContent = (
           <QuestionDropdown
+            key={`${question._id}-${question.options?.length || 0}`}
             question={question}
             options={question.options || []}
             value={question.answer || ''}
