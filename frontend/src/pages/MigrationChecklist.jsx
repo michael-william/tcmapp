@@ -14,8 +14,6 @@ import { SearchFilter } from '@/components/molecules/SearchFilter';
 import { QuestionManagementModal } from '@/components/organisms/QuestionManagementModal';
 import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
-import { SiteLimitWarningModal } from '@/components/organisms/SiteLimitWarningModal';
-import { SkuRequiredModal } from '@/components/organisms/SkuRequiredModal';
 import { BridgeConditionalModal } from '@/components/organisms/BridgeConditionalModal';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -55,20 +53,40 @@ export const MigrationChecklist = () => {
   const [hasManagement, setHasManagement] = useState(false);
   const [enablingManagement, setEnablingManagement] = useState(false);
 
+  // Enhance questions with dynamic options for Q34
+  const enhancedQuestions = useMemo(() => {
+    if (!migration?.questions) return [];
+
+    return migration.questions.map(q => {
+      // Special handling for Q34 - dynamic options based on Q33
+      if (q.id === 'q34' && q.metadata?.dynamicOptions) {
+        const q33 = migration.questions.find(q2 => q2.id === 'q33');
+        const skuType = q33?.answer;
+
+        if (!skuType || skuType === '') {
+          return { ...q, options: [] };
+        }
+
+        const skuLimits = q.metadata?.skuLimits || {
+          'Standard': 5,
+          'Enterprise': 10,
+          'Tableau +': 50,
+        };
+
+        const maxSites = skuLimits[skuType] || 50;
+        const dynamicOptions = Array.from({ length: maxSites }, (_, i) => (i + 1).toString());
+
+        return { ...q, options: dynamicOptions };
+      }
+
+      return q;
+    });
+  }, [migration]);
+
   // Navigation blocking state
   const [isNavigating, setIsNavigating] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-
-  // Site limit validation state
-  const [siteLimitWarning, setSiteLimitWarning] = useState({
-    isOpen: false,
-    skuType: '',
-    maxSites: 0,
-    enteredValue: 0,
-    questionId: null,
-  });
-  const [skuRequiredModal, setSkuRequiredModal] = useState(false);
 
   // Bridge conditional logic state
   const [bridgeConditionalModal, setBridgeConditionalModal] = useState({
@@ -139,9 +157,9 @@ export const MigrationChecklist = () => {
 
   // Group questions by section
   const questionsBySection = useMemo(() => {
-    if (!migration?.questions) return {};
+    if (!enhancedQuestions || enhancedQuestions.length === 0) return {};
 
-    return migration.questions.reduce((acc, question) => {
+    return enhancedQuestions.reduce((acc, question) => {
       const section = question.section || 'Uncategorized';
       if (!acc[section]) {
         acc[section] = [];
@@ -149,7 +167,7 @@ export const MigrationChecklist = () => {
       acc[section].push(question);
       return acc;
     }, {});
-  }, [migration]);
+  }, [enhancedQuestions]);
 
   // Get unique sections
   const sections = useMemo(() => Object.keys(questionsBySection), [questionsBySection]);
@@ -217,46 +235,6 @@ export const MigrationChecklist = () => {
     }
   };
 
-  // Validate site limits for Q34
-  const validateSitesLimit = useCallback((questionId) => {
-    const question = migration?.questions?.find((q) => q._id === questionId);
-    if (!question || question.order !== 34) return; // Only validate Q34
-
-    const q33 = migration?.questions?.find((q) => q.order === 33); // SKU type
-    const skuType = q33?.answer;
-
-    // Check if SKU is selected
-    if (!skuType || skuType === '') {
-      setSkuRequiredModal(true);
-      // Clear the sites value
-      updateQuestion(questionId, { answer: null, completed: false });
-      return;
-    }
-
-    // Get limits from metadata
-    const skuLimits = question.metadata?.skuLimits || {
-      'Standard': 3,
-      'Enterprise': 10,
-      'Tableau +': 50,
-    };
-
-    const maxSites = skuLimits[skuType];
-    const enteredValue = question.answer;
-
-    // Validate against limit
-    if (enteredValue && enteredValue > maxSites) {
-      setSiteLimitWarning({
-        isOpen: true,
-        skuType,
-        maxSites,
-        enteredValue,
-        questionId,
-      });
-      // Reset to max allowed
-      updateQuestion(questionId, { answer: maxSites, completed: true });
-    }
-  }, [migration, updateQuestion]);
-
   // Handle Bridge conditional logic
   const handleBridgeConditionalLogic = useCallback((bridgeAnswer, skipModal = false) => {
     if (!bridgeAnswer) return;
@@ -311,6 +289,30 @@ export const MigrationChecklist = () => {
   const handleQuestionChange = (questionId, updates) => {
     const question = migration?.questions?.find(q => q._id === questionId);
 
+    // Special handling for q33 (SKU type change)
+    if (question?.id === 'q33') {
+      const q34 = migration?.questions?.find(q => q.id === 'q34');
+      const newSkuType = updates.answer;
+      const currentSites = q34?.answer;
+
+      if (q34 && currentSites && newSkuType) {
+        const skuLimits = q34.metadata?.skuLimits || {
+          'Standard': 5,
+          'Enterprise': 10,
+          'Tableau +': 50,
+        };
+
+        const maxSitesForNewSku = skuLimits[newSkuType];
+
+        if (parseInt(currentSites) > maxSitesForNewSku) {
+          updateQuestion(q34._id, {
+            answer: null,
+            completed: false
+          });
+        }
+      }
+    }
+
     // Special handling for q45 (Bridge requirement)
     if (question?.id === 'q45' && updates.answer === 'No') {
       // Define dependent question IDs
@@ -335,13 +337,23 @@ export const MigrationChecklist = () => {
       }
     }
 
-    updateQuestion(questionId, updates);
-  };
+    // Add tracking fields for answered questions (optimistic update)
+    const enhancedUpdates = { ...updates };
+    const isBeingCleared = updates.completed === false &&
+                          (updates.answer === null || updates.answer === undefined || updates.answer === '');
 
-  // Handle question blur (for validation)
-  const handleQuestionBlur = useCallback((questionId) => {
-    validateSitesLimit(questionId);
-  }, [validateSitesLimit]);
+    if (isBeingCleared) {
+      // Clear tracking when un-answering
+      enhancedUpdates.updatedAt = null;
+      enhancedUpdates.updatedBy = null;
+    } else if (updates.completed || updates.answer !== undefined) {
+      // Set tracking when answering
+      enhancedUpdates.updatedAt = new Date().toISOString();
+      enhancedUpdates.updatedBy = user?.email || null;
+    }
+
+    updateQuestion(questionId, enhancedUpdates);
+  };
 
   // Get q45 answer value for monitoring
   const q45Answer = useMemo(() => {
@@ -512,109 +524,6 @@ export const MigrationChecklist = () => {
     );
   }
 
-  // Page header with navigation and actions
-  const pageHeader = (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => handleNavigation('/')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-primary">
-            {migration.clientInfo?.clientName || 'Migration Checklist'}
-          </h1>
-          <SaveStatus
-            saving={saving}
-            lastSaved={lastSaved}
-            error={saveError}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onRetry={retrySave}
-          />
-        </div>
-      </div>
-      <div className="flex flex-row">
-        <SearchFilter
-          selectedSection={selectedSection}
-          onSectionChange={setSelectedSection}
-          selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
-          sections={sections}
-          size="sm"
-        />
-      </div>
-
-      {/* Save button */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={handleSave}
-          disabled={saving || !hasUnsavedChanges}
-          size="sm"
-          className="gap-2"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
-            </>
-          )}
-        </Button>
-
-        {isInterWorks && !hasManagement && (
-          <Button
-            variant="gradient"
-            size="sm"
-            onClick={handleEnableManagement}
-            disabled={enablingManagement}
-            className="gap-2"
-          >
-            {enablingManagement ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                Create Management
-              </>
-            )}
-          </Button>
-        )}
-
-        {isInterWorks && hasManagement && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewManagement}
-            className="gap-2"
-          >
-            <BarChart3 className="h-4 w-4" />
-            View Management
-          </Button>
-        )}
-
-        {isInterWorks && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsManagementModalOpen(true)}
-            className="gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Add Topics
-          </Button>
-        )}
-      </div>
-      
-    </div>
-  );
-
   return (
     <MigrationLayout
       completed={completed}
@@ -624,10 +533,26 @@ export const MigrationChecklist = () => {
       guestContacts={contacts.guest}
       interworksContacts={contacts.interworks}
       onNavigate={handleNavigation}
-      pageHeader={pageHeader}
+      saving={saving}
+      lastSaved={lastSaved}
+      saveError={saveError}
+      hasUnsavedChanges={hasUnsavedChanges}
+      onRetry={retrySave}
+      selectedSection={selectedSection}
+      onSectionChange={setSelectedSection}
+      selectedStatus={selectedStatus}
+      onStatusChange={setSelectedStatus}
+      sections={sections}
+      isInterWorks={isInterWorks}
+      hasManagement={hasManagement}
+      enablingManagement={enablingManagement}
+      migrationId={id}
+      onSave={handleSave}
+      onEnableManagement={handleEnableManagement}
+      onViewManagement={handleViewManagement}
+      onOpenManagementModal={() => setIsManagementModalOpen(true)}
     >
       <div className="space-y-6">
-
         {/* Client Information */}
         <ClientInfoSection
           clientInfo={migration.clientInfo || {}}
@@ -663,7 +588,6 @@ export const MigrationChecklist = () => {
                 section={section}
                 questions={questions}
                 onQuestionChange={handleQuestionChange}
-                onQuestionBlur={handleQuestionBlur}
                 isCollapsed={collapsedSections[section]}
                 onToggle={() => toggleSection(section)}
               />
@@ -692,21 +616,6 @@ export const MigrationChecklist = () => {
         onDiscard={handleDiscardChanges}
         onSave={handleSaveAndNavigate}
         saving={isNavigating}
-      />
-
-      {/* Site Limit Warning Modal */}
-      <SiteLimitWarningModal
-        isOpen={siteLimitWarning.isOpen}
-        onClose={() => setSiteLimitWarning({ ...siteLimitWarning, isOpen: false })}
-        skuType={siteLimitWarning.skuType}
-        maxSites={siteLimitWarning.maxSites}
-        enteredValue={siteLimitWarning.enteredValue}
-      />
-
-      {/* SKU Required Modal */}
-      <SkuRequiredModal
-        isOpen={skuRequiredModal}
-        onClose={() => setSkuRequiredModal(false)}
       />
 
       {/* Bridge Conditional Modal */}
