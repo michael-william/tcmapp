@@ -4,31 +4,86 @@
  * Dynamic component that renders the appropriate question type.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { QuestionCheckbox } from '@/components/molecules/QuestionCheckbox';
 import { QuestionTextInput } from '@/components/molecules/QuestionTextInput';
 import { QuestionDateInput } from '@/components/molecules/QuestionDateInput';
 import { QuestionDropdown } from '@/components/molecules/QuestionDropdown';
 import { QuestionYesNo } from '@/components/molecules/QuestionYesNo';
 import { QuestionNumberInput } from '@/components/molecules/QuestionNumberInput';
+import { AnswerChangeWarningModal } from '@/components/organisms/AnswerChangeWarningModal';
 import { cn } from '@/lib/utils';
 
-export const QuestionItem = ({ question, onChange, onBlur }) => {
+export const QuestionItem = ({ question, onChange }) => {
   if (!question) return null;
+
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [pendingChange, setPendingChange] = useState(null);
 
   const isDisabled = !!question.metadata?.disabledBy;
 
+  // Check if question was previously answered (excluding textInput)
+  const isPreviouslyAnswered = () => {
+    if (question.questionType === 'textInput') return false;
+
+    // For checkboxes, check if completed field is true
+    if (question.questionType === 'checkbox') {
+      const hasBeenCompleted = question.completed === true;
+      const hasTrackingInfo = question.updatedAt || question.completedAt;
+      return hasBeenCompleted && hasTrackingInfo;
+    }
+
+    // For other question types, check if answer exists and is not empty
+    const hasAnswer = question.answer !== null &&
+                      question.answer !== undefined &&
+                      question.answer !== '';
+
+    // Check for ANY indicator that question was previously answered
+    const hasBeenAnswered = question.updatedAt ||
+                           question.completed === true ||
+                           question.completedAt;
+
+    return hasAnswer && hasBeenAnswered;
+  };
+
+  // Execute the pending change after user confirmation
+  const executePendingChange = () => {
+    if (pendingChange) {
+      onChange?.(question._id, pendingChange.updates);
+    }
+    setShowWarningModal(false);
+    setPendingChange(null);
+  };
+
   const handleChange = (value) => {
     if (isDisabled) return; // Prevent changes
-    onChange?.(question._id, { answer: value, completed: !!value });
+
+    const updates = { answer: value, completed: !!value };
+
+    // Check if previously answered and value is different
+    if (isPreviouslyAnswered() && value !== question.answer) {
+      setPendingChange({ updates });
+      setShowWarningModal(true);
+    } else {
+      onChange?.(question._id, updates);
+    }
   };
 
   const handleCheckboxChange = (checked) => {
     if (isDisabled) return; // Prevent changes
-    onChange?.(question._id, {
+
+    const updates = {
       completed: checked,
       completedAt: checked ? new Date().toISOString() : null,
-    });
+    };
+
+    // Check if previously answered and value is different
+    if (isPreviouslyAnswered() && checked !== question.completed) {
+      setPendingChange({ updates });
+      setShowWarningModal(true);
+    } else {
+      onChange?.(question._id, updates);
+    }
   };
 
   const handleConditionalChange = (field, value) => {
@@ -36,9 +91,11 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
     onChange?.(question._id, { [field]: value });
   };
 
+  let questionContent;
+
   switch (question.questionType) {
     case 'checkbox':
-      return (
+      questionContent = (
         <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
           <QuestionCheckbox
             question={question}
@@ -54,9 +111,10 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
           )}
         </div>
       );
+      break;
 
     case 'textInput':
-      return (
+      questionContent = (
         <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
           <QuestionTextInput
             question={question}
@@ -71,9 +129,10 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
           )}
         </div>
       );
+      break;
 
     case 'dateInput':
-      return (
+      questionContent = (
         <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
           <QuestionDateInput
             question={question}
@@ -88,31 +147,54 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
           )}
         </div>
       );
+      break;
 
     case 'dropdown':
-      return (
-        <QuestionDropdown
-          question={question}
-          options={question.options || []}
-          value={question.answer || ''}
-          onChange={handleChange}
-        />
-      );
+      const hasEmptyOptions = !question.options || question.options.length === 0;
+      const isDynamicDropdown = question.metadata?.dynamicOptions && question.metadata?.dependsOn;
+
+      if (isDynamicDropdown && hasEmptyOptions) {
+        // Show disabled state with message
+        questionContent = (
+          <div className="space-y-1">
+            <QuestionDropdown
+              question={question}
+              options={[]}
+              value=""
+              onChange={() => {}} // No-op
+              disabled={true}
+            />
+            <p className="text-xs text-muted-foreground">
+              Please select SKU type first (Q33)
+            </p>
+          </div>
+        );
+      } else {
+        questionContent = (
+          <QuestionDropdown
+            question={question}
+            options={question.options || []}
+            value={question.answer || ''}
+            onChange={handleChange}
+          />
+        );
+      }
+      break;
 
     case 'numberInput':
-      return (
+      questionContent = (
         <QuestionNumberInput
           question={question}
           value={question.answer || 1}
           onChange={handleChange}
-          onBlur={() => onBlur?.(question._id)}
           min={question.metadata?.min || 1}
           max={question.metadata?.max}
         />
       );
+      break;
 
     case 'yesNo':
-      return (
+      questionContent = (
         <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
           <QuestionYesNo
             question={question}
@@ -134,12 +216,31 @@ export const QuestionItem = ({ question, onChange, onBlur }) => {
           )}
         </div>
       );
+      break;
 
     default:
-      return (
+      questionContent = (
         <div className="text-sm text-muted-foreground">
           Unknown question type: {question.questionType}
         </div>
       );
+      break;
   }
+
+  return (
+    <>
+      {questionContent}
+      <AnswerChangeWarningModal
+        isOpen={showWarningModal}
+        onCancel={() => {
+          setShowWarningModal(false);
+          setPendingChange(null);
+        }}
+        onConfirm={executePendingChange}
+        questionText={question.questionText}
+        updatedAt={question.updatedAt}
+        updatedBy={question.updatedBy}
+      />
+    </>
+  );
 };

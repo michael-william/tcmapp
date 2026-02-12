@@ -8,6 +8,7 @@ import React from 'react';
 import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { InfoTooltip } from '@/components/atoms/InfoTooltip';
+import { UpdateInfo } from '@/components/atoms/UpdateInfo';
 import { cn } from '@/lib/utils';
 
 export const QuestionDateInput = ({
@@ -23,21 +24,24 @@ export const QuestionDateInput = ({
   };
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex items-center gap-2">
-        <Label htmlFor={question._id} className="text-base font-normal">
-          {question.questionText}
-        </Label>
-        {question.helpText && <InfoTooltip content={question.helpText} />}
+    <div className={className}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 flex-1">
+          <Label htmlFor={question._id} className="text-base font-normal">
+            {question.questionText}
+          </Label>
+          {question.helpText && <InfoTooltip content={question.helpText} />}
+        </div>
+        <Input
+          id={question._id}
+          type="date"
+          value={value}
+          onChange={handleChange}
+          className={cn('w-auto shrink-0', disabled && 'cursor-not-allowed')}
+          disabled={disabled}
+        />
       </div>
-      <Input
-        id={question._id}
-        type="date"
-        value={value}
-        onChange={handleChange}
-        className={cn('max-w-xs', disabled && 'cursor-not-allowed')}
-        disabled={disabled}
-      />
+      {!disabled && <UpdateInfo updatedAt={question.updatedAt} updatedBy={question.updatedBy} />}
     </div>
   );
 };

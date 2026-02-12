@@ -54,7 +54,7 @@ export const Login = () => {
     <AuthLayout>
       <Card className="animate-fadeIn bg-white/10 backdrop-blur-md border-white/20 shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center">Sign In</CardTitle>
+          <CardTitle className="text-center text-white">Sign In</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -68,7 +68,7 @@ export const Login = () => {
 
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -82,7 +82,7 @@ export const Login = () => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white">Password</Label>
               <Input
                 id="password"
                 type="password"

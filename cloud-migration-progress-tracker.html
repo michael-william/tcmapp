@@ -1,0 +1,2915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Cloud Migration Project Checklist | InterWorks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #5EA8A7;
+            --primary-dark: #277884;
+            --accent: #FE4447;
+            --accent-glow: #FF6B6E;
+            --dark: #1A1A2E;
+            --light: #F8F9FA;
+            --gray: #6C757D;
+            --success: #28a745;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+            background: var(--light);
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
+            color: white;
+            padding: 1.5rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .header h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Client Information Section */
+        .client-info-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .client-info-section h2 {
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.35rem;
+        }
+
+        .client-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .client-info-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .client-info-label {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .client-info-input, .client-info-select, .client-info-textarea {
+            padding: 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .client-info-textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .client-info-input:focus, .client-info-select:focus, .client-info-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(94, 168, 167, 0.1);
+        }
+
+        /* Progress Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Controls */
+        .controls {
+            background: white;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .filter-select {
+            padding: 0.4rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(94, 168, 167, 0.3);
+        }
+
+        .button-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .button-accent:hover {
+            background: var(--accent-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(254, 68, 71, 0.3);
+        }
+
+        /* Section */
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .section.two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .section.two-column-layout .section-header {
+            grid-column: 1 / -1;
+        }
+
+        .section.two-column-layout > div:not(.section-header) {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 0.75rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        /* Question Items */
+        .question-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            gap: 0.5rem;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .question-item:hover {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary);
+        }
+
+        .question-item.completed {
+            background: rgba(40, 167, 69, 0.05);
+            border-color: var(--success);
+        }
+
+        .checkbox-wrapper {
+            flex-shrink: 0;
+        }
+
+        .question-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+
+        .question-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .question-date {
+            padding: 0.35rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .question-date:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(94, 168, 167, 0.1);
+        }
+
+        .question-owner {
+            padding: 0.35rem 0.6rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .question-owner:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Content Validation Table */
+        .validation-table {
+            width: 100%;
+            margin-top: 0.5rem;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .validation-table th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .validation-table td {
+            padding: 0.4rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .validation-table input {
+            width: 100%;
+            padding: 0.35rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .validation-table input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Issues Log */
+        .issues-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .issue-item {
+            display: grid;
+            grid-template-columns: 1fr auto 120px;
+            gap: 0.5rem;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .issue-input, .issue-select {
+            padding: 0.35rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .issue-input:focus, .issue-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .add-issue-btn {
+            margin-top: 0.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .add-issue-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Custom Confirmation Modal */
+        .confirmation-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .confirmation-overlay.show {
+            display: flex;
+        }
+
+        .confirmation-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 28px 32px;
+            max-width: 420px;
+            width: 90%;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confirmation-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .confirmation-icon {
+            font-size: 1.8rem;
+        }
+
+        .confirmation-message {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .confirmation-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .confirmation-btn-cancel {
+            background: #e9ecef;
+            color: var(--dark);
+        }
+
+        .confirmation-btn-cancel:hover {
+            background: #dee2e6;
+        }
+
+        .confirmation-btn-confirm {
+            background: var(--accent);
+            color: white;
+        }
+
+        .confirmation-btn-confirm:hover {
+            background: var(--accent-glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .question-item {
+                grid-template-columns: auto 1fr;
+                gap: 0.35rem;
+            }
+
+            .question-date, .question-owner {
+                grid-column: 2 / 3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Tableau Cloud Migration</h1>
+        <p class="header-subtitle">Project Checklist - Track completion and allow a whole project overview</p>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div class="confirmation-overlay" id="confirmationModal">
+        <div class="confirmation-box">
+            <div class="confirmation-title">
+                <span class="confirmation-icon">⚠️</span>
+                Unselect Task?
+            </div>
+            <div class="confirmation-message">
+                Are you sure you want to mark this task as incomplete? This will remove the completion date.
+            </div>
+            <div class="confirmation-buttons">
+                <button class="confirmation-btn confirmation-btn-cancel" onclick="closeConfirmation(false)">Cancel</button>
+                <button class="confirmation-btn confirmation-btn-confirm" onclick="closeConfirmation(true)">Yes, Unselect</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Client Information -->
+        <div class="client-info-section">
+            <h2>Project Information</h2>
+            <div class="client-info-grid">
+                <div class="client-info-field">
+                    <label class="client-info-label">Client</label>
+                    <input type="text" class="client-info-input" id="clientName" placeholder="Enter client name">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Stakeholder</label>
+                    <input type="text" class="client-info-input" id="stakeholder" placeholder="Enter stakeholder name">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Primary Contact</label>
+                    <input type="text" class="client-info-input" id="primaryContact" placeholder="Enter primary contact">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Tableau Cloud Site</label>
+                    <input type="text" class="client-info-input" id="cloudSite" placeholder="e.g., https://client.online.tableau.com">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Current Client Tableau Version</label>
+                    <input type="text" class="client-info-input" id="tableauVersion" placeholder="e.g., 2023.3">
+                </div>
+                <div class="client-info-field">
+                    <label class="client-info-label">Expected Go-Live Date</label>
+                    <input type="date" class="client-info-input" id="goLiveDate">
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="remainingTasks">0</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="progressPercentage">0%</div>
+                <div class="stat-label">Progress</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="filter-group">
+                <label class="filter-label">Filter by Section:</label>
+                <select class="filter-select" id="sectionFilter" onchange="filterTasks()">
+                    <option value="all">All Sections</option>
+                    <option value="0">Site Setup</option>
+                    <option value="1">Users</option>
+                    <option value="2">Groups</option>
+                    <option value="3">Project Hierarchy</option>
+                    <option value="4">Project Permissions</option>
+                    <option value="5">Data Sources</option>
+                    <option value="6">Workbooks</option>
+                    <option value="7">Flows</option>
+                    <option value="8">Virtual Connections</option>
+                    <option value="9">Custom Views</option>
+                    <option value="10">Data Driven Alerts</option>
+                    <option value="11">Favorites</option>
+                    <option value="12">Tags</option>
+                    <option value="13">Accelerated Views</option>
+                    <option value="14">Webhooks</option>
+                    <option value="15">Collections</option>
+                    <option value="16">Data Source Extract Refreshes</option>
+                    <option value="17">Workbook Extract Refreshes</option>
+                    <option value="18">Flow Run Tasks</option>
+                    <option value="19">Subscriptions</option>
+                    <option value="20">Bridge Connections</option>
+                    <option value="21">Migration Issues Log</option>
+                    <option value="22">Content Validation</option>
+                    <option value="23">Content Testing</option>
+                    <option value="24">Post Migration Tasks</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Show:</label>
+                <select class="filter-select" id="statusFilter" onchange="filterTasks()">
+                    <option value="all">All Tasks</option>
+                    <option value="completed">Completed</option>
+                    <option value="incomplete">Incomplete</option>
+                </select>
+            </div>
+            <button class="button button-primary" onclick="exportPDF()">Export to PDF</button>
+            <button class="button button-accent" onclick="resetProgress()">Reset Progress</button>
+        </div>
+
+        <!-- Tasks Container -->
+        <div id="tasksContainer"></div>
+    </div>
+
+    <script>
+        // Migration sections and tasks based on the Word document
+        const migrationSections = [
+            {
+                section: "Site Setup",
+                tasks: [
+                    {task: "Authentication set up on Site", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "SMTP", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Data Connectivity", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Custom Domain", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Users",
+                tasks: [
+                    {task: "Initial Users", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "User Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Groups",
+                tasks: [
+                    {task: "Groups", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Groups Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Project Hierarchy",
+                tasks: [
+                    {task: "Project Hierarchy", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Project Hierarchy Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Project Permissions",
+                tasks: [
+                    {task: "Project Permissions", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Project Permissions Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Data Sources",
+                tasks: [
+                    {task: "Data Sources", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Data Sources Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Workbooks",
+                tasks: [
+                    {task: "Workbooks", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Workbooks Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Flows",
+                tasks: [
+                    {task: "Flows", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Flows Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Virtual Connections",
+                tasks: [
+                    {task: "Virtual Connections", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Virtual Connections Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Custom Views",
+                tasks: [
+                    {task: "Custom Views", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Custom Views Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Data Driven Alerts",
+                tasks: [
+                    {task: "Data Driven Alerts", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Data Driven Alerts Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Favorites",
+                tasks: [
+                    {task: "Favorites", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Favorites Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Tags",
+                tasks: [
+                    {task: "Tags", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Tags Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Accelerated Views",
+                tasks: [
+                    {task: "Accelerated Views", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Accelerated Views Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Webhooks",
+                tasks: [
+                    {task: "Webhooks", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Webhooks Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Collections",
+                tasks: [
+                    {task: "Collections", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Collections Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Data Source Extract Refreshes",
+                tasks: [
+                    {task: "Data Source Extract Refreshes", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Data Source Extract Refreshes Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Workbook Extract Refreshes",
+                tasks: [
+                    {task: "Workbook Extract Refreshes", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Workbook Extract Refreshes Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Flow Run Tasks",
+                tasks: [
+                    {task: "Flow Run Tasks", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Flow Run Tasks Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Subscriptions",
+                tasks: [
+                    {task: "Subscriptions", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""},
+                    {task: "Subscriptions Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Bridge Connections",
+                tasks: [
+                    {task: "Introduction to Bridge", completed: false, date: "", owner: "IW"},
+                    {task: "Set Up/Install Bridge (if necessary)", completed: false, date: "", owner: "IW"},
+                    {task: "Configure Pooling", completed: false, date: "", owner: "IW"},
+                    {task: "Test Connections", completed: false, date: "", owner: "IW"},
+                    {task: "Update Bridge Workbooks", completed: false, date: "", owner: "IW"},
+                    {task: "Update Bridge Data Sources", completed: false, date: "", owner: "IW"},
+                    {task: "Update Bridge Prep Flows", completed: false, date: "", owner: "IW"},
+                    {task: "Update Bridge Virtual Connections", completed: false, date: "", owner: "IW"},
+                    {task: "Testing & Troubleshoot if necessary", completed: false, date: "", owner: "IW"},
+                    {task: "Runbook Bridge Updates", completed: false, date: "", owner: "IW"},
+                    {task: "Bridge Connections Validation", completed: false, date: "", owner: "IW", runbook: "", migrated: "", notes: ""}
+                ]
+            },
+            {
+                section: "Migration Issues Log",
+                specialType: "issues"
+            },
+            {
+                section: "Content Validation",
+                specialType: "validation"
+            },
+            {
+                section: "Content Testing",
+                tasks: [
+                    {task: "User Access", completed: false, date: "", owner: ""},
+                    {task: "Workbook Access", completed: false, date: "", owner: ""},
+                    {task: "Data Connectivity - Live Connections", completed: false, date: "", owner: ""},
+                    {task: "Data Connectivity - Extract Refreshes", completed: false, date: "", owner: ""},
+                    {task: "Dashboard functionality", completed: false, date: "", owner: ""},
+                    {task: "Metrics", completed: false, date: "", owner: ""},
+                    {task: "Subscriptions", completed: false, date: "", owner: ""},
+                    {task: "RLS", completed: false, date: "", owner: "Client"},
+                    {task: "URL Actions", completed: false, date: "", owner: "Client"},
+                    {task: "Subscription", completed: false, date: "", owner: ""}
+                ]
+            },
+            {
+                section: "Post Migration Tasks",
+                tasks: [
+                    {task: "Custom Logo on Cloud", completed: false, date: "", owner: ""},
+                    {task: "InterWorks Testing Complete", completed: false, date: "", owner: ""},
+                    {task: "Client Testing Complete", completed: false, date: "", owner: ""},
+                    {task: "Back up Tableau Server", completed: false, date: "", owner: ""},
+                    {task: "Export Config Data", completed: false, date: "", owner: ""},
+                    {task: "Export all Content to Disk", completed: false, date: "", owner: ""},
+                    {task: "Fully Decommission Tableau Server", completed: false, date: "", owner: ""},
+                    {task: "Go Live Date Confirmed?", completed: false, date: "", owner: ""},
+                    {task: "Activate subscriptions", completed: false, date: "", owner: ""},
+                    {task: "Go Live Completed", completed: false, date: "", owner: ""},
+                    {task: "Client Sign Off", completed: false, date: "", owner: ""}
+                ]
+            }
+        ];
+
+        let allTasks = [];
+        let issues = [];
+        let validationData = {
+            users: {runbook: "", cloud: ""},
+            siteAdminCreators: {runbook: "", cloud: ""},
+            siteAdminExplorers: {runbook: "", cloud: ""},
+            creators: {runbook: "", cloud: ""},
+            explorers: {runbook: "", cloud: ""},
+            viewers: {runbook: "", cloud: ""},
+            groups: {runbook: "", cloud: ""},
+            projects: {runbook: "", cloud: ""},
+            workbooks: {runbook: "", cloud: ""},
+            dataSources: {runbook: "", cloud: ""},
+            metrics: {runbook: "", cloud: ""},
+            askDataLenses: {runbook: "", cloud: ""},
+            flows: {runbook: "", cloud: ""},
+            dataRoles: {runbook: "", cloud: ""},
+            virtualConnections: {runbook: "", cloud: ""},
+            customViews: {runbook: "", cloud: ""},
+            subscriptions: {runbook: "", cloud: ""},
+            dataDrivenAlerts: {runbook: "", cloud: ""},
+            collections: {runbook: "", cloud: ""},
+            viewAccelerations: {runbook: "", cloud: ""},
+            extensions: {runbook: "", cloud: ""},
+            webhooks: {runbook: "", cloud: ""},
+            favourites: {runbook: "", cloud: ""},
+            tags: {runbook: "", cloud: ""}
+        };
+        let pendingToggleIndex = null;
+
+        // Initialize
+        function init() {
+            // Flatten all tasks into single array
+            migrationSections.forEach((section, sectionIndex) => {
+                if (section.tasks) {
+                    section.tasks.forEach(task => {
+                        allTasks.push({
+                            section: section.section,
+                            sectionIndex: sectionIndex,
+                            ...task
+                        });
+                    });
+                }
+            });
+
+            loadProgress();
+            loadClientInfo();
+            loadIssues();
+            loadValidationData();
+            filterTasks();
+            loadNoFlowsState();
+            loadNoVirtualConnectionsState();
+            loadNoCustomViewsState();
+            loadNoDataDrivenAlertsState();
+            loadNoTagsState();
+            loadNoAcceleratedViewsState();
+            loadNoWebhooksState();
+            loadUserMigrationCompleteState();
+            loadGroupsCompleteState();
+            loadProjectHierarchyCompleteState();
+            loadProjectPermissionsCompleteState();
+
+            // Load complete states for additional sections
+            Object.keys(completeSections).forEach(sectionName => {
+                loadSectionCompleteState(sectionName);
+            });
+
+            updateStats();
+        }
+
+        // Save/Load functions
+        function saveProgress() {
+            localStorage.setItem('tableauCloudMigrationProgress', JSON.stringify(allTasks));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('tableauCloudMigrationProgress');
+            if (saved) {
+                const savedData = JSON.parse(saved);
+                savedData.forEach((savedTask, index) => {
+                    if (allTasks[index]) {
+                        allTasks[index].completed = savedTask.completed;
+                        allTasks[index].date = savedTask.date || '';
+                        allTasks[index].owner = savedTask.owner || allTasks[index].owner;
+                        // Preserve isYesNo from original definition, load answer from saved
+                        if (allTasks[index].isYesNo) {
+                            allTasks[index].yesNoAnswer = savedTask.yesNoAnswer || '';
+                        }
+                        // Load runbook and migrated fields for Users tasks
+                        if (allTasks[index].runbook !== undefined) {
+                            allTasks[index].runbook = savedTask.runbook || '';
+                        }
+                        if (allTasks[index].migrated !== undefined) {
+                            allTasks[index].migrated = savedTask.migrated || '';
+                        }
+                        if (allTasks[index].notes !== undefined) {
+                            allTasks[index].notes = savedTask.notes || '';
+                        }
+                    }
+                });
+            }
+        }
+
+        function saveClientInfo() {
+            const clientInfo = {
+                clientName: document.getElementById('clientName').value,
+                stakeholder: document.getElementById('stakeholder').value,
+                primaryContact: document.getElementById('primaryContact').value,
+                cloudSite: document.getElementById('cloudSite').value,
+                tableauVersion: document.getElementById('tableauVersion').value,
+                goLiveDate: document.getElementById('goLiveDate').value
+            };
+            localStorage.setItem('tableauCloudMigrationClientInfo', JSON.stringify(clientInfo));
+        }
+
+        function loadClientInfo() {
+            const saved = localStorage.getItem('tableauCloudMigrationClientInfo');
+            if (saved) {
+                const clientInfo = JSON.parse(saved);
+                document.getElementById('clientName').value = clientInfo.clientName || '';
+                document.getElementById('stakeholder').value = clientInfo.stakeholder || '';
+                document.getElementById('primaryContact').value = clientInfo.primaryContact || '';
+                document.getElementById('cloudSite').value = clientInfo.cloudSite || '';
+                document.getElementById('tableauVersion').value = clientInfo.tableauVersion || '';
+                document.getElementById('goLiveDate').value = clientInfo.goLiveDate || '';
+            }
+        }
+
+        function saveIssues() {
+            localStorage.setItem('tableauCloudMigrationIssues', JSON.stringify(issues));
+        }
+
+        function loadIssues() {
+            const saved = localStorage.getItem('tableauCloudMigrationIssues');
+            if (saved) {
+                issues = JSON.parse(saved);
+            }
+        }
+
+        function saveValidationData() {
+            localStorage.setItem('tableauCloudMigrationValidation', JSON.stringify(validationData));
+        }
+
+        function loadValidationData() {
+            const saved = localStorage.getItem('tableauCloudMigrationValidation');
+            if (saved) {
+                validationData = JSON.parse(saved);
+            }
+        }
+
+        // Event listeners for client info
+        ['clientName', 'stakeholder', 'primaryContact', 'cloudSite', 'tableauVersion', 'goLiveDate'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener(element.type === 'date' ? 'change' : 'input', saveClientInfo);
+            }
+        });
+
+        // Toggle task completion
+        function toggleTask(index) {
+            const task = allTasks[index];
+
+            if (task.completed) {
+                pendingToggleIndex = index;
+                document.getElementById('confirmationModal').classList.add('show');
+                return;
+            }
+
+            task.completed = true;
+            if (!task.date) {
+                const now = new Date();
+                task.date = now.toLocaleDateString('en-GB');
+            }
+
+            saveProgress();
+            filterTasks();
+            updateStats();
+        }
+
+        function closeConfirmation(confirmed) {
+            document.getElementById('confirmationModal').classList.remove('show');
+
+            if (confirmed && pendingToggleIndex !== null) {
+                const task = allTasks[pendingToggleIndex];
+                task.completed = false;
+                task.date = '';
+
+                saveProgress();
+                filterTasks();
+                updateStats();
+            } else {
+                filterTasks();
+            }
+
+            pendingToggleIndex = null;
+        }
+
+        // Handle date change
+        function handleDateChange(index, value) {
+            allTasks[index].date = value;
+            saveProgress();
+        }
+
+        // Handle owner change
+        function handleOwnerChange(index, value) {
+            allTasks[index].owner = value;
+            saveProgress();
+        }
+
+        // Handle yes/no answer
+        function handleYesNoAnswer(index, value) {
+            allTasks[index].yesNoAnswer = value;
+            saveProgress();
+        }
+
+        // Handle runbook change
+        function handleRunbookChange(index, value) {
+            allTasks[index].runbook = value;
+            saveProgress();
+        }
+
+        // Handle migrated change
+        function handleMigratedChange(index, value) {
+            allTasks[index].migrated = value;
+            saveProgress();
+        }
+
+        // Handle SMTP custom checkbox change
+        function handleSMTPCustomChange(index, checked) {
+            const value = checked ? 'yes' : 'no';
+            allTasks[index].runbook = value;
+
+            // If unchecked, also uncheck and disable the tested checkbox and details textarea
+            if (!checked) {
+                allTasks[index].migrated = 'no';
+                const testedCheckbox = document.getElementById(`smtp-tested-${index}`);
+                if (testedCheckbox) {
+                    testedCheckbox.checked = false;
+                    testedCheckbox.disabled = true;
+                    testedCheckbox.parentElement.parentElement.style.opacity = '0.4';
+                    testedCheckbox.parentElement.parentElement.style.cursor = 'not-allowed';
+                }
+
+                // Disable SMTP details textarea
+                const detailsTextarea = document.getElementById(`smtp-details-${index}`);
+                if (detailsTextarea) {
+                    detailsTextarea.disabled = true;
+                    detailsTextarea.parentElement.style.opacity = '0.4';
+                    detailsTextarea.parentElement.style.cursor = 'not-allowed';
+                }
+            } else {
+                // Enable the tested checkbox
+                const testedCheckbox = document.getElementById(`smtp-tested-${index}`);
+                if (testedCheckbox) {
+                    testedCheckbox.disabled = false;
+                    testedCheckbox.parentElement.parentElement.style.opacity = '1';
+                    testedCheckbox.parentElement.parentElement.style.cursor = 'default';
+                }
+
+                // Enable SMTP details textarea
+                const detailsTextarea = document.getElementById(`smtp-details-${index}`);
+                if (detailsTextarea) {
+                    detailsTextarea.disabled = false;
+                    detailsTextarea.parentElement.style.opacity = '1';
+                    detailsTextarea.parentElement.style.cursor = 'default';
+                }
+            }
+
+            saveProgress();
+        }
+
+        // Handle Custom Domain checkbox change
+        function handleCustomDomainChange(index, checked) {
+            const value = checked ? 'yes' : 'no';
+            allTasks[index].runbook = value;
+
+            // If unchecked, also uncheck and disable the tested checkbox and details textarea
+            if (!checked) {
+                allTasks[index].migrated = 'no';
+                const testedCheckbox = document.getElementById(`domain-tested-${index}`);
+                if (testedCheckbox) {
+                    testedCheckbox.checked = false;
+                    testedCheckbox.disabled = true;
+                    testedCheckbox.parentElement.parentElement.style.opacity = '0.4';
+                    testedCheckbox.parentElement.parentElement.style.cursor = 'not-allowed';
+                }
+
+                // Disable Custom Domain details textarea
+                const detailsTextarea = document.getElementById(`domain-details-${index}`);
+                if (detailsTextarea) {
+                    detailsTextarea.disabled = true;
+                    detailsTextarea.parentElement.style.opacity = '0.4';
+                    detailsTextarea.parentElement.style.cursor = 'not-allowed';
+                }
+            } else {
+                // Enable the tested checkbox
+                const testedCheckbox = document.getElementById(`domain-tested-${index}`);
+                if (testedCheckbox) {
+                    testedCheckbox.disabled = false;
+                    testedCheckbox.parentElement.parentElement.style.opacity = '1';
+                    testedCheckbox.parentElement.parentElement.style.cursor = 'default';
+                }
+
+                // Enable Custom Domain details textarea
+                const detailsTextarea = document.getElementById(`domain-details-${index}`);
+                if (detailsTextarea) {
+                    detailsTextarea.disabled = false;
+                    detailsTextarea.parentElement.style.opacity = '1';
+                    detailsTextarea.parentElement.style.cursor = 'default';
+                }
+            }
+
+            saveProgress();
+        }
+
+        // Handle user migration notes change
+        function handleUserMigrationNotes(index, value) {
+            allTasks[index].notes = value;
+            saveProgress();
+        }
+
+        // Handle "No flows to migrate" checkbox
+        let noFlowsToMigrate = false;
+
+        function handleNoFlowsChange(checked) {
+            noFlowsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoFlows', JSON.stringify(noFlowsToMigrate));
+
+            // Toggle visibility of Flows content
+            const flowsContent = document.getElementById('migrateFlowsContent');
+            if (flowsContent) {
+                flowsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            // Change section background
+            const flowsSection = document.getElementById('flowsSection');
+            if (flowsSection) {
+                flowsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoFlowsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoFlows');
+            if (saved) {
+                noFlowsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noFlowsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noFlowsToMigrate;
+                }
+
+                // Apply visibility state to content
+                const flowsContent = document.getElementById('migrateFlowsContent');
+                if (flowsContent) {
+                    flowsContent.style.display = noFlowsToMigrate ? 'none' : 'block';
+                }
+
+                // Apply background color
+                const flowsSection = document.getElementById('flowsSection');
+                if (flowsSection) {
+                    flowsSection.style.background = noFlowsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No virtual connections to migrate" checkbox
+        let noVirtualConnectionsToMigrate = false;
+
+        function handleNoVirtualConnectionsChange(checked) {
+            noVirtualConnectionsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoVirtualConnections', JSON.stringify(noVirtualConnectionsToMigrate));
+
+            // Toggle visibility of Virtual Connections content
+            const virtualConnectionsContent = document.getElementById('migrateVirtualConnectionsContent');
+            if (virtualConnectionsContent) {
+                virtualConnectionsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            // Change section background
+            const virtualConnectionsSection = document.getElementById('virtualConnectionsSection');
+            if (virtualConnectionsSection) {
+                virtualConnectionsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoVirtualConnectionsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoVirtualConnections');
+            if (saved) {
+                noVirtualConnectionsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noVirtualConnectionsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noVirtualConnectionsToMigrate;
+                }
+
+                // Apply visibility state to content
+                const virtualConnectionsContent = document.getElementById('migrateVirtualConnectionsContent');
+                if (virtualConnectionsContent) {
+                    virtualConnectionsContent.style.display = noVirtualConnectionsToMigrate ? 'none' : 'block';
+                }
+
+                // Apply background color
+                const virtualConnectionsSection = document.getElementById('virtualConnectionsSection');
+                if (virtualConnectionsSection) {
+                    virtualConnectionsSection.style.background = noVirtualConnectionsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No custom views to migrate" checkbox
+        let noCustomViewsToMigrate = false;
+
+        function handleNoCustomViewsChange(checked) {
+            noCustomViewsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoCustomViews', JSON.stringify(noCustomViewsToMigrate));
+
+            // Toggle visibility of Custom Views content
+            const customViewsContent = document.getElementById('migrateCustomViewsContent');
+            if (customViewsContent) {
+                customViewsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            // Change section background
+            const customViewsSection = document.getElementById('customViewsSection');
+            if (customViewsSection) {
+                customViewsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoCustomViewsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoCustomViews');
+            if (saved) {
+                noCustomViewsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noCustomViewsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noCustomViewsToMigrate;
+                }
+
+                // Apply visibility state to content
+                const customViewsContent = document.getElementById('migrateCustomViewsContent');
+                if (customViewsContent) {
+                    customViewsContent.style.display = noCustomViewsToMigrate ? 'none' : 'block';
+                }
+
+                // Apply background color
+                const customViewsSection = document.getElementById('customViewsSection');
+                if (customViewsSection) {
+                    customViewsSection.style.background = noCustomViewsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No data driven alerts to migrate" checkbox
+        let noDataDrivenAlertsToMigrate = false;
+
+        function handleNoDataDrivenAlertsChange(checked) {
+            noDataDrivenAlertsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoDataDrivenAlerts', JSON.stringify(noDataDrivenAlertsToMigrate));
+
+            const dataDrivenAlertsContent = document.getElementById('migrateDataDrivenAlertsContent');
+            if (dataDrivenAlertsContent) {
+                dataDrivenAlertsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            const dataDrivenAlertsSection = document.getElementById('dataDrivenAlertsSection');
+            if (dataDrivenAlertsSection) {
+                dataDrivenAlertsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoDataDrivenAlertsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoDataDrivenAlerts');
+            if (saved) {
+                noDataDrivenAlertsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noDataDrivenAlertsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noDataDrivenAlertsToMigrate;
+                }
+
+                const dataDrivenAlertsContent = document.getElementById('migrateDataDrivenAlertsContent');
+                if (dataDrivenAlertsContent) {
+                    dataDrivenAlertsContent.style.display = noDataDrivenAlertsToMigrate ? 'none' : 'block';
+                }
+
+                const dataDrivenAlertsSection = document.getElementById('dataDrivenAlertsSection');
+                if (dataDrivenAlertsSection) {
+                    dataDrivenAlertsSection.style.background = noDataDrivenAlertsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No tags to migrate" checkbox
+        let noTagsToMigrate = false;
+
+        function handleNoTagsChange(checked) {
+            noTagsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoTags', JSON.stringify(noTagsToMigrate));
+
+            const tagsContent = document.getElementById('migrateTagsContent');
+            if (tagsContent) {
+                tagsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            const tagsSection = document.getElementById('tagsSection');
+            if (tagsSection) {
+                tagsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoTagsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoTags');
+            if (saved) {
+                noTagsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noTagsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noTagsToMigrate;
+                }
+
+                const tagsContent = document.getElementById('migrateTagsContent');
+                if (tagsContent) {
+                    tagsContent.style.display = noTagsToMigrate ? 'none' : 'block';
+                }
+
+                const tagsSection = document.getElementById('tagsSection');
+                if (tagsSection) {
+                    tagsSection.style.background = noTagsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No accelerated views to migrate" checkbox
+        let noAcceleratedViewsToMigrate = false;
+
+        function handleNoAcceleratedViewsChange(checked) {
+            noAcceleratedViewsToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoAcceleratedViews', JSON.stringify(noAcceleratedViewsToMigrate));
+
+            const acceleratedViewsContent = document.getElementById('migrateAcceleratedViewsContent');
+            if (acceleratedViewsContent) {
+                acceleratedViewsContent.style.display = checked ? 'none' : 'block';
+            }
+
+            const acceleratedViewsSection = document.getElementById('acceleratedViewsSection');
+            if (acceleratedViewsSection) {
+                acceleratedViewsSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoAcceleratedViewsState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoAcceleratedViews');
+            if (saved) {
+                noAcceleratedViewsToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noAcceleratedViewsCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noAcceleratedViewsToMigrate;
+                }
+
+                const acceleratedViewsContent = document.getElementById('migrateAcceleratedViewsContent');
+                if (acceleratedViewsContent) {
+                    acceleratedViewsContent.style.display = noAcceleratedViewsToMigrate ? 'none' : 'block';
+                }
+
+                const acceleratedViewsSection = document.getElementById('acceleratedViewsSection');
+                if (acceleratedViewsSection) {
+                    acceleratedViewsSection.style.background = noAcceleratedViewsToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "No webhooks to migrate" checkbox
+        let noWebhooksToMigrate = false;
+
+        function handleNoWebhooksChange(checked) {
+            noWebhooksToMigrate = checked;
+            localStorage.setItem('tableauCloudMigrationNoWebhooks', JSON.stringify(noWebhooksToMigrate));
+
+            const webhooksContent = document.getElementById('migrateWebhooksContent');
+            if (webhooksContent) {
+                webhooksContent.style.display = checked ? 'none' : 'block';
+            }
+
+            const webhooksSection = document.getElementById('webhooksSection');
+            if (webhooksSection) {
+                webhooksSection.style.background = checked ? '#e9ecef' : 'white';
+            }
+
+            // Update task statistics
+            updateStats();
+        }
+
+        function loadNoWebhooksState() {
+            const saved = localStorage.getItem('tableauCloudMigrationNoWebhooks');
+            if (saved) {
+                noWebhooksToMigrate = JSON.parse(saved);
+                const checkbox = document.getElementById('noWebhooksCheckbox');
+                if (checkbox) {
+                    checkbox.checked = noWebhooksToMigrate;
+                }
+
+                const webhooksContent = document.getElementById('migrateWebhooksContent');
+                if (webhooksContent) {
+                    webhooksContent.style.display = noWebhooksToMigrate ? 'none' : 'block';
+                }
+
+                const webhooksSection = document.getElementById('webhooksSection');
+                if (webhooksSection) {
+                    webhooksSection.style.background = noWebhooksToMigrate ? '#e9ecef' : 'white';
+                }
+            }
+        }
+
+        // Handle "Users Complete" functionality
+        let userMigrationComplete = false;
+        let userMigrationCompleteDateTime = null;
+        let userMigrationUnlockReasons = [];
+
+        function toggleUserMigrationComplete() {
+            if (userMigrationComplete) {
+                // Ask for reason to unlock
+                const reason = prompt('Provide reason to unlock Users:');
+                if (reason && reason.trim() !== '') {
+                    userMigrationComplete = false;
+                    userMigrationCompleteDateTime = null;
+
+                    // Add unlock reason with timestamp to the array
+                    const unlockEntry = {
+                        reason: reason,
+                        timestamp: new Date().toISOString(),
+                        unlockedBy: 'User' // Could be expanded to include actual user info
+                    };
+                    userMigrationUnlockReasons.push(unlockEntry);
+
+                    localStorage.setItem('tableauCloudMigrationUserComplete', JSON.stringify(userMigrationComplete));
+                    localStorage.removeItem('tableauCloudMigrationUserCompleteDateTime');
+                    localStorage.setItem('tableauCloudMigrationUnlockReasons', JSON.stringify(userMigrationUnlockReasons));
+                    filterTasks();
+                }
+            } else {
+                // Mark as complete with timestamp
+                userMigrationComplete = true;
+                userMigrationCompleteDateTime = new Date().toISOString();
+                localStorage.setItem('tableauCloudMigrationUserComplete', JSON.stringify(userMigrationComplete));
+                localStorage.setItem('tableauCloudMigrationUserCompleteDateTime', userMigrationCompleteDateTime);
+                filterTasks();
+            }
+        }
+
+        function loadUserMigrationCompleteState() {
+            const saved = localStorage.getItem('tableauCloudMigrationUserComplete');
+            if (saved) {
+                userMigrationComplete = JSON.parse(saved);
+            }
+            const savedDateTime = localStorage.getItem('tableauCloudMigrationUserCompleteDateTime');
+            if (savedDateTime) {
+                userMigrationCompleteDateTime = savedDateTime;
+            }
+            const savedUnlockReasons = localStorage.getItem('tableauCloudMigrationUnlockReasons');
+            if (savedUnlockReasons) {
+                userMigrationUnlockReasons = JSON.parse(savedUnlockReasons);
+            }
+        }
+
+        function formatCompleteDateTime(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        function isUserMigrationLocked() {
+            return userMigrationComplete;
+        }
+
+        function clearUnlockHistory() {
+            if (confirm('Are you sure you want to clear all unlock history?')) {
+                userMigrationUnlockReasons = [];
+                localStorage.setItem('tableauCloudMigrationUnlockReasons', JSON.stringify(userMigrationUnlockReasons));
+                filterTasks();
+            }
+        }
+
+        // Handle "Groups Complete" functionality
+        let groupsComplete = false;
+        let groupsCompleteDateTime = null;
+        let groupsUnlockReasons = [];
+
+        function toggleGroupsComplete() {
+            if (groupsComplete) {
+                const reason = prompt('Provide reason to unlock Groups:');
+                if (reason && reason.trim() !== '') {
+                    groupsComplete = false;
+                    groupsCompleteDateTime = null;
+                    const unlockEntry = {
+                        reason: reason,
+                        timestamp: new Date().toISOString(),
+                        unlockedBy: 'User'
+                    };
+                    groupsUnlockReasons.push(unlockEntry);
+                    localStorage.setItem('tableauCloudMigrationGroupsComplete', JSON.stringify(groupsComplete));
+                    localStorage.removeItem('tableauCloudMigrationGroupsCompleteDateTime');
+                    localStorage.setItem('tableauCloudMigrationGroupsUnlockReasons', JSON.stringify(groupsUnlockReasons));
+                    filterTasks();
+                }
+            } else {
+                groupsComplete = true;
+                groupsCompleteDateTime = new Date().toISOString();
+                localStorage.setItem('tableauCloudMigrationGroupsComplete', JSON.stringify(groupsComplete));
+                localStorage.setItem('tableauCloudMigrationGroupsCompleteDateTime', groupsCompleteDateTime);
+                filterTasks();
+            }
+        }
+
+        function loadGroupsCompleteState() {
+            const saved = localStorage.getItem('tableauCloudMigrationGroupsComplete');
+            if (saved) {
+                groupsComplete = JSON.parse(saved);
+            }
+            const savedDateTime = localStorage.getItem('tableauCloudMigrationGroupsCompleteDateTime');
+            if (savedDateTime) {
+                groupsCompleteDateTime = savedDateTime;
+            }
+            const savedUnlockReasons = localStorage.getItem('tableauCloudMigrationGroupsUnlockReasons');
+            if (savedUnlockReasons) {
+                groupsUnlockReasons = JSON.parse(savedUnlockReasons);
+            }
+        }
+
+        function isGroupsLocked() {
+            return groupsComplete;
+        }
+
+        function clearGroupsUnlockHistory() {
+            if (confirm('Are you sure you want to clear all unlock history?')) {
+                groupsUnlockReasons = [];
+                localStorage.setItem('tableauCloudMigrationGroupsUnlockReasons', JSON.stringify(groupsUnlockReasons));
+                filterTasks();
+            }
+        }
+
+        // Handle "Project Hierarchy Complete" functionality
+        let projectHierarchyComplete = false;
+        let projectHierarchyCompleteDateTime = null;
+        let projectHierarchyUnlockReasons = [];
+
+        function toggleProjectHierarchyComplete() {
+            if (projectHierarchyComplete) {
+                const reason = prompt('Provide reason to unlock Project Hierarchy:');
+                if (reason && reason.trim() !== '') {
+                    projectHierarchyComplete = false;
+                    projectHierarchyCompleteDateTime = null;
+                    const unlockEntry = {
+                        reason: reason,
+                        timestamp: new Date().toISOString(),
+                        unlockedBy: 'User'
+                    };
+                    projectHierarchyUnlockReasons.push(unlockEntry);
+                    localStorage.setItem('tableauCloudMigrationProjectHierarchyComplete', JSON.stringify(projectHierarchyComplete));
+                    localStorage.removeItem('tableauCloudMigrationProjectHierarchyCompleteDateTime');
+                    localStorage.setItem('tableauCloudMigrationProjectHierarchyUnlockReasons', JSON.stringify(projectHierarchyUnlockReasons));
+                    filterTasks();
+                }
+            } else {
+                projectHierarchyComplete = true;
+                projectHierarchyCompleteDateTime = new Date().toISOString();
+                localStorage.setItem('tableauCloudMigrationProjectHierarchyComplete', JSON.stringify(projectHierarchyComplete));
+                localStorage.setItem('tableauCloudMigrationProjectHierarchyCompleteDateTime', projectHierarchyCompleteDateTime);
+                filterTasks();
+            }
+        }
+
+        function loadProjectHierarchyCompleteState() {
+            const saved = localStorage.getItem('tableauCloudMigrationProjectHierarchyComplete');
+            if (saved) {
+                projectHierarchyComplete = JSON.parse(saved);
+            }
+            const savedDateTime = localStorage.getItem('tableauCloudMigrationProjectHierarchyCompleteDateTime');
+            if (savedDateTime) {
+                projectHierarchyCompleteDateTime = savedDateTime;
+            }
+            const savedUnlockReasons = localStorage.getItem('tableauCloudMigrationProjectHierarchyUnlockReasons');
+            if (savedUnlockReasons) {
+                projectHierarchyUnlockReasons = JSON.parse(savedUnlockReasons);
+            }
+        }
+
+        function isProjectHierarchyLocked() {
+            return projectHierarchyComplete;
+        }
+
+        function clearProjectHierarchyUnlockHistory() {
+            if (confirm('Are you sure you want to clear all unlock history?')) {
+                projectHierarchyUnlockReasons = [];
+                localStorage.setItem('tableauCloudMigrationProjectHierarchyUnlockReasons', JSON.stringify(projectHierarchyUnlockReasons));
+                filterTasks();
+            }
+        }
+
+        // Handle "Project Permissions Complete" functionality
+        let projectPermissionsComplete = false;
+        let projectPermissionsCompleteDateTime = null;
+        let projectPermissionsUnlockReasons = [];
+
+        function toggleProjectPermissionsComplete() {
+            if (projectPermissionsComplete) {
+                const reason = prompt('Provide reason to unlock Project Permissions:');
+                if (reason && reason.trim() !== '') {
+                    projectPermissionsComplete = false;
+                    projectPermissionsCompleteDateTime = null;
+                    const unlockEntry = {
+                        reason: reason,
+                        timestamp: new Date().toISOString(),
+                        unlockedBy: 'User'
+                    };
+                    projectPermissionsUnlockReasons.push(unlockEntry);
+                    localStorage.setItem('tableauCloudMigrationProjectPermissionsComplete', JSON.stringify(projectPermissionsComplete));
+                    localStorage.removeItem('tableauCloudMigrationProjectPermissionsCompleteDateTime');
+                    localStorage.setItem('tableauCloudMigrationProjectPermissionsUnlockReasons', JSON.stringify(projectPermissionsUnlockReasons));
+                    filterTasks();
+                }
+            } else {
+                projectPermissionsComplete = true;
+                projectPermissionsCompleteDateTime = new Date().toISOString();
+                localStorage.setItem('tableauCloudMigrationProjectPermissionsComplete', JSON.stringify(projectPermissionsComplete));
+                localStorage.setItem('tableauCloudMigrationProjectPermissionsCompleteDateTime', projectPermissionsCompleteDateTime);
+                filterTasks();
+            }
+        }
+
+        function loadProjectPermissionsCompleteState() {
+            const saved = localStorage.getItem('tableauCloudMigrationProjectPermissionsComplete');
+            if (saved) {
+                projectPermissionsComplete = JSON.parse(saved);
+            }
+            const savedDateTime = localStorage.getItem('tableauCloudMigrationProjectPermissionsCompleteDateTime');
+            if (savedDateTime) {
+                projectPermissionsCompleteDateTime = savedDateTime;
+            }
+            const savedUnlockReasons = localStorage.getItem('tableauCloudMigrationProjectPermissionsUnlockReasons');
+            if (savedUnlockReasons) {
+                projectPermissionsUnlockReasons = JSON.parse(savedUnlockReasons);
+            }
+        }
+
+        function isProjectPermissionsLocked() {
+            return projectPermissionsComplete;
+        }
+
+        function clearProjectPermissionsUnlockHistory() {
+            if (confirm('Are you sure you want to clear all unlock history?')) {
+                projectPermissionsUnlockReasons = [];
+                localStorage.setItem('tableauCloudMigrationProjectPermissionsUnlockReasons', JSON.stringify(projectPermissionsUnlockReasons));
+                filterTasks();
+            }
+        }
+
+        // Complete functionality for additional sections
+        const completeSections = {
+            'Site Setup': { complete: false, dateTime: null, unlockReasons: [] },
+            'Data Sources': { complete: false, dateTime: null, unlockReasons: [] },
+            'Workbooks': { complete: false, dateTime: null, unlockReasons: [] },
+            'Flows': { complete: false, dateTime: null, unlockReasons: [] },
+            'Virtual Connections': { complete: false, dateTime: null, unlockReasons: [] },
+            'Custom Views': { complete: false, dateTime: null, unlockReasons: [] },
+            'Data Driven Alerts': { complete: false, dateTime: null, unlockReasons: [] },
+            'Favorites': { complete: false, dateTime: null, unlockReasons: [] },
+            'Tags': { complete: false, dateTime: null, unlockReasons: [] },
+            'Accelerated Views': { complete: false, dateTime: null, unlockReasons: [] },
+            'Webhooks': { complete: false, dateTime: null, unlockReasons: [] },
+            'Collections': { complete: false, dateTime: null, unlockReasons: [] },
+            'Data Source Extract Refreshes': { complete: false, dateTime: null, unlockReasons: [] },
+            'Workbook Extract Refreshes': { complete: false, dateTime: null, unlockReasons: [] },
+            'Flow Run Tasks': { complete: false, dateTime: null, unlockReasons: [] },
+            'Subscriptions': { complete: false, dateTime: null, unlockReasons: [] }
+        };
+
+        function toggleSectionComplete(sectionName) {
+            const section = completeSections[sectionName];
+            if (!section) return;
+
+            if (section.complete) {
+                const reason = prompt(`Provide reason to unlock ${sectionName}:`);
+                if (reason && reason.trim() !== '') {
+                    section.complete = false;
+                    section.dateTime = null;
+                    const unlockEntry = {
+                        reason: reason,
+                        timestamp: new Date().toISOString(),
+                        unlockedBy: 'User'
+                    };
+                    section.unlockReasons.push(unlockEntry);
+                    localStorage.setItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}Complete`, JSON.stringify(section.complete));
+                    localStorage.removeItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}CompleteDateTime`);
+                    localStorage.setItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}UnlockReasons`, JSON.stringify(section.unlockReasons));
+                    filterTasks();
+                }
+            } else {
+                section.complete = true;
+                section.dateTime = new Date().toISOString();
+                localStorage.setItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}Complete`, JSON.stringify(section.complete));
+                localStorage.setItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}CompleteDateTime`, section.dateTime);
+                filterTasks();
+            }
+        }
+
+        function loadSectionCompleteState(sectionName) {
+            const section = completeSections[sectionName];
+            if (!section) return;
+
+            const saved = localStorage.getItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}Complete`);
+            if (saved) {
+                section.complete = JSON.parse(saved);
+            }
+            const savedDateTime = localStorage.getItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}CompleteDateTime`);
+            if (savedDateTime) {
+                section.dateTime = savedDateTime;
+            }
+            const savedUnlockReasons = localStorage.getItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}UnlockReasons`);
+            if (savedUnlockReasons) {
+                section.unlockReasons = JSON.parse(savedUnlockReasons);
+            }
+        }
+
+        function isSectionLocked(sectionName) {
+            const section = completeSections[sectionName];
+            return section ? section.complete : false;
+        }
+
+        function clearSectionUnlockHistory(sectionName) {
+            const section = completeSections[sectionName];
+            if (!section) return;
+
+            if (confirm('Are you sure you want to clear all unlock history?')) {
+                section.unlockReasons = [];
+                localStorage.setItem(`tableauCloudMigration${sectionName.replace(/\s+/g, '')}UnlockReasons`, JSON.stringify(section.unlockReasons));
+                filterTasks();
+            }
+        }
+
+        // Add Delta task to Users section
+        function addDelta(sectionIndex) {
+            const section = migrationSections[sectionIndex];
+
+            // Count existing deltas to determine the next number
+            const deltaCount = section.tasks.filter(t => t.task.startsWith('Delta')).length;
+            const deltaNumber = deltaCount + 1;
+
+            // Create new delta task
+            const newDelta = {
+                task: `Delta ${deltaNumber}`,
+                completed: false,
+                date: "",
+                owner: "IW",
+                runbook: "",
+                migrated: "",
+                notes: ""
+            };
+
+            section.tasks.push(newDelta);
+
+            // Add to allTasks array as well
+            allTasks.push({
+                section: section.section,
+                sectionIndex: sectionIndex,
+                ...newDelta
+            });
+
+            saveProgress();
+            filterTasks();
+            updateStats();
+        }
+
+        // Remove Delta task
+        function removeDelta(taskIndex) {
+            const task = allTasks[taskIndex];
+
+            // Confirm deletion
+            if (!confirm(`Remove "${task.task}"?`)) {
+                return;
+            }
+
+            // Remove from allTasks
+            allTasks.splice(taskIndex, 1);
+
+            // Remove from migrationSections
+            const section = migrationSections[task.sectionIndex];
+            const sectionTaskIndex = section.tasks.findIndex(t =>
+                t.task === task.task &&
+                t.date === task.date &&
+                t.owner === task.owner
+            );
+
+            if (sectionTaskIndex !== -1) {
+                section.tasks.splice(sectionTaskIndex, 1);
+            }
+
+            saveProgress();
+            filterTasks();
+            updateStats();
+        }
+
+        // Add Content Item to Content Migration section
+        function addContentItem(sectionIndex) {
+            const section = migrationSections[sectionIndex];
+
+            // Count existing added items to determine the next number
+            const addedCount = section.tasks.filter(t => t.task.startsWith('Added:')).length;
+            const itemNumber = addedCount + 1;
+
+            // Create new content item
+            const newItem = {
+                task: `Added: Item ${itemNumber}`,
+                completed: false,
+                date: "",
+                owner: "IW",
+                runbook: "",
+                migrated: "",
+                notes: ""
+            };
+
+            section.tasks.push(newItem);
+
+            // Add to allTasks array as well
+            allTasks.push({
+                section: section.section,
+                sectionIndex: sectionIndex,
+                ...newItem
+            });
+
+            saveProgress();
+            filterTasks();
+            updateStats();
+        }
+
+        // Filter and display tasks
+        function filterTasks() {
+            const sectionFilter = document.getElementById('sectionFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+
+            migrationSections.forEach((section, sectionIndex) => {
+                if (sectionFilter !== 'all' && sectionFilter !== sectionIndex.toString()) {
+                    return;
+                }
+
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+
+                // Add section ID for styling purposes
+                if (section.section === 'Flows') {
+                    sectionDiv.id = 'flowsSection';
+                } else if (section.section === 'Virtual Connections') {
+                    sectionDiv.id = 'virtualConnectionsSection';
+                } else if (section.section === 'Custom Views') {
+                    sectionDiv.id = 'customViewsSection';
+                } else if (section.section === 'Data Driven Alerts') {
+                    sectionDiv.id = 'dataDrivenAlertsSection';
+                } else if (section.section === 'Tags') {
+                    sectionDiv.id = 'tagsSection';
+                } else if (section.section === 'Accelerated Views') {
+                    sectionDiv.id = 'acceleratedViewsSection';
+                } else if (section.section === 'Webhooks') {
+                    sectionDiv.id = 'webhooksSection';
+                }
+
+                // Add two-column layout for Pre Requisites, Bridge Connections, and Content Migration sections
+                if (section.section === 'Pre Requisites' || section.section === 'Bridge Connections' || section.section === 'Content Migration') {
+                    sectionDiv.classList.add('two-column-layout');
+                }
+
+                // Create section header with optional checkbox for sections with optional content
+                let headerCheckbox = '';
+                if (section.section === 'Flows') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noFlowsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoFlowsChange(this.checked)">
+                            <span>No flows to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Virtual Connections') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noVirtualConnectionsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoVirtualConnectionsChange(this.checked)">
+                            <span>No virtual connections to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Custom Views') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noCustomViewsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoCustomViewsChange(this.checked)">
+                            <span>No custom views to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Data Driven Alerts') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noDataDrivenAlertsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoDataDrivenAlertsChange(this.checked)">
+                            <span>No data driven alerts to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Tags') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noTagsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoTagsChange(this.checked)">
+                            <span>No tags to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Accelerated Views') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noAcceleratedViewsCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoAcceleratedViewsChange(this.checked)">
+                            <span>No accelerated views to migrate</span>
+                        </label>
+                    `;
+                } else if (section.section === 'Webhooks') {
+                    headerCheckbox = `
+                        <label style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; cursor: pointer;">
+                            <input type="checkbox"
+                                   id="noWebhooksCheckbox"
+                                   style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);"
+                                   onchange="handleNoWebhooksChange(this.checked)">
+                            <span>No webhooks to migrate</span>
+                        </label>
+                    `;
+                }
+
+                sectionDiv.innerHTML = `
+                    <div class="section-header">
+                        <div class="section-title">${section.section}</div>
+                        ${headerCheckbox}
+                    </div>
+                `;
+
+                if (section.specialType === 'issues') {
+                    // Render issues log
+                    const issuesContainer = document.createElement('div');
+                    issuesContainer.className = 'issues-container';
+
+                    issues.forEach((issue, index) => {
+                        const issueDiv = document.createElement('div');
+                        issueDiv.className = 'issue-item';
+
+                        // Set background color based on status
+                        if (issue.status === 'Resolved') {
+                            issueDiv.style.backgroundColor = 'rgba(40, 167, 69, 0.15)'; // Green
+                        } else if (issue.status === 'In Progress') {
+                            issueDiv.style.backgroundColor = 'rgba(13, 110, 253, 0.15)'; // Blue
+                        } else if (issue.status === 'No') {
+                            issueDiv.style.backgroundColor = 'rgba(220, 53, 69, 0.15)'; // Red
+                        }
+
+                        issueDiv.innerHTML = `
+                            <input type="text" class="issue-input" placeholder="Describe the issue..."
+                                   value="${issue.issue}"
+                                   oninput="updateIssue(${index}, 'issue', this.value)">
+                            <select class="issue-select" onchange="updateIssue(${index}, 'status', this.value); filterTasks();">
+                                <option value="Awaiting" ${issue.status === 'Awaiting' ? 'selected' : ''}>Awaiting</option>
+                                <option value="In Progress" ${issue.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Resolved" ${issue.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="No" ${issue.status === 'No' ? 'selected' : ''}>No</option>
+                            </select>
+                            <input type="date" class="question-date"
+                                   value="${issue.date}"
+                                   onchange="updateIssue(${index}, 'date', this.value)">
+                        `;
+                        issuesContainer.appendChild(issueDiv);
+                    });
+
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'add-issue-btn';
+                    addBtn.textContent = 'Add Issue';
+                    addBtn.onclick = addIssue;
+
+                    sectionDiv.appendChild(issuesContainer);
+                    sectionDiv.appendChild(addBtn);
+
+                } else if (section.specialType === 'validation') {
+                    // Render validation table
+                    const table = document.createElement('table');
+                    table.className = 'validation-table';
+
+                    const headers = ['Migrated Content', 'Runbook', 'Cloud'];
+                    const rows = [
+                        {label: 'Users', key: 'users'},
+                        {label: 'Site Admin Creators (Server Admins)', key: 'siteAdminCreators'},
+                        {label: 'Site Admin Explorers', key: 'siteAdminExplorers'},
+                        {label: 'Creators', key: 'creators'},
+                        {label: 'Explorers', key: 'explorers'},
+                        {label: 'Viewers', key: 'viewers'},
+                        {label: 'Groupss', key: 'groups'},
+                        {label: 'Projects (excluding default/samples)', key: 'projects'},
+                        {label: 'Workbooks', key: 'workbooks'},
+                        {label: 'Published Data Sources', key: 'dataSources'},
+                        {label: 'Metrics', key: 'metrics'},
+                        {label: 'Ask Data Lenses', key: 'askDataLenses'},
+                        {label: 'Flows', key: 'flows'},
+                        {label: 'Data Roles', key: 'dataRoles'},
+                        {label: 'Virtual Connections', key: 'virtualConnections'},
+                        {label: 'Custom Views', key: 'customViews'},
+                        {label: 'Subscriptions', key: 'subscriptions'},
+                        {label: 'Data Driven Alerts', key: 'dataDrivenAlerts'},
+                        {label: 'Collections', key: 'collections'},
+                        {label: 'View Accelerations', key: 'viewAccelerations'},
+                        {label: 'Extensions', key: 'extensions'},
+                        {label: 'Webhooks', key: 'webhooks'},
+                        {label: 'Favourites', key: 'favourites'},
+                        {label: 'Tags', key: 'tags'}
+                    ];
+
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                ${headers.map(h => `<th>${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map(row => `
+                                <tr>
+                                    <td>${row.label}</td>
+                                    <td><input type="text" value="${validationData[row.key].runbook}"
+                                               oninput="updateValidation('${row.key}', 'runbook', this.value)"></td>
+                                    <td><input type="text" value="${validationData[row.key].cloud}"
+                                               oninput="updateValidation('${row.key}', 'cloud', this.value)"></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+
+                    sectionDiv.appendChild(table);
+
+                } else if (section.tasks) {
+                    // Render regular tasks
+                    let filteredTasks = allTasks.filter(t => t.sectionIndex === sectionIndex);
+
+                    if (statusFilter === 'completed') {
+                        filteredTasks = filteredTasks.filter(t => t.completed);
+                    } else if (statusFilter === 'incomplete') {
+                        filteredTasks = filteredTasks.filter(t => !t.completed);
+                    }
+
+                    // Create a wrapper for two-column layout sections
+                    const tasksWrapper = document.createElement('div');
+
+                    // Add ID for sections with optional content to enable visibility toggling
+                    if (section.section === 'Flows') {
+                        tasksWrapper.id = 'migrateFlowsContent';
+                    } else if (section.section === 'Virtual Connections') {
+                        tasksWrapper.id = 'migrateVirtualConnectionsContent';
+                    } else if (section.section === 'Custom Views') {
+                        tasksWrapper.id = 'migrateCustomViewsContent';
+                    } else if (section.section === 'Data Driven Alerts') {
+                        tasksWrapper.id = 'migrateDataDrivenAlertsContent';
+                    } else if (section.section === 'Tags') {
+                        tasksWrapper.id = 'migrateTagsContent';
+                    } else if (section.section === 'Accelerated Views') {
+                        tasksWrapper.id = 'migrateAcceleratedViewsContent';
+                    } else if (section.section === 'Webhooks') {
+                        tasksWrapper.id = 'migrateWebhooksContent';
+                    }
+
+                    filteredTasks.forEach(task => {
+                        const taskIndex = allTasks.indexOf(task);
+                        const taskDiv = document.createElement('div');
+                        taskDiv.className = `question-item ${task.completed ? 'completed' : ''}`;
+
+                        let taskContent = '';
+
+                        if (task.runbook !== undefined && task.migrated !== undefined) {
+                            // Special layout for sections with runbook/migrated/notes: two-column layout with task/fields on left, notes on right
+                            taskDiv.style.display = 'grid';
+                            taskDiv.style.gridTemplateColumns = '1fr 1fr';
+                            taskDiv.style.gap = '1rem';
+                            taskDiv.style.position = 'relative';
+
+                            // Check if this section is locked
+                            const isUserMigration = section.section === 'Users';
+                            const isGroups = section.section === 'Groups';
+                            const isProjectHierarchy = section.section === 'Project Hierarchy';
+                            const isProjectPermissions = section.section === 'Project Permissions';
+                            const isSiteSetup = section.section === 'Site Setup';
+                            const isLocked = (isUserMigration && isUserMigrationLocked()) ||
+                                           (isGroups && isGroupsLocked()) ||
+                                           (isProjectHierarchy && isProjectHierarchyLocked()) ||
+                                           (isProjectPermissions && isProjectPermissionsLocked()) ||
+                                           isSectionLocked(section.section);
+                            const disabledAttr = isLocked ? 'disabled' : '';
+                            const lockedStyle = isLocked ? 'opacity: 0.6; cursor: not-allowed;' : '';
+
+                            // Add close button for Delta tasks (Users) and added items (other sections)
+                            const isRemovable = task.task.startsWith('Delta') || task.task.startsWith('Added:');
+                            const closeButton = (isRemovable && !isLocked) ? `
+                                <button onclick="removeDelta(${taskIndex})"
+                                        style="position: absolute; top: 0.5rem; right: 0.5rem;
+                                               background: #dc3545; color: white; border: none;
+                                               border-radius: 50%; width: 24px; height: 24px;
+                                               cursor: pointer; font-size: 16px; line-height: 1;
+                                               display: flex; align-items: center; justify-content: center;
+                                               transition: all 0.3s ease; z-index: 10;"
+                                        onmouseover="this.style.background='#c82333'"
+                                        onmouseout="this.style.background='#dc3545'">×</button>
+                            ` : '';
+
+                            // Site Setup section has different layout
+                            if (isSiteSetup) {
+                                // SMTP task has yes/no checkbox
+                                if (task.task === 'SMTP') {
+                                    // Store SMTP custom value in runbook field, tested value in migrated field, details in notes
+                                    const smtpCustomUsed = task.runbook === 'yes';
+                                    const smtpTested = task.migrated === 'yes';
+                                    const smtpTestedDisabled = !smtpCustomUsed || isLocked;
+                                    const smtpTestedDisabledAttr = smtpTestedDisabled ? 'disabled' : '';
+                                    const smtpTestedStyle = smtpTestedDisabled ? 'opacity: 0.4; cursor: not-allowed;' : '';
+                                    const smtpDetailsDisabled = !smtpCustomUsed || isLocked;
+                                    const smtpDetailsDisabledAttr = smtpDetailsDisabled ? 'disabled' : '';
+                                    const smtpDetailsStyle = smtpDetailsDisabled ? 'opacity: 0.4; cursor: not-allowed;' : '';
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Is Custom SMTP being used?</label>
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label style="display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                                        <input type="radio" name="smtp-custom-${taskIndex}"
+                                                               value="yes"
+                                                               ${smtpCustomUsed ? 'checked' : ''}
+                                                               ${disabledAttr}
+                                                               onchange="handleSMTPCustomChange(${taskIndex}, true)"
+                                                               style="cursor: pointer;">
+                                                        <span style="font-size: 0.85rem;">Yes</span>
+                                                    </label>
+                                                    <label style="display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                                        <input type="radio" name="smtp-custom-${taskIndex}"
+                                                               value="no"
+                                                               ${!smtpCustomUsed ? 'checked' : ''}
+                                                               ${disabledAttr}
+                                                               onchange="handleSMTPCustomChange(${taskIndex}, false)"
+                                                               style="cursor: pointer;">
+                                                        <span style="font-size: 0.85rem;">No</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; ${smtpTestedStyle}">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Has SMTP been set up and tested on the cloud site?</label>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox" id="smtp-tested-${taskIndex}"
+                                                           ${smtpTested ? 'checked' : ''}
+                                                           ${smtpTestedDisabledAttr}
+                                                           onchange="handleMigratedChange(${taskIndex}, this.checked ? 'yes' : 'no')">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; ${smtpDetailsStyle}">
+                                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Provide SMTP details</label>
+                                            <textarea
+                                                class="client-info-textarea"
+                                                id="smtp-details-${taskIndex}"
+                                                placeholder="Provide SMTP details..."
+                                                ${smtpDetailsDisabledAttr}
+                                                onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                style="min-height: 100%; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                        </div>
+                                    `;
+                                } else if (task.task === 'Data Connectivity') {
+                                    // Data Connectivity task has text box for connectivity details
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Provide connectivity details</label>
+                                                <textarea
+                                                    class="client-info-textarea"
+                                                    placeholder="Describe connectivity details..."
+                                                    ${disabledAttr}
+                                                    onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                    style="min-height: 80px; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                            </div>
+                                        </div>
+                                    `;
+                                } else if (task.task === 'Custom Domain') {
+                                    // Custom Domain task has yes/no checkbox (similar to SMTP)
+                                    const customDomainUsed = task.runbook === 'yes';
+                                    const domainTested = task.migrated === 'yes';
+                                    const domainTestedDisabled = !customDomainUsed || isLocked;
+                                    const domainTestedDisabledAttr = domainTestedDisabled ? 'disabled' : '';
+                                    const domainTestedStyle = domainTestedDisabled ? 'opacity: 0.4; cursor: not-allowed;' : '';
+                                    const domainDetailsDisabled = !customDomainUsed || isLocked;
+                                    const domainDetailsDisabledAttr = domainDetailsDisabled ? 'disabled' : '';
+                                    const domainDetailsStyle = domainDetailsDisabled ? 'opacity: 0.4; cursor: not-allowed;' : '';
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Is Custom Domain being used?</label>
+                                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                                    <label style="display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                                        <input type="radio" name="domain-custom-${taskIndex}"
+                                                               value="yes"
+                                                               ${customDomainUsed ? 'checked' : ''}
+                                                               ${disabledAttr}
+                                                               onchange="handleCustomDomainChange(${taskIndex}, true)"
+                                                               style="cursor: pointer;">
+                                                        <span style="font-size: 0.85rem;">Yes</span>
+                                                    </label>
+                                                    <label style="display: flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                                                        <input type="radio" name="domain-custom-${taskIndex}"
+                                                               value="no"
+                                                               ${!customDomainUsed ? 'checked' : ''}
+                                                               ${disabledAttr}
+                                                               onchange="handleCustomDomainChange(${taskIndex}, false)"
+                                                               style="cursor: pointer;">
+                                                        <span style="font-size: 0.85rem;">No</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; ${domainTestedStyle}">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Has Custom Domain been set up and tested on the cloud site?</label>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox" id="domain-tested-${taskIndex}"
+                                                           ${domainTested ? 'checked' : ''}
+                                                           ${domainTestedDisabledAttr}
+                                                           onchange="handleMigratedChange(${taskIndex}, this.checked ? 'yes' : 'no')">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; ${domainDetailsStyle}">
+                                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Provide Custom Domain details</label>
+                                            <textarea
+                                                class="client-info-textarea"
+                                                id="domain-details-${taskIndex}"
+                                                placeholder="Provide Custom Domain details..."
+                                                ${domainDetailsDisabledAttr}
+                                                onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                style="min-height: 100%; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                        </div>
+                                    `;
+                                } else {
+                                    // Authentication task
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Provide Authentication mechanism</label>
+                                                <textarea
+                                                    class="client-info-textarea"
+                                                    placeholder="Describe authentication mechanism..."
+                                                    ${disabledAttr}
+                                                    onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                    style="min-height: 80px; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; ${lockedStyle}">
+                                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">Additional details</label>
+                                            <textarea
+                                                class="client-info-textarea"
+                                                placeholder="Additional details..."
+                                                ${disabledAttr}
+                                                onchange="handleRunbookChange(${taskIndex}, this.value)"
+                                                style="min-height: 100%; width: 100%; font-size: 0.85rem;">${task.runbook || ''}</textarea>
+                                        </div>
+                                    `;
+                                }
+                            } else {
+                                // Check if this is a Validation task (simplified layout)
+                                if (task.task.includes('Validation')) {
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; ${lockedStyle}">
+                                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">${task.task} notes</label>
+                                            <textarea
+                                                class="client-info-textarea"
+                                                placeholder="Provide some detail..."
+                                                ${disabledAttr}
+                                                onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                style="min-height: 100%; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                        </div>
+                                    `;
+                                } else {
+                                    // Regular task layout with runbook, migrated, and owner
+                                    taskContent = `
+                                        ${closeButton}
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem; ${lockedStyle}">
+                                            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; align-items: center;">
+                                                <div class="question-text">${task.task}</div>
+                                                <div class="checkbox-wrapper">
+                                                    <input type="checkbox" class="question-checkbox"
+                                                           ${task.completed ? 'checked' : ''}
+                                                           ${disabledAttr}
+                                                           onchange="toggleTask(${taskIndex})">
+                                                </div>
+                                                <input type="date" class="question-date"
+                                                       value="${task.date}"
+                                                       ${disabledAttr}
+                                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                            </div>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: center;">
+                                                <input type="number" class="question-date" placeholder="Runbook"
+                                                       value="${task.runbook || ''}"
+                                                       ${disabledAttr}
+                                                       onchange="handleRunbookChange(${taskIndex}, this.value)"
+                                                       style="min-width: 100px;">
+                                                <input type="number" class="question-date" placeholder="Migrated"
+                                                       value="${task.migrated || ''}"
+                                                       ${disabledAttr}
+                                                       onchange="handleMigratedChange(${taskIndex}, this.value)"
+                                                       style="min-width: 100px;">
+                                                <select class="question-owner" ${disabledAttr} onchange="handleOwnerChange(${taskIndex}, this.value)">
+                                                    <option value="IW" ${task.owner === 'IW' ? 'selected' : ''}>IW</option>
+                                                    <option value="Client" ${task.owner === 'Client' ? 'selected' : ''}>Client</option>
+                                                    <option value="IW/C" ${task.owner === 'IW/C' ? 'selected' : ''}>IW/C</option>
+                                                    <option value="" ${task.owner === '' ? 'selected' : ''}>-</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; ${lockedStyle}">
+                                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--dark);">${task.task} notes</label>
+                                            <textarea
+                                                class="client-info-textarea"
+                                                placeholder="Provide some detail..."
+                                                ${disabledAttr}
+                                                onchange="handleUserMigrationNotes(${taskIndex}, this.value)"
+                                                style="min-height: 100%; width: 100%; font-size: 0.85rem;">${task.notes || ''}</textarea>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        } else if (task.isYesNo) {
+                            // Yes/No question layout
+                            taskDiv.style.gridTemplateColumns = 'auto 1fr';
+                            taskDiv.style.alignItems = 'start';
+
+                            taskContent = `
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="question-checkbox"
+                                           ${task.completed ? 'checked' : ''}
+                                           onchange="toggleTask(${taskIndex})">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                                    <div class="question-text">${task.task}</div>
+                                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                                                <input type="radio" name="yesno_${taskIndex}" value="Yes"
+                                                       ${task.yesNoAnswer === 'Yes' ? 'checked' : ''}
+                                                       onchange="handleYesNoAnswer(${taskIndex}, 'Yes')"
+                                                       style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+                                                <span style="font-size: 0.9rem;">Yes</span>
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                                                <input type="radio" name="yesno_${taskIndex}" value="No"
+                                                       ${task.yesNoAnswer === 'No' ? 'checked' : ''}
+                                                       onchange="handleYesNoAnswer(${taskIndex}, 'No')"
+                                                       style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+                                                <span style="font-size: 0.9rem;">No</span>
+                                            </label>
+                                        </div>
+                                        <input type="date" class="question-date"
+                                               value="${task.date}"
+                                               onchange="handleDateChange(${taskIndex}, this.value)">
+                                        <select class="question-owner" onchange="handleOwnerChange(${taskIndex}, this.value)">
+                                            <option value="IW" ${task.owner === 'IW' ? 'selected' : ''}>IW</option>
+                                            <option value="Client" ${task.owner === 'Client' ? 'selected' : ''}>Client</option>
+                                            <option value="IW/C" ${task.owner === 'IW/C' ? 'selected' : ''}>IW/C</option>
+                                            <option value="" ${task.owner === '' ? 'selected' : ''}>-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // Regular checkbox question layout
+                            taskContent = `
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="question-checkbox"
+                                           ${task.completed ? 'checked' : ''}
+                                           onchange="toggleTask(${taskIndex})">
+                                </div>
+                                <div class="question-text">${task.task}</div>
+                                <input type="date" class="question-date"
+                                       value="${task.date}"
+                                       onchange="handleDateChange(${taskIndex}, this.value)">
+                                <select class="question-owner" onchange="handleOwnerChange(${taskIndex}, this.value)">
+                                    <option value="IW" ${task.owner === 'IW' ? 'selected' : ''}>IW</option>
+                                    <option value="Client" ${task.owner === 'Client' ? 'selected' : ''}>Client</option>
+                                    <option value="IW/C" ${task.owner === 'IW/C' ? 'selected' : ''}>IW/C</option>
+                                    <option value="" ${task.owner === '' ? 'selected' : ''}>-</option>
+                                </select>
+                            `;
+                        }
+
+                        taskDiv.innerHTML = taskContent;
+                        tasksWrapper.appendChild(taskDiv);
+                    });
+
+                    sectionDiv.appendChild(tasksWrapper);
+
+                    // Add buttons for sections with runbook/migrated/notes fields
+                    if (section.tasks.length > 0 && section.tasks[0].runbook !== undefined) {
+                        const buttonContainer = document.createElement('div');
+                        buttonContainer.style.display = 'flex';
+                        buttonContainer.style.gap = '0.75rem';
+                        buttonContainer.style.marginTop = '0.75rem';
+                        buttonContainer.style.flexWrap = 'wrap';
+
+                        const addItemBtn = document.createElement('button');
+                        addItemBtn.className = 'add-issue-btn';
+                        addItemBtn.textContent = '+ Add Delta';
+
+                        // List of all sections with complete button
+                        const sectionsWithCompleteButton = ['Site Setup', 'Users', 'Groups', 'Project Hierarchy', 'Project Permissions',
+                            'Data Sources', 'Workbooks', 'Flows', 'Virtual Connections', 'Custom Views',
+                            'Data Driven Alerts', 'Favorites', 'Tags', 'Accelerated Views', 'Webhooks',
+                            'Collections', 'Data Source Extract Refreshes', 'Workbook Extract Refreshes', 'Flow Run Tasks', 'Subscriptions'];
+
+                        if (sectionsWithCompleteButton.includes(section.section)) {
+
+                            // Determine which section this is
+                            const sectionName = section.section;
+                            let isComplete, completeDateTime, unlockReasons, toggleFunction, clearFunction;
+
+                            if (sectionName === 'Users') {
+                                isComplete = userMigrationComplete;
+                                completeDateTime = userMigrationCompleteDateTime;
+                                unlockReasons = userMigrationUnlockReasons;
+                                toggleFunction = toggleUserMigrationComplete;
+                                clearFunction = clearUnlockHistory;
+                                addItemBtn.onclick = () => addDelta(sectionIndex);
+                            } else if (sectionName === 'Groups') {
+                                isComplete = groupsComplete;
+                                completeDateTime = groupsCompleteDateTime;
+                                unlockReasons = groupsUnlockReasons;
+                                toggleFunction = toggleGroupsComplete;
+                                clearFunction = clearGroupsUnlockHistory;
+                                addItemBtn.onclick = () => addContentItem(sectionIndex);
+                            } else if (sectionName === 'Project Hierarchy') {
+                                isComplete = projectHierarchyComplete;
+                                completeDateTime = projectHierarchyCompleteDateTime;
+                                unlockReasons = projectHierarchyUnlockReasons;
+                                toggleFunction = toggleProjectHierarchyComplete;
+                                clearFunction = clearProjectHierarchyUnlockHistory;
+                                addItemBtn.onclick = () => addContentItem(sectionIndex);
+                            } else if (sectionName === 'Project Permissions') {
+                                isComplete = projectPermissionsComplete;
+                                completeDateTime = projectPermissionsCompleteDateTime;
+                                unlockReasons = projectPermissionsUnlockReasons;
+                                toggleFunction = toggleProjectPermissionsComplete;
+                                clearFunction = clearProjectPermissionsUnlockHistory;
+                                addItemBtn.onclick = () => addContentItem(sectionIndex);
+                            } else {
+                                // Use the generic complete sections object
+                                const sectionData = completeSections[sectionName];
+                                isComplete = sectionData.complete;
+                                completeDateTime = sectionData.dateTime;
+                                unlockReasons = sectionData.unlockReasons;
+                                toggleFunction = () => toggleSectionComplete(sectionName);
+                                clearFunction = () => clearSectionUnlockHistory(sectionName);
+                                addItemBtn.onclick = () => addContentItem(sectionIndex);
+                            }
+
+                            if (isComplete) {
+                                addItemBtn.disabled = true;
+                                addItemBtn.style.opacity = '0.5';
+                                addItemBtn.style.cursor = 'not-allowed';
+                            }
+
+                            // Add Complete button
+                            const completeBtn = document.createElement('button');
+                            completeBtn.className = 'add-issue-btn';
+                            completeBtn.style.background = isComplete ? 'var(--success)' : '#6c757d';
+                            completeBtn.style.marginLeft = 'auto';
+                            completeBtn.textContent = isComplete ? `${sectionName} Complete ✓` : `${sectionName} Complete`;
+                            completeBtn.onclick = toggleFunction;
+
+                            // Don't add "Add Delta" button for Site Setup section
+                            if (sectionName !== 'Site Setup') {
+                                buttonContainer.appendChild(addItemBtn);
+                            }
+                            buttonContainer.appendChild(completeBtn);
+
+                            // Add completion timestamp if complete
+                            if (isComplete && completeDateTime) {
+                                const completionInfo = document.createElement('div');
+                                completionInfo.style.display = 'flex';
+                                completionInfo.style.alignItems = 'center';
+                                completionInfo.style.gap = '0.5rem';
+                                completionInfo.style.fontSize = '0.85rem';
+                                completionInfo.style.color = 'var(--success)';
+                                completionInfo.style.fontWeight = '600';
+                                completionInfo.style.marginLeft = '1rem';
+                                completionInfo.innerHTML = `<span style="font-size: 1.2rem;">✓</span> Completed: ${formatCompleteDateTime(completeDateTime)}`;
+                                buttonContainer.appendChild(completionInfo);
+                            }
+
+                            // Add unlock reasons text area if there are any unlock reasons
+                            if (unlockReasons.length > 0) {
+                                const unlockReasonsContainer = document.createElement('div');
+                                unlockReasonsContainer.style.marginTop = '1rem';
+                                unlockReasonsContainer.style.width = '100%';
+
+                                const labelContainer = document.createElement('div');
+                                labelContainer.style.display = 'flex';
+                                labelContainer.style.justifyContent = 'space-between';
+                                labelContainer.style.alignItems = 'center';
+                                labelContainer.style.marginBottom = '0.5rem';
+
+                                const unlockReasonsLabel = document.createElement('label');
+                                unlockReasonsLabel.textContent = 'Unlock History:';
+                                unlockReasonsLabel.style.fontWeight = '600';
+                                unlockReasonsLabel.style.fontSize = '0.9rem';
+                                unlockReasonsLabel.style.color = 'var(--text)';
+
+                                const clearButton = document.createElement('button');
+                                clearButton.textContent = 'Clear History';
+                                clearButton.className = 'add-issue-btn';
+                                clearButton.style.background = '#dc3545';
+                                clearButton.style.padding = '0.25rem 0.75rem';
+                                clearButton.style.fontSize = '0.75rem';
+                                clearButton.style.marginTop = '0';
+                                clearButton.onclick = clearFunction;
+
+                                labelContainer.appendChild(unlockReasonsLabel);
+                                labelContainer.appendChild(clearButton);
+
+                                const unlockReasonsTextarea = document.createElement('textarea');
+                                unlockReasonsTextarea.readOnly = true;
+                                unlockReasonsTextarea.style.width = '100%';
+                                unlockReasonsTextarea.style.padding = '0.5rem';
+                                unlockReasonsTextarea.style.border = '1px solid var(--border)';
+                                unlockReasonsTextarea.style.borderRadius = '4px';
+                                unlockReasonsTextarea.style.fontFamily = 'inherit';
+                                unlockReasonsTextarea.style.fontSize = '0.85rem';
+                                unlockReasonsTextarea.style.backgroundColor = '#f8f9fa';
+                                unlockReasonsTextarea.style.color = 'var(--text)';
+                                unlockReasonsTextarea.style.resize = 'vertical';
+                                unlockReasonsTextarea.style.overflow = 'hidden';
+
+                                // Format unlock reasons for display
+                                const unlockReasonsText = unlockReasons.map((entry, index) => {
+                                    const formattedDate = formatCompleteDateTime(entry.timestamp);
+                                    return `${index + 1}. [${formattedDate}] ${entry.reason}`;
+                                }).join('\n\n');
+
+                                unlockReasonsTextarea.value = unlockReasonsText;
+
+                                // Auto-size the textarea based on content
+                                const lineCount = unlockReasonsText.split('\n').length;
+                                const lineHeight = 1.5; // em
+                                const padding = 1; // rem in total (0.5 top + 0.5 bottom)
+                                unlockReasonsTextarea.style.height = `calc(${lineCount * lineHeight}em + ${padding}rem)`;
+
+                                unlockReasonsContainer.appendChild(labelContainer);
+                                unlockReasonsContainer.appendChild(unlockReasonsTextarea);
+                                sectionDiv.appendChild(unlockReasonsContainer);
+                            }
+                        } else {
+                            addItemBtn.onclick = () => addContentItem(sectionIndex);
+                            buttonContainer.appendChild(addItemBtn);
+                        }
+
+                        sectionDiv.appendChild(buttonContainer);
+                    }
+                }
+
+                container.appendChild(sectionDiv);
+            });
+        }
+
+        // Issues management
+        function addIssue() {
+            issues.push({issue: '', status: 'Awaiting', date: ''});
+            saveIssues();
+            filterTasks();
+        }
+
+        function updateIssue(index, field, value) {
+            issues[index][field] = value;
+            saveIssues();
+        }
+
+        // Validation management
+        function updateValidation(key, field, value) {
+            validationData[key][field] = value;
+            saveValidationData();
+        }
+
+        // Update statistics
+        function updateStats() {
+            // Filter out tasks from sections that have "No [item] to migrate" checked
+            const activeTasks = allTasks.filter(t => {
+                if (t.section === 'Flows' && noFlowsToMigrate) return false;
+                if (t.section === 'Virtual Connections' && noVirtualConnectionsToMigrate) return false;
+                if (t.section === 'Custom Views' && noCustomViewsToMigrate) return false;
+                if (t.section === 'Data Driven Alerts' && noDataDrivenAlertsToMigrate) return false;
+                if (t.section === 'Tags' && noTagsToMigrate) return false;
+                if (t.section === 'Accelerated Views' && noAcceleratedViewsToMigrate) return false;
+                if (t.section === 'Webhooks' && noWebhooksToMigrate) return false;
+                return true;
+            });
+
+            const total = activeTasks.length;
+            const completed = activeTasks.filter(t => t.completed).length;
+            const remaining = total - completed;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('remainingTasks').textContent = remaining;
+            document.getElementById('progressPercentage').textContent = percentage + '%';
+        }
+
+        // Export to PDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const clientInfo = {
+                clientName: document.getElementById('clientName').value,
+                stakeholder: document.getElementById('stakeholder').value,
+                primaryContact: document.getElementById('primaryContact').value,
+                cloudSite: document.getElementById('cloudSite').value,
+                tableauVersion: document.getElementById('tableauVersion').value,
+                goLiveDate: document.getElementById('goLiveDate').value
+            };
+
+            let yPos = 20;
+
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('Tableau Cloud Migration Checklist', 20, yPos);
+            yPos += 10;
+
+            // Client Info
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            if (clientInfo.clientName) doc.text(`Client: ${clientInfo.clientName}`, 20, yPos += 7);
+            if (clientInfo.stakeholder) doc.text(`Stakeholder: ${clientInfo.stakeholder}`, 20, yPos += 6);
+            if (clientInfo.primaryContact) doc.text(`Contact: ${clientInfo.primaryContact}`, 20, yPos += 6);
+            if (clientInfo.cloudSite) doc.text(`Cloud Site: ${clientInfo.cloudSite}`, 20, yPos += 6);
+            if (clientInfo.tableauVersion) doc.text(`Version: ${clientInfo.tableauVersion}`, 20, yPos += 6);
+            if (clientInfo.goLiveDate) doc.text(`Go-Live: ${clientInfo.goLiveDate}`, 20, yPos += 6);
+
+            yPos += 10;
+
+            // Stats
+            const completed = allTasks.filter(t => t.completed).length;
+            const total = allTasks.length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Progress: ${completed}/${total} (${percentage}%)`, 20, yPos);
+            yPos += 10;
+
+            // Tasks by section
+            migrationSections.forEach((section) => {
+                if (section.tasks) {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(section.section, 20, yPos);
+                    yPos += 7;
+
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'normal');
+
+                    const sectionTasks = allTasks.filter(t => t.section === section.section);
+                    sectionTasks.forEach(task => {
+                        if (yPos > 280) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+
+                        const status = task.completed ? '[✓]' : '[ ]';
+                        const text = `${status} ${task.task}`;
+                        const lines = doc.splitTextToSize(text, 150);
+
+                        lines.forEach(line => {
+                            doc.text(line, 25, yPos);
+                            yPos += 5;
+                        });
+
+                        if (task.date) {
+                            doc.setFontSize(8);
+                            doc.text(`   Date: ${task.date} | Owner: ${task.owner}`, 25, yPos);
+                            yPos += 5;
+                            doc.setFontSize(9);
+                        }
+                    });
+
+                    yPos += 5;
+                }
+            });
+
+            doc.save('tableau-cloud-migration-checklist.pdf');
+        }
+
+        // Reset progress
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem('tableauCloudMigrationProgress');
+                localStorage.removeItem('tableauCloudMigrationClientInfo');
+                localStorage.removeItem('tableauCloudMigrationIssues');
+                localStorage.removeItem('tableauCloudMigrationValidation');
+                location.reload();
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
