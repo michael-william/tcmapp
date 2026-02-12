@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { ClientInfoField } from '@/components/molecules/ClientInfoField';
 import { cn } from '@/lib/utils';
 
-export const ClientInfoSection = ({ clientInfo = {}, onChange, readOnly = false, className }) => {
+export const ClientInfoSection = ({ clientInfo = {}, onChange, readOnly = false, className, columns = 2 }) => {
   const fields = [
     { key: 'clientName', label: 'Client Name', type: 'text' },
     { key: 'region', label: 'Region', type: 'text' },
@@ -25,13 +25,18 @@ export const ClientInfoSection = ({ clientInfo = {}, onChange, readOnly = false,
     onChange?.(key, value);
   };
 
+  // Dynamic grid class based on columns prop
+  const gridClass = columns === 3
+    ? 'grid grid-cols-1 md:grid-cols-3 gap-4'
+    : 'grid grid-cols-1 md:grid-cols-2 gap-4';
+
   return (
     <Card className={cn('animate-fadeIn', className)}>
       <CardHeader>
         <CardTitle>Client Information</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={gridClass}>
           {fields.map((field) => (
             <ClientInfoField
               key={field.key}

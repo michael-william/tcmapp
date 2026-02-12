@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 import { ContactsModal } from '@/components/organisms/ContactsModal';
 
-export const ContactsList = ({ clientName, guestContacts, interworksContacts }) => {
+export const ContactsList = ({ clientName, guestContacts, interworksContacts, variant = 'vertical' }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
 
@@ -24,9 +24,13 @@ export const ContactsList = ({ clientName, guestContacts, interworksContacts }) 
     ? guestContacts
     : interworksContacts;
 
+  const containerClass = variant === 'horizontal'
+    ? 'flex flex-row gap-3 items-center'
+    : 'flex flex-col gap-1 items-end';
+
   return (
     <>
-      <div className="flex flex-col gap-1 items-end">
+      <div className={containerClass}>
         <button
           onClick={() => openModal('client')}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"

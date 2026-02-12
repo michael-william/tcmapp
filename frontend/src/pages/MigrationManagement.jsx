@@ -8,13 +8,15 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MigrationLayout } from '@/components/templates/MigrationLayout';
-import { ChecklistOverview } from '@/components/organisms/ChecklistOverview';
+import { ManagementHeader } from '@/components/organisms/ManagementHeader';
+import { ActionToolbar } from '@/components/organisms/ActionToolbar';
 import { WeeklyNotesSection } from '@/components/organisms/WeeklyNotesSection';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { useManagement } from '@/hooks/useManagement';
 import { ArrowLeft, ClipboardList, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
 
 export const MigrationManagement = () => {
   const { id } = useParams();
@@ -32,44 +34,49 @@ export const MigrationManagement = () => {
     deleteNote,
   } = useManagement(id);
 
-  // Page header with navigation
-  const pageHeader = (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Dashboard
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-primary">
-            {management?.clientInfo?.clientName || 'Migration Management'}
-          </h1>
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => navigate(`/migration/${id}`)}
-        className="gap-2"
-      >
-        <ClipboardList className="h-4 w-4" />
-        View Checklist
-      </Button>
-    </div>
-  );
+  const [contacts, setContacts] = React.useState({ guest: [], interworks: [] });
+
+  // Fetch contacts when migration loads
+  useEffect(() => {
+    const fetchContacts = async () => {
+      if (!id) return;
+
+      try {
+        const response = await api.get(`/migrations/${id}`);
+        const migration = response.data.migration;
+
+        if (!migration?.clientId) return;
+
+        const clientId = migration.clientId._id || migration.clientId;
+        const usersResponse = await api.get(`/users?clientId=${clientId}`);
+        const users = usersResponse.data.users || [];
+
+        setContacts({
+          guest: users.filter(u => u.role === 'guest'),
+          interworks: users.filter(u => u.role === 'interworks'),
+        });
+      } catch (error) {
+        console.error('Failed to fetch contacts:', error);
+        // Fail silently - contacts are optional feature
+      }
+    };
+
+    fetchContacts();
+  }, [id]);
+
+  // Create management header content
+  const managementHeaderContent = management ? (
+    <ManagementHeader
+      clientInfo={management.clientInfo || {}}
+      progress={management.progress || { completed: 0, total: 0, percentage: 0 }}
+      guestContacts={contacts.guest}
+      interworksContacts={contacts.interworks}
+    />
+  ) : null;
 
   if (loading) {
     return (
-      <MigrationLayout
-        completed={0}
-        total={0}
-        percentage={0}
-        pageHeader={pageHeader}
-      >
+      <MigrationLayout>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -79,12 +86,7 @@ export const MigrationManagement = () => {
 
   if (error) {
     return (
-      <MigrationLayout
-        completed={0}
-        total={0}
-        percentage={0}
-        pageHeader={pageHeader}
-      >
+      <MigrationLayout>
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="py-12 text-center">
             <p className="text-destructive mb-4">{error}</p>
@@ -105,12 +107,7 @@ export const MigrationManagement = () => {
 
   if (!management) {
     return (
-      <MigrationLayout
-        completed={0}
-        total={0}
-        percentage={0}
-        pageHeader={pageHeader}
-      >
+      <MigrationLayout>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground mb-4">
@@ -123,23 +120,39 @@ export const MigrationManagement = () => {
     );
   }
 
-  const { completed = 0, total = 0, percentage = 0 } = management.progress || {};
+  // Create action toolbar content
+  const actionToolbarContent = (
+    <ActionToolbar>
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Overview
+        </Button>
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate(`/migration/${id}`)}
+        className="gap-2"
+      >
+        <ClipboardList className="h-4 w-4" />
+        View Checklist
+      </Button>
+    </ActionToolbar>
+  );
 
   return (
     <MigrationLayout
-      completed={completed}
-      total={total}
-      percentage={percentage}
-      clientName={management.clientInfo?.clientName}
-      pageHeader={pageHeader}
+      managementHeader={managementHeaderContent}
+      actionToolbar={actionToolbarContent}
     >
+      {/* Main Content */}
       <div className="space-y-6">
-        {/* Checklist Overview Section */}
-          <ChecklistOverview
-            clientInfo={management.clientInfo}
-            progress={management.progress}
-          />
-
         {/* Weekly Notes Section */}
         <WeeklyNotesSection
           notes={management.weeklyNotes}

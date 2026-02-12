@@ -87,4 +87,37 @@ describe('ClientInfoSection Component', () => {
     expect(screen.getByLabelText('Go-Live Date')).toHaveAttribute('type', 'date');
     expect(screen.getByLabelText('Client Name')).toHaveAttribute('type', 'text');
   });
+
+  it('defaults to 2-column layout', () => {
+    const { container } = render(<ClientInfoSection clientInfo={mockClientInfo} />);
+    const grid = container.querySelector('.grid');
+
+    expect(grid).toHaveClass('md:grid-cols-2');
+    expect(grid).not.toHaveClass('md:grid-cols-3');
+  });
+
+  it('supports 3-column layout with columns prop', () => {
+    const { container } = render(<ClientInfoSection clientInfo={mockClientInfo} columns={3} />);
+    const grid = container.querySelector('.grid');
+
+    expect(grid).toHaveClass('md:grid-cols-3');
+    expect(grid).not.toHaveClass('md:grid-cols-2');
+  });
+
+  it('renders all fields correctly in 3-column layout', () => {
+    render(<ClientInfoSection clientInfo={mockClientInfo} columns={3} />);
+
+    // Verify all fields still render
+    expect(screen.getByLabelText('Client Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Region')).toBeInTheDocument();
+    expect(screen.getByLabelText('Server Version')).toBeInTheDocument();
+    expect(screen.getByLabelText('Server URL')).toBeInTheDocument();
+    expect(screen.getByLabelText('Kickoff Date')).toBeInTheDocument();
+    expect(screen.getByLabelText('Primary Contact')).toBeInTheDocument();
+    expect(screen.getByLabelText('Meeting Cadence')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go-Live Date')).toBeInTheDocument();
+
+    // Verify values still display correctly
+    expect(screen.getByDisplayValue('Acme Corp')).toBeInTheDocument();
+  });
 });
