@@ -31,6 +31,12 @@ const questionSchema = new mongoose.Schema({
     default: false,
   },
   timestamp: Date,
+  updatedBy: {
+    type: String, // User email who last modified this question
+  },
+  updatedAt: {
+    type: Date, // When this question was last modified
+  },
   order: {
     type: Number,
     required: true,

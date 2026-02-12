@@ -261,7 +261,45 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
 
     if (questions) {
       // Transform incoming questions from helpText to metadata.infoTooltip
-      migration.questions = questions.map(transformQuestionForBackend);
+      const transformedQuestions = questions.map(transformQuestionForBackend);
+
+      // Track who updated each question and when
+      migration.questions = transformedQuestions.map((incomingQ) => {
+        const existingQ = migration.questions.find(q => q.id === incomingQ.id);
+
+        // If question exists, check if answer or other fields changed
+        if (existingQ) {
+          const answerChanged = JSON.stringify(existingQ.answer) !== JSON.stringify(incomingQ.answer);
+          const completedChanged = existingQ.completed !== incomingQ.completed;
+
+          // Check if question is being cleared (un-answered)
+          const isBeingCleared =
+            incomingQ.completed === false &&
+            (incomingQ.answer === null || incomingQ.answer === undefined || incomingQ.answer === '');
+
+          if (isBeingCleared) {
+            // Clear tracking fields when answer is removed
+            incomingQ.updatedBy = null;
+            incomingQ.updatedAt = null;
+          } else if (answerChanged || completedChanged) {
+            // Set tracking fields when answer changes
+            incomingQ.updatedBy = req.user.email;
+            incomingQ.updatedAt = new Date();
+          } else {
+            // Preserve existing tracking data if no changes
+            incomingQ.updatedBy = existingQ.updatedBy;
+            incomingQ.updatedAt = existingQ.updatedAt;
+          }
+        } else {
+          // New question - set initial tracking data if it has an answer
+          if (incomingQ.answer !== null && incomingQ.answer !== undefined && incomingQ.answer !== '') {
+            incomingQ.updatedBy = req.user.email;
+            incomingQ.updatedAt = new Date();
+          }
+        }
+
+        return incomingQ;
+      });
     }
 
     if (additionalNotes !== undefined) {
@@ -558,6 +596,10 @@ router.put(
         }
         migration.questions[questionIndex].metadata.infoTooltip = req.body.helpText;
       }
+
+      // Track who modified this question and when (for InterWorks edits to question structure)
+      migration.questions[questionIndex].updatedBy = req.user.email;
+      migration.questions[questionIndex].updatedAt = new Date();
 
       await migration.save();
 
