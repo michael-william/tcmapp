@@ -1,20 +1,20 @@
 /**
  * QuestionCheckbox Component
  *
- * Checkbox question with label, optional help tooltip, and timestamp.
+ * Checkbox question with label, optional help tooltip, and update tracking.
  */
 
 import React from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Label } from '@/components/ui/Label';
 import { InfoTooltip } from '@/components/atoms/InfoTooltip';
+import { UpdateInfo } from '@/components/atoms/UpdateInfo';
 import { cn } from '@/lib/utils';
 
 export const QuestionCheckbox = ({
   question,
   checked = false,
   onCheckedChange,
-  timestamp,
   disabled = false,
   className,
 }) => {
@@ -24,16 +24,9 @@ export const QuestionCheckbox = ({
   };
 
   return (
-    <div className={cn('flex items-start space-x-3', className)}>
-      <Checkbox
-        id={question._id}
-        checked={checked}
-        onCheckedChange={handleChange}
-        disabled={disabled}
-        className={cn('mt-1', disabled && 'cursor-not-allowed')}
-      />
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
+    <div className={className}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 flex-1">
           <Label
             htmlFor={question._id}
             className={cn(
@@ -45,12 +38,15 @@ export const QuestionCheckbox = ({
           </Label>
           {question.helpText && <InfoTooltip content={question.helpText} />}
         </div>
-        {checked && timestamp && !disabled && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Completed: {new Date(timestamp).toLocaleDateString()}
-          </p>
-        )}
+        <Checkbox
+          id={question._id}
+          checked={checked}
+          onCheckedChange={handleChange}
+          disabled={disabled}
+          className={cn('shrink-0', disabled && 'cursor-not-allowed')}
+        />
       </div>
+      {!disabled && <UpdateInfo updatedAt={question.updatedAt} updatedBy={question.updatedBy} />}
     </div>
   );
 };

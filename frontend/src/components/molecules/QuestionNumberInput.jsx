@@ -9,6 +9,7 @@ import React from 'react';
 import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { InfoTooltip } from '@/components/atoms/InfoTooltip';
+import { UpdateInfo } from '@/components/atoms/UpdateInfo';
 import { cn } from '@/lib/utils';
 
 export const QuestionNumberInput = ({
@@ -35,31 +36,34 @@ export const QuestionNumberInput = ({
   };
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex items-center gap-2">
-        <Label htmlFor={question._id} className="text-base font-normal">
-          {question.questionText}
-        </Label>
-        {question.metadata?.infoTooltip && (
-          <InfoTooltip content={question.metadata.infoTooltip} />
-        )}
+    <div className={className}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 flex-1">
+          <Label htmlFor={question._id} className="text-base font-normal">
+            {question.questionText}
+          </Label>
+          {question.metadata?.infoTooltip && (
+            <InfoTooltip content={question.metadata.infoTooltip} />
+          )}
+        </div>
+        <Input
+          id={question._id}
+          type="number"
+          value={value || ''}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          min={min}
+          max={max}
+          placeholder="Enter number..."
+          className={cn('w-32 shrink-0', error && 'border-red-500')}
+        />
       </div>
-      <Input
-        id={question._id}
-        type="number"
-        value={value || ''}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        min={min}
-        max={max}
-        placeholder="Enter number..."
-        className={cn('max-w-xs', error && 'border-red-500')}
-      />
       {error && (
-        <p className="text-sm text-red-500">
+        <p className="text-sm text-red-500 mt-2">
           Please enter a valid number within the allowed range.
         </p>
       )}
+      <UpdateInfo updatedAt={question.updatedAt} updatedBy={question.updatedBy} />
     </div>
   );
 };
