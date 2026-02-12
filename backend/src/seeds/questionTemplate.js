@@ -51,8 +51,9 @@ const questionTemplate = [
   {
     id: 'q5',
     section: 'Communications',
-    questionText: 'Communication assistance offered?',
-    questionType: 'checkbox',
+    questionText: 'Would you like assistance with your communication strategy?',
+    questionType: 'yesNo',
+    options: ['Yes', 'No'],
     answer: null,
     completed: false,
     order: 5,
@@ -161,7 +162,7 @@ const questionTemplate = [
   {
     id: 'q15',
     section: 'Access & Connectivity',
-    questionText: 'Tool installed on Jumpbox?',
+    questionText: 'TCM tool installed on Jumpbox?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
@@ -218,7 +219,8 @@ const questionTemplate = [
     id: 'q20',
     section: 'Tableau Server',
     questionText: 'Is there a time delay for client to review Runbook?',
-    questionType: 'checkbox',
+    questionType: 'yesNo',
+    options: ['Yes', 'No'],
     answer: null,
     completed: false,
     order: 20,
@@ -239,7 +241,7 @@ const questionTemplate = [
   {
     id: 'q22',
     section: 'Tableau Server',
-    questionText: 'Has any housekeeping taken place?',
+    questionText: 'Server ready to migrate?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
@@ -367,7 +369,7 @@ const questionTemplate = [
     questionText: 'Confirm Tableau Cloud SKU type',
     questionType: 'dropdown',
     options: ['Standard', 'Enterprise', 'Tableau +'],
-    answer: null,
+    answer: 'Standard',
     completed: false,
     order: 33,
     metadata: {},
@@ -376,20 +378,20 @@ const questionTemplate = [
     id: 'q34',
     section: 'Tableau Cloud',
     questionText: 'Number of Expected Sites',
-    questionType: 'numberInput',
-    options: null,
-    answer: 1,
+    questionType: 'dropdown',
+    options: [],
+    answer: null,
     completed: false,
     order: 34,
     metadata: {
       dependsOn: 'q33',
+      dynamicOptions: true,
       skuLimits: {
-        'Standard': 3,
+        'Standard': 5,
         'Enterprise': 10,
         'Tableau +': 50,
       },
-      min: 1,
-      infoTooltip: 'Site limits vary by SKU: Standard (3), Enterprise (10), Tableau + (50)',
+      infoTooltip: 'Site limits vary by SKU: Standard (5), Enterprise (10), Tableau + (50)',
     },
   },
   {
@@ -569,7 +571,8 @@ const questionTemplate = [
     id: 'q51',
     section: 'Tableau Bridge',
     questionText: 'Will the data sources be using Windows Auth?',
-    questionType: 'checkbox',
+    questionType: 'yesNo',
+    options: ['Yes', 'No'],
     answer: null,
     completed: false,
     order: 51,
@@ -589,11 +592,15 @@ const questionTemplate = [
     id: 'q53',
     section: 'Cloud Data Sources',
     questionText: 'Is Private Connect required?',
-    questionType: 'checkbox',
+    questionType: 'yesNo',
+    options: ['Yes', 'No'],
     answer: null,
     completed: false,
     order: 53,
-    metadata: {},
+    metadata: {
+      hasConditionalInput: true,
+      conditionalText: 'What is the pod for the instance with Private Connect?',
+    },
   },
   {
     id: 'q54',
@@ -679,12 +686,25 @@ const notesQuestions = {
     order: 61,
     metadata: {},
   },
+  generalNotes: {
+    id: 'q62',
+    section: 'General Notes',
+    questionText: 'Additional notes or comments',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 62,
+    metadata: {
+      isFullWidth: true,
+    },
+  },
 };
 
 // Insert questions in reverse order to avoid index shifts
 let updatedQuestions = [...questionTemplate];
 
 // Insert from LAST to FIRST
+updatedQuestions.splice(55, 0, notesQuestions.generalNotes);      // At the very end
 updatedQuestions.splice(55, 0, notesQuestions.cloudDataSources);  // After q55 (index 54)
 updatedQuestions.splice(52, 0, notesQuestions.tableauBridge);     // After q52 (index 51)
 updatedQuestions.splice(31, 0, notesQuestions.preFlightChecks);   // After q31 (index 30)
