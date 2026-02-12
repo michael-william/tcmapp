@@ -34,6 +34,7 @@ export const useMigration = (migrationId) => {
       const fetchedMigration = response.data.migration;
       setMigration(fetchedMigration);
       migrationRef.current = fetchedMigration; // Keep ref in sync
+      setHasUnsavedChanges(false); // Reset unsaved flag when loading fresh data
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load migration');
       console.error('Error fetching migration:', err);
@@ -87,13 +88,18 @@ export const useMigration = (migrationId) => {
     try {
       setSaving(true);
       setSaveError(null);
-      await api.put(`/migrations/${migrationId}`, {
+      const response = await api.put(`/migrations/${migrationId}`, {
         clientInfo: currentMigration.clientInfo,
         questions: currentMigration.questions,
       });
 
-      // Don't replace entire state - it's already correct
-      // Just update metadata
+      // Update state with backend response to get updatedAt and updatedBy fields
+      if (response.data.migration) {
+        const updatedMigration = response.data.migration;
+        setMigration(updatedMigration);
+        migrationRef.current = updatedMigration;
+      }
+
       setLastSaved(new Date());
       setHasUnsavedChanges(false); // Clear unsaved flag
       return { success: true };
