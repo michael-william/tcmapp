@@ -19,8 +19,27 @@ export const MigrationLayout = ({
   guestContacts,
   interworksContacts,
   onNavigate,
-  pageHeader,
   className,
+
+  // NEW: Add all the props needed by ProgressSection
+  saving,
+  lastSaved,
+  saveError,
+  hasUnsavedChanges,
+  onRetry,
+  selectedSection,
+  onSectionChange,
+  selectedStatus,
+  onStatusChange,
+  sections,
+  isInterWorks,
+  hasManagement,
+  enablingManagement,
+  migrationId,
+  onSave,
+  onEnableManagement,
+  onViewManagement,
+  onOpenManagementModal,
 }) => {
   const { user, logout } = useAuth();
 
@@ -40,18 +59,29 @@ export const MigrationLayout = ({
         clientName={clientName}
         guestContacts={guestContacts}
         interworksContacts={interworksContacts}
+        saving={saving}
+        lastSaved={lastSaved}
+        saveError={saveError}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onRetry={onRetry}
+        selectedSection={selectedSection}
+        onSectionChange={onSectionChange}
+        selectedStatus={selectedStatus}
+        onStatusChange={onStatusChange}
+        sections={sections}
+        isInterWorks={isInterWorks}
+        hasManagement={hasManagement}
+        enablingManagement={enablingManagement}
+        migrationId={migrationId}
+        onSave={onSave}
+        onNavigate={onNavigate}
+        onEnableManagement={onEnableManagement}
+        onViewManagement={onViewManagement}
+        onOpenManagementModal={onOpenManagementModal}
       />
 
-      {pageHeader && (
-        <div className="bg-white/80 backdrop-blur-lg border-b px-4 py-4 sticky top-[200px] z-30">
-          <div className="container mx-auto">
-            {pageHeader}
-          </div>
-        </div>
-      )}
-
       <main className={cn('container mx-auto px-4 py-8', className)}>
-        <div className="glass-container bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl">
+        <div className="glass-container bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl max-w-[85%] mx-auto">
           {children}
         </div>
       </main>
