@@ -59,7 +59,8 @@ export const MigrationChecklist = () => {
 
     return migration.questions.map(q => {
       // Special handling for Q34 - dynamic options based on Q33
-      if (q.id === 'q34' && q.metadata?.dynamicOptions) {
+      // Check for dependsOn and skuLimits instead of dynamicOptions flag
+      if (q.id === 'q34' && q.metadata?.dependsOn === 'q33' && q.metadata?.skuLimits) {
         const q33 = migration.questions.find(q2 => q2.id === 'q33');
         const skuType = q33?.answer;
 
@@ -67,12 +68,7 @@ export const MigrationChecklist = () => {
           return { ...q, options: [] };
         }
 
-        const skuLimits = q.metadata?.skuLimits || {
-          'Standard': 5,
-          'Enterprise': 10,
-          'Tableau +': 50,
-        };
-
+        const skuLimits = q.metadata.skuLimits;
         const maxSites = skuLimits[skuType] || 50;
         const dynamicOptions = Array.from({ length: maxSites }, (_, i) => (i + 1).toString());
 
