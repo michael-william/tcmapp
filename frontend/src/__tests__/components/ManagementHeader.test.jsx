@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '../test-utils';
+import { render, screen, waitFor } from '../test-utils';
+import userEvent from '@testing-library/user-event';
 import { ManagementHeader } from '@/components/organisms/ManagementHeader';
 
 describe('ManagementHeader', () => {
@@ -125,5 +126,101 @@ describe('ManagementHeader', () => {
     // Contact buttons should have aria-labels for accessibility
     expect(screen.getByLabelText('View client contacts')).toBeInTheDocument();
     expect(screen.getByLabelText('View InterWorks team contacts')).toBeInTheDocument();
+  });
+
+  it('renders with chevron icon pointing down when expanded', () => {
+    render(<ManagementHeader clientInfo={mockClientInfo} />);
+
+    // Check for ChevronDown icon (should be present)
+    const chevron = document.querySelector('svg');
+    expect(chevron).toBeInTheDocument();
+
+    // Should NOT have rotate class when expanded
+    expect(chevron).not.toHaveClass('rotate-[-90deg]');
+  });
+
+  it('toggles collapsed state when clicking header', async () => {
+    const user = userEvent.setup();
+    render(<ManagementHeader clientInfo={mockClientInfo} />);
+
+    // Should start expanded - fields visible
+    expect(screen.getByDisplayValue('Acme Corp')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('North America')).toBeInTheDocument();
+
+    // Get the header trigger (the CardHeader with cursor-pointer class)
+    const header = screen.getByText('Client Information').closest('div[class*="cursor-pointer"]');
+    expect(header).toBeInTheDocument();
+
+    // Click header to collapse
+    await user.click(header);
+
+    // Wait for collapse animation and check that fields are hidden
+    await waitFor(() => {
+      // After collapse, content should be hidden (Radix Collapsible sets display:none or height:0)
+      const clientNameField = screen.queryByDisplayValue('Acme Corp');
+      // The field might still be in the DOM but not visible
+      if (clientNameField) {
+        expect(clientNameField).not.toBeVisible();
+      } else {
+        // Or it might be removed from the DOM entirely
+        expect(clientNameField).not.toBeInTheDocument();
+      }
+    });
+
+    // Check chevron has rotated
+    const chevron = document.querySelector('svg');
+    expect(chevron).toHaveClass('rotate-[-90deg]');
+  });
+
+  it('expands again when clicking collapsed header', async () => {
+    const user = userEvent.setup();
+    render(<ManagementHeader clientInfo={mockClientInfo} />);
+
+    // Get header
+    const header = screen.getByText('Client Information').closest('div[class*="cursor-pointer"]');
+
+    // Collapse
+    await user.click(header);
+    await waitFor(() => {
+      const chevron = document.querySelector('svg');
+      expect(chevron).toHaveClass('rotate-[-90deg]');
+    });
+
+    // Expand again
+    await user.click(header);
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Acme Corp')).toBeVisible();
+    });
+
+    // Chevron should point down again
+    const chevron = document.querySelector('svg');
+    expect(chevron).not.toHaveClass('rotate-[-90deg]');
+  });
+
+  it('keeps contacts visible when collapsed', async () => {
+    const user = userEvent.setup();
+    render(
+      <ManagementHeader
+        clientInfo={mockClientInfo}
+        guestContacts={mockGuestContacts}
+        interworksContacts={mockInterworksContacts}
+      />
+    );
+
+    // Get header and collapse
+    const header = screen.getByText('Client Information').closest('div[class*="cursor-pointer"]');
+    await user.click(header);
+
+    // Contacts should still be visible
+    expect(screen.getByText('Acme Corp Contacts')).toBeInTheDocument();
+    expect(screen.getByText('InterWorks Team')).toBeInTheDocument();
+  });
+
+  it('has cursor-pointer and select-none on header', () => {
+    render(<ManagementHeader clientInfo={mockClientInfo} />);
+
+    const header = screen.getByText('Client Information').closest('div[class*="cursor-pointer"]');
+    expect(header).toHaveClass('cursor-pointer');
+    expect(header).toHaveClass('select-none');
   });
 });

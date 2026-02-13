@@ -127,7 +127,7 @@ export const MigrationManagement = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/')}
+          onClick={() => navigate(`/migration/${id}/overview`)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Overview
