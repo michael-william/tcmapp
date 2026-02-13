@@ -28,7 +28,7 @@ describe('ManagementHeader', () => {
     { name: 'Bob Johnson', email: 'bob@interworks.com', role: 'Consultant' },
   ];
 
-  it('renders with client info, progress stats, and contacts', () => {
+  it('renders with client info and contacts', () => {
     render(
       <ManagementHeader
         clientInfo={mockClientInfo}
@@ -41,19 +41,12 @@ describe('ManagementHeader', () => {
     // Check for Client Information card title
     expect(screen.getByText('Client Information')).toBeInTheDocument();
 
-    // Check for stat cards
-    expect(screen.getByText('Total Tasks')).toBeInTheDocument();
-    expect(screen.getByText('62')).toBeInTheDocument();
-    expect(screen.getByText('Completed')).toBeInTheDocument();
-    expect(screen.getByText('25')).toBeInTheDocument();
-    expect(screen.getByText('Remaining')).toBeInTheDocument();
-    expect(screen.getByText('37')).toBeInTheDocument();
-    expect(screen.getByText('Progress')).toBeInTheDocument();
-    expect(screen.getByText('40%')).toBeInTheDocument();
-
     // Check for contacts
     expect(screen.getByText('Acme Corp Contacts')).toBeInTheDocument();
     expect(screen.getByText('InterWorks Team')).toBeInTheDocument();
+
+    // NOTE: Stat cards are commented out to save vertical space
+    // They are not expected to be rendered
   });
 
   it('shows purple gradient background', () => {
@@ -104,23 +97,12 @@ describe('ManagementHeader', () => {
   it('handles empty data gracefully', () => {
     render(<ManagementHeader />);
 
-    // Should still render with default values
-    expect(screen.getByText('Total Tasks')).toBeInTheDocument();
-    // Look for "0" in stat cards - there should be multiple
-    const zeroTexts = screen.getAllByText('0');
-    expect(zeroTexts.length).toBeGreaterThan(0);
+    // Should still render the Client Information card
+    expect(screen.getByText('Client Information')).toBeInTheDocument();
   });
 
-  it('calculates remaining tasks correctly', () => {
-    render(
-      <ManagementHeader
-        progress={{ completed: 10, total: 50, percentage: 20 }}
-      />
-    );
-
-    expect(screen.getByText('Remaining')).toBeInTheDocument();
-    expect(screen.getByText('40')).toBeInTheDocument();
-  });
+  // NOTE: Test removed - stat cards are commented out to save vertical space
+  // it('calculates remaining tasks correctly', () => { ... }
 
   it('displays contacts horizontally in card header', () => {
     render(
