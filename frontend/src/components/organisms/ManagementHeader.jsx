@@ -1,26 +1,27 @@
 /**
  * ManagementHeader Component
  *
- * Purple gradient header section for Management view containing client info + progress stats.
- * Displays Client Information card (3-column grid of 6 fields) with horizontal ContactsList in header,
- * with 4 Progress Stat Cards on bottom row.
+ * Purple gradient header section for Management view containing client info.
+ * Displays Client Information card (3-column grid of 6 fields) with horizontal ContactsList in header.
+ *
+ * Note: Progress stat cards are commented out to save vertical space.
  */
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { ClientInfoField } from '@/components/molecules/ClientInfoField';
-import { ProgressStatsSection } from '@/components/organisms/ProgressStatsSection';
+// import { ProgressStatsSection } from '@/components/organisms/ProgressStatsSection';
 import { ContactsList } from '@/components/molecules/ContactsList';
 import { cn } from '@/lib/utils';
 
 export const ManagementHeader = ({
   clientInfo = {},
-  progress = { completed: 0, total: 0, percentage: 0 },
+  progress = { completed: 0, total: 0, percentage: 0 }, // Keep prop for future use
   guestContacts = [],
   interworksContacts = [],
   className,
 }) => {
-  const { completed, total, percentage } = progress;
+  // const { completed, total, percentage } = progress; // Commented out - stat cards disabled
 
   return (
     <div className={cn(
@@ -28,8 +29,7 @@ export const ManagementHeader = ({
       className
     )}>
       {/* Client Information Card with Contacts in Header */}
-      <div className="mb-6">
-        <Card>
+      <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Client Information</CardTitle>
@@ -80,14 +80,15 @@ export const ManagementHeader = ({
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Bottom Row: 4 Stat Cards */}
+      {/* Bottom Row: 4 Stat Cards - COMMENTED OUT to save vertical space */}
+      {/*
       <ProgressStatsSection
         completed={completed}
         total={total}
         percentage={percentage}
       />
+      */}
     </div>
   );
 };
