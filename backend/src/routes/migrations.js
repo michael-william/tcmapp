@@ -206,6 +206,7 @@ router.get('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
       migration: {
         ...migrationObj,
         progress,
+        hasManagement: !!migrationObj.managementModule?.enabled,
       },
     });
   } catch (error) {
@@ -742,10 +743,14 @@ router.post(
 
       await migration.save();
 
+      const migrationObj = migration.toObject();
       res.status(200).json({
         success: true,
         message: 'Migration Management created successfully - You can now track weekly progress and add recap notes.',
-        migration,
+        migration: {
+          ...migrationObj,
+          hasManagement: true, // Always true since we just enabled it
+        },
       });
     } catch (error) {
       console.error('Enable management module error:', error);
