@@ -49,7 +49,7 @@ export const QuestionItem = ({ question, onChange }) => {
   // Execute the pending change after user confirmation
   const executePendingChange = () => {
     if (pendingChange) {
-      onChange?.(question._id, pendingChange.updates);
+      onChange?.(question.id, pendingChange.updates);
     }
     setShowWarningModal(false);
     setPendingChange(null);
@@ -65,7 +65,7 @@ export const QuestionItem = ({ question, onChange }) => {
       setPendingChange({ updates });
       setShowWarningModal(true);
     } else {
-      onChange?.(question._id, updates);
+      onChange?.(question.id, updates);
     }
   };
 
@@ -82,13 +82,13 @@ export const QuestionItem = ({ question, onChange }) => {
       setPendingChange({ updates });
       setShowWarningModal(true);
     } else {
-      onChange?.(question._id, updates);
+      onChange?.(question.id, updates);
     }
   };
 
   const handleConditionalChange = (field, value) => {
     if (isDisabled) return; // Prevent changes
-    onChange?.(question._id, { [field]: value });
+    onChange?.(question.id, { [field]: value });
   };
 
   let questionContent;
@@ -158,7 +158,7 @@ export const QuestionItem = ({ question, onChange }) => {
         questionContent = (
           <div className="space-y-1">
             <QuestionDropdown
-              key={`${question._id}-${question.options?.length || 0}`}
+              key={`${question.id}-${question.options?.length || 0}`}
               question={question}
               options={[]}
               value=""
@@ -173,7 +173,7 @@ export const QuestionItem = ({ question, onChange }) => {
       } else {
         questionContent = (
           <QuestionDropdown
-            key={`${question._id}-${question.options?.length || 0}`}
+            key={`${question.id}-${question.options?.length || 0}`}
             question={question}
             options={question.options || []}
             value={question.answer || ''}

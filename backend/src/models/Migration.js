@@ -21,9 +21,25 @@ const questionSchema = new mongoose.Schema({
   },
   questionType: {
     type: String,
-    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo', 'numberInput'],
+    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo', 'numberInput', 'hidden', 'delta', 'deltaParent'],
     default: 'checkbox',
   },
+  // NEW: Nested deltas array for deltaParent questions
+  deltas: [{
+    id: { type: String, required: true },
+    name: String,  // User-provided label
+    fields: {
+      runbook: String,
+      migrated: Boolean,
+      owner: String,
+      date: Date,
+      notes: String,
+      complete: Boolean
+    },
+    createdBy: String,
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: Date
+  }],
   options: [String], // For dropdown and yesNo types
   answer: mongoose.Schema.Types.Mixed, // String, Date, Boolean, or null
   completed: {
@@ -61,6 +77,25 @@ const questionSchema = new mongoose.Schema({
     skuLimits: mongoose.Schema.Types.Mixed,
     min: Number,
     max: Number,
+    // Management question metadata fields
+    isManagementQuestion: {
+      type: Boolean,
+      default: false,
+    },
+    sectionGroup: String,
+    hasDate: {
+      type: Boolean,
+      default: false,
+    },
+    hasDetails: {
+      type: Boolean,
+      default: false,
+    },
+    isDeltaParent: {
+      type: Boolean,
+      default: false,
+    },
+    deltaTemplate: mongoose.Schema.Types.Mixed,
   },
 });
 
@@ -103,6 +138,7 @@ const migrationSchema = new mongoose.Schema(
         lowercase: true,
         trim: true,
       },
+      questions: [questionSchema],
       weeklyNotes: [
         {
           _id: {
