@@ -1,21 +1,24 @@
 /**
  * MigrationManagement Page
  *
- * Management view for tracking migration progress and weekly notes.
- * InterWorks users can edit notes, clients have read-only access.
+ * Management view for tracking migration progress, weekly notes, and management sections.
+ * InterWorks users can edit notes and questions, clients have read-only access.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MigrationLayout } from '@/components/templates/MigrationLayout';
 import { ManagementHeader } from '@/components/organisms/ManagementHeader';
 import { ActionToolbar } from '@/components/organisms/ActionToolbar';
 import { WeeklyNotesSection } from '@/components/organisms/WeeklyNotesSection';
+import { ManagementSectionsContainer } from '@/components/organisms/ManagementSectionsContainer';
+import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
+import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { useManagement } from '@/hooks/useManagement';
-import { ArrowLeft, ClipboardList, Loader2 } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Loader2, Save } from 'lucide-react';
 import api from '@/lib/api';
 
 export const MigrationManagement = () => {
@@ -29,12 +32,50 @@ export const MigrationManagement = () => {
     loading,
     error,
     saving,
+    saveError,
+    lastSaved,
+    hasUnsavedChanges,
     addNote,
     editNote,
     deleteNote,
+    updateQuestion,
+    addDelta,
+    updateDelta,
+    removeDelta,
+    saveManagement,
+    retrySave,
   } = useManagement(id);
 
-  const [contacts, setContacts] = React.useState({ guest: [], interworks: [] });
+  const [contacts, setContacts] = useState({ guest: [], interworks: [] });
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+
+  // Initialize all sections as collapsed on first load
+  useEffect(() => {
+    if (management?.questions && Object.keys(collapsedSections).length === 0) {
+      // Get unique section names
+      const sections = [...new Set(management.questions.map(q => q.section))];
+      const initialCollapsed = {};
+      sections.forEach(section => {
+        initialCollapsed[section] = true; // Start collapsed
+      });
+      setCollapsedSections(initialCollapsed);
+    }
+  }, [management?.questions]);
+
+  // Warn before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   // Fetch contacts when migration loads
   useEffect(() => {
@@ -63,6 +104,47 @@ export const MigrationManagement = () => {
 
     fetchContacts();
   }, [id]);
+
+  // Handle navigation with unsaved changes check
+  const handleNavigation = useCallback((path) => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation(path);
+      setShowUnsavedModal(true);
+    } else {
+      navigate(path);
+    }
+  }, [hasUnsavedChanges, navigate]);
+
+  // Unsaved modal handlers
+  const handleCancelNavigation = () => {
+    setShowUnsavedModal(false);
+    setPendingNavigation(null);
+  };
+
+  const handleDiscardChanges = () => {
+    setShowUnsavedModal(false);
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleSaveAndNavigate = async () => {
+    const result = await saveManagement();
+    if (result.success) {
+      setShowUnsavedModal(false);
+      if (pendingNavigation) {
+        navigate(pendingNavigation);
+        setPendingNavigation(null);
+      }
+    }
+    // If save fails, modal stays open and user sees error
+  };
+
+  // Save handler
+  const handleSave = async () => {
+    await saveManagement();
+  };
 
   // Create management header content
   const managementHeaderContent = management ? (
@@ -127,24 +209,79 @@ export const MigrationManagement = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(`/migration/${id}/overview`)}
+          onClick={() => handleNavigation(`/migration/${id}/overview`)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Overview
         </Button>
+
+        <SaveStatus
+          saving={saving}
+          lastSaved={lastSaved}
+          error={saveError}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onRetry={retrySave}
+        />
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => navigate(`/migration/${id}`)}
-        className="gap-2"
-      >
-        <ClipboardList className="h-4 w-4" />
-        View Checklist
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={handleSave}
+          disabled={saving || !hasUnsavedChanges}
+          size="sm"
+          className="gap-2"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+            </>
+          )}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleNavigation(`/migration/${id}`)}
+          className="gap-2"
+        >
+          <ClipboardList className="h-4 w-4" />
+          View Checklist
+        </Button>
+      </div>
     </ActionToolbar>
   );
+
+  // Handle question changes
+  const handleQuestionChange = (questionId, updates) => {
+    updateQuestion(questionId, updates);
+  };
+
+  // Handle delta operations
+  const handleAddDelta = async (parentId, name) => {
+    await addDelta(parentId, name);
+  };
+
+  const handleUpdateDelta = async (parentId, deltaId, updates) => {
+    await updateDelta(parentId, deltaId, updates);
+  };
+
+  const handleRemoveDelta = async (parentId, deltaId) => {
+    await removeDelta(parentId, deltaId);
+  };
+
+  // Handle section toggle
+  const handleToggleSection = (sectionName) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
 
   return (
     <MigrationLayout
@@ -162,7 +299,29 @@ export const MigrationManagement = () => {
           isReadOnly={!isInterWorks}
           saving={saving}
         />
+
+        {/* Management Sections */}
+        <ManagementSectionsContainer
+          questions={management.questions || []}
+          onQuestionChange={handleQuestionChange}
+          onAddDelta={handleAddDelta}
+          onUpdateDelta={handleUpdateDelta}
+          onRemoveDelta={handleRemoveDelta}
+          collapsedSections={collapsedSections}
+          onToggleSection={handleToggleSection}
+          isInterWorks={isInterWorks}
+          readOnly={!isInterWorks}
+        />
       </div>
+
+      {/* Unsaved Changes Modal */}
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onCancel={handleCancelNavigation}
+        onDiscard={handleDiscardChanges}
+        onSave={handleSaveAndNavigate}
+        saving={saving}
+      />
     </MigrationLayout>
   );
 };
