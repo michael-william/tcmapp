@@ -9,17 +9,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // server: {
-  //   host: '0.0.0.0',
-  //   port: 5173,
-  //   allowedHosts: true,
-  //   proxy: {
-  //     '/api': {
-  //       target: process.env.VITE_API_URL || 'http://localhost:5000',
-  //       changeOrigin: true,
-  //     },
-  //   },
-  // },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    watch: {
+      usePolling: true,
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

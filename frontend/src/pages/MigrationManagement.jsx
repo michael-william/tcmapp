@@ -11,7 +11,7 @@ import { MigrationLayout } from '@/components/templates/MigrationLayout';
 import { ManagementHeader } from '@/components/organisms/ManagementHeader';
 import { ActionToolbar } from '@/components/organisms/ActionToolbar';
 import { WeeklyNotesSection } from '@/components/organisms/WeeklyNotesSection';
-import { ManagementSectionsContainer } from '@/components/organisms/ManagementSectionsContainer';
+import { ManagementSectionsContainer } from '@/components/organisms/ManagementSectionsContainer.jsx';
 import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
 import { SaveStatus } from '@/components/molecules/SaveStatus';
 import { Button } from '@/components/ui/Button';
