@@ -14,7 +14,7 @@ export const ActionToolbar = ({
 }) => {
   return (
     <div className={cn(
-      'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b sticky top-[73px] z-20',
+      'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b',
       className
     )}>
       <div className="container mx-auto px-4 py-4">
