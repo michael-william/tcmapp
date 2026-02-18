@@ -51,7 +51,7 @@ export const useMigration = (migrationId) => {
       const updated = {
         ...prev,
         questions: prev.questions.map((q) =>
-          q._id === questionId ? { ...q, ...updates } : q
+          q.id === questionId ? { ...q, ...updates } : q
         ),
       };
       migrationRef.current = updated; // Keep ref in sync

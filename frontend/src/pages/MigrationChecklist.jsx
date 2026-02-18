@@ -261,7 +261,7 @@ export const MigrationChecklist = () => {
       // Disable and set N/A
       dependentQuestions.forEach(q => {
         const naValue = getNAValue(q.questionType);
-        updateQuestion(q._id, {
+        updateQuestion(q.id, {
           answer: naValue,
           completed: false,
           metadata: { ...q.metadata, disabledBy: 'q45' },
@@ -271,7 +271,7 @@ export const MigrationChecklist = () => {
       // Re-enable questions (only if currently disabled by q45)
       dependentQuestions.forEach(q => {
         if (q.metadata?.disabledBy === 'q45') {
-          updateQuestion(q._id, {
+          updateQuestion(q.id, {
             answer: null,
             completed: false,
             metadata: { ...q.metadata, disabledBy: null },
@@ -301,7 +301,7 @@ export const MigrationChecklist = () => {
         const maxSitesForNewSku = skuLimits[newSkuType];
 
         if (parseInt(currentSites) > maxSitesForNewSku) {
-          updateQuestion(q34._id, {
+          updateQuestion(q34.id, {
             answer: null,
             completed: false
           });
@@ -368,7 +368,7 @@ export const MigrationChecklist = () => {
     const q45 = migration?.questions?.find(q => q.id === 'q45');
 
     // Update q45 answer
-    updateQuestion(q45._id, {
+    updateQuestion(q45.id, {
       answer: bridgeConditionalModal.newValue,
       completed: true,
     });
