@@ -58,10 +58,15 @@ export const MigrationLayout = ({
         onNavigate={onNavigate}
       />
 
-      {/* Management Header (Management view only) */}
+      {/* Management Header + Action Toolbar (Management view only) - Combined sticky container */}
       {managementHeader && (
         <div className="sticky top-[73px] z-30">
           {managementHeader}
+          {actionToolbar && (
+            <div className="mt-0">
+              {actionToolbar}
+            </div>
+          )}
         </div>
       )}
 
@@ -95,9 +100,6 @@ export const MigrationLayout = ({
           onOpenManagementModal={onOpenManagementModal}
         />
       )}
-
-      {/* Action Toolbar (Management view only, below header) */}
-      {actionToolbar}
 
       <main className={cn('container mx-auto px-4 py-8', className)}>
         <div className="glass-container bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl max-w-[85%] mx-auto">
