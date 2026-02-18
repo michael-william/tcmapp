@@ -20,13 +20,15 @@ describe('useMigration Hook', () => {
     },
     questions: [
       {
-        _id: 'q1',
+        _id: 'mongo-id-1',
+        id: 'q1',
         questionText: 'Question 1',
         answer: '',
         completed: false,
       },
       {
-        _id: 'q2',
+        _id: 'mongo-id-2',
+        id: 'q2',
         questionText: 'Question 2',
         answer: 'Answer 2',
         completed: true,
@@ -90,7 +92,7 @@ describe('useMigration Hook', () => {
     result.current.updateQuestion('q1', { answer: 'New Answer', completed: true });
 
     await waitFor(() => {
-      const updatedQuestion = result.current.migration.questions.find((q) => q._id === 'q1');
+      const updatedQuestion = result.current.migration.questions.find((q) => q.id === 'q1');
       expect(updatedQuestion.answer).toBe('New Answer');
       expect(updatedQuestion.completed).toBe(true);
     });
