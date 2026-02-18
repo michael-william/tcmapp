@@ -46,7 +46,7 @@ export const ManagementSection = ({
     if (allCompleted && !isCollapsed) {
       onToggle?.();
     }
-  }, [allCompleted, isCollapsed, onToggle]);
+  }, [allCompleted]);
 
   const handleCompleteSection = () => {
     if (readOnly) return;
