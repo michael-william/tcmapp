@@ -98,7 +98,7 @@ export const useManagement = (migrationId) => {
   }, []);
 
   /**
-   * Add delta - immediate execution + refetch
+   * Add delta - immediate execution with direct state update
    */
   const addDelta = async (parentId, name) => {
     try {
@@ -109,9 +109,24 @@ export const useManagement = (migrationId) => {
       );
 
       if (response.data.success) {
+        const newDelta = response.data.delta;
+
+        // Update local state directly (no refetch)
+        setManagement(prev => ({
+          ...prev,
+          questions: prev.questions.map(q => {
+            if (q.id === parentId) {
+              return {
+                ...q,
+                deltas: [...(q.deltas || []), newDelta]
+              };
+            }
+            return q;
+          })
+        }));
+
         toast.success('Delta added');
-        await fetchManagement();  // ← Refetch
-        return response.data.delta;
+        return newDelta;
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to add delta';
@@ -124,32 +139,48 @@ export const useManagement = (migrationId) => {
   };
 
   /**
-   * Update delta - LOCAL STATE ONLY (no API call)
+   * Update delta - immediate execution with direct state update
    */
-  const updateDelta = useCallback((parentId, deltaId, updates) => {
-    setManagement((prev) => {
-      if (!prev) return prev;
+  const updateDelta = async (parentId, deltaId, updates) => {
+    try {
+      setSaving(true);
+      const response = await api.put(
+        `/migrations/${migrationId}/management/questions/${parentId}/deltas/${deltaId}`,
+        updates
+      );
 
-      const updated = {
-        ...prev,
-        questions: prev.questions.map((q) => {
-          if (q.id === parentId && q.deltas) {
-            return {
-              ...q,
-              deltas: q.deltas.map((delta) =>
-                delta.id === deltaId ? { ...delta, ...updates } : delta
-              ),
-            };
-          }
-          return q;
-        }),
-      };
-      managementRef.current = updated;
-      return updated;
-    });
-    setHasUnsavedChanges(true);
-    setSaveError(null);
-  }, []);
+      if (response.data.success) {
+        const updatedDelta = response.data.delta;
+
+        // Update local state directly (no refetch)
+        setManagement((prev) => ({
+          ...prev,
+          questions: prev.questions.map((q) => {
+            if (q.id === parentId && q.deltas) {
+              return {
+                ...q,
+                deltas: q.deltas.map((delta) =>
+                  delta.id === deltaId ? updatedDelta : delta
+                ),
+              };
+            }
+            return q;
+          }),
+        }));
+
+        toast.success('Changes saved');
+        return true;
+      }
+      return false;
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to save changes';
+      console.error('[DELTA UPDATE] Error:', errorMessage, err);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /**
    * Remove delta - immediate execution + refetch

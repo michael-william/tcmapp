@@ -10,7 +10,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MigrationLayout } from '@/components/templates/MigrationLayout';
 import { ManagementHeader } from '@/components/organisms/ManagementHeader';
 import { ActionToolbar } from '@/components/organisms/ActionToolbar';
-import { WeeklyNotesSection } from '@/components/organisms/WeeklyNotesSection';
+// import { WeeklyNotesSection } from '@/components/organisms/WeeklyNotesSection';
 import { ManagementSectionsContainer } from '@/components/organisms/ManagementSectionsContainer.jsx';
 import { UnsavedChangesModal } from '@/components/molecules/UnsavedChangesModal';
 import { SaveStatus } from '@/components/molecules/SaveStatus';
@@ -290,15 +290,15 @@ export const MigrationManagement = () => {
     >
       {/* Main Content */}
       <div className="space-y-6">
-        {/* Weekly Notes Section */}
-        <WeeklyNotesSection
+        {/* Weekly Notes Section - Commented out for now, may revisit later */}
+        {/* <WeeklyNotesSection
           notes={management.weeklyNotes}
           onAddNote={addNote}
           onEditNote={editNote}
           onDeleteNote={deleteNote}
           isReadOnly={!isInterWorks}
           saving={saving}
-        />
+        /> */}
 
         {/* Management Sections */}
         <ManagementSectionsContainer

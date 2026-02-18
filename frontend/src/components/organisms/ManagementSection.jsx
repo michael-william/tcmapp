@@ -116,6 +116,7 @@ export const ManagementSection = ({
 
                   <DeltaParentQuestion
                     question={deltaParent}
+                    section={section}
                     onAddDelta={onAddDelta}
                     onUpdateDelta={onUpdateDelta}
                     onRemoveDelta={onRemoveDelta}
