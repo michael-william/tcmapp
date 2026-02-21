@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Mail } from 'lucide-react';
+import { Users, Mail, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -31,6 +31,33 @@ export const ContactsCard = ({ contacts, clientName }) => {
     } catch (error) {
       console.error('Failed to copy emails:', error);
       toast.error('Failed to copy email addresses');
+    }
+  };
+
+  const handleDownloadPrereqs = async () => {
+    try {
+      // Fetch the PDF as a blob to preserve binary data
+      const response = await fetch('/TCM_Prereqs.pdf');
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+
+      // Create object URL and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'TCM_Prerequisites.pdf';
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+      toast.error('Failed to download prerequisites PDF');
     }
   };
 
@@ -83,8 +110,20 @@ export const ContactsCard = ({ contacts, clientName }) => {
             )}
           </div>
 
-          {/* Copy All Emails Button */}
-          <div className="flex-none pt-2 border-t border-white/10">
+          {/* Action Buttons */}
+          <div className="flex-none pt-2 border-t border-white/10 space-y-2">
+            {/* Download TCM Prereqs Button */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleDownloadPrereqs}
+              className="w-full gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download TCM Prereqs.
+            </Button>
+
+            {/* Copy All Emails Button */}
             <Button
               variant="default"
               size="sm"
