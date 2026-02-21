@@ -21,7 +21,7 @@ const questionSchema = new mongoose.Schema({
   },
   questionType: {
     type: String,
-    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo', 'numberInput', 'hidden', 'delta', 'deltaParent'],
+    enum: ['checkbox', 'textInput', 'dateInput', 'dropdown', 'yesNo', 'numberInput', 'hidden', 'delta', 'deltaParent', 'multiSelect'],
     default: 'checkbox',
   },
   // NEW: Nested deltas array for deltaParent questions

@@ -1,7 +1,7 @@
 /**
  * Question Template
  *
- * Default 61 questions for Tableau Cloud migration projects.
+ * Default 64 questions for Tableau Cloud migration projects.
  * Sourced from tableau-migration-checklist-pro.html
  */
 
@@ -498,7 +498,7 @@ const questionTemplate = [
   {
     id: 'q44',
     section: 'Tableau Cloud',
-    questionText: 'Additional notes for Tableau Cloud',
+    questionText: 'Tableau Cloud Manager URL',
     questionType: 'textInput',
     answer: null,
     completed: false,
@@ -507,6 +507,16 @@ const questionTemplate = [
   },
   {
     id: 'q45',
+    section: 'Tableau Cloud',
+    questionText: 'Additional notes for Tableau Cloud',
+    questionType: 'textInput',
+    answer: null,
+    completed: false,
+    order: 45,
+    metadata: {},
+  },
+  {
+    id: 'q46',
     section: 'Tableau Bridge',
     questionText: 'Do you require the use of Tableau Bridge?',
     questionType: 'yesNo',
@@ -517,7 +527,7 @@ const questionTemplate = [
     metadata: {},
   },
   {
-    id: 'q46',
+    id: 'q47',
     section: 'Tableau Bridge',
     questionText: 'Have the Bridge Servers been requested and built?',
     questionType: 'yesNo',
@@ -525,50 +535,50 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 46,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q47',
+    id: 'q48',
     section: 'Tableau Bridge',
     questionText: 'If No - Expected turnaround/Date',
     questionType: 'dateInput',
     answer: null,
     completed: false,
     order: 47,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q48',
+    id: 'q49',
     section: 'Tableau Bridge',
     questionText: 'Has any testing been done?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 48,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q49',
+    id: 'q50',
     section: 'Tableau Bridge',
     questionText: 'Is the Bridge client running in service mode?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 49,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q50',
+    id: 'q51',
     section: 'Tableau Bridge',
     questionText: 'Will the bridge server be accessed via a service account?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 50,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q51',
+    id: 'q52',
     section: 'Tableau Bridge',
     questionText: 'Will the data sources be using Windows Auth?',
     questionType: 'yesNo',
@@ -576,20 +586,20 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 51,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q52',
+    id: 'q53',
     section: 'Tableau Bridge',
     questionText: 'Flatfiles will require a full UNC filepath when using Bridge. Confirm',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 52,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   {
-    id: 'q53',
+    id: 'q54',
     section: 'Cloud Data Sources',
     questionText: 'Is Private Connect required?',
     questionType: 'yesNo',
@@ -603,7 +613,7 @@ const questionTemplate = [
     },
   },
   {
-    id: 'q54',
+    id: 'q55',
     section: 'Cloud Data Sources',
     questionText: 'Is IP whitelisting required and completed?',
     questionType: 'checkbox',
@@ -613,7 +623,7 @@ const questionTemplate = [
     metadata: {},
   },
   {
-    id: 'q55',
+    id: 'q56',
     section: 'Cloud Data Sources',
     questionText: 'What authentication is used to Cloud Data Sources',
     questionType: 'textInput',
@@ -622,12 +632,23 @@ const questionTemplate = [
     order: 55,
     metadata: {},
   },
+  {
+    id: 'q57',
+    section: 'Cloud Data Sources',
+    questionText: 'Cloud Platform',
+    questionType: 'multiSelect',
+    options: ['AWS', 'Azure', 'GCP', 'Other', 'N/A'],
+    answer: ['N/A'],
+    completed: false,
+    order: 56,
+    metadata: {},
+  },
 ];
 
 // Define the new section notes questions
 const notesQuestions = {
   communications: {
-    id: 'q56',
+    id: 'q58',
     section: 'Communications',
     questionText: 'Additional notes for Communications',
     questionType: 'textInput',
@@ -637,7 +658,7 @@ const notesQuestions = {
     metadata: {},
   },
   accessConnectivity: {
-    id: 'q57',
+    id: 'q59',
     section: 'Access & Connectivity',
     questionText: 'Additional notes for Access & Connectivity',
     questionType: 'textInput',
@@ -647,7 +668,7 @@ const notesQuestions = {
     metadata: {},
   },
   tableauServer: {
-    id: 'q58',
+    id: 'q60',
     section: 'Tableau Server',
     questionText: 'Additional notes for Tableau Server',
     questionType: 'textInput',
@@ -657,7 +678,7 @@ const notesQuestions = {
     metadata: {},
   },
   preFlightChecks: {
-    id: 'q59',
+    id: 'q61',
     section: 'Pre Flight Checks',
     questionText: 'Additional notes for Pre Flight Checks',
     questionType: 'textInput',
@@ -667,17 +688,17 @@ const notesQuestions = {
     metadata: {},
   },
   tableauBridge: {
-    id: 'q60',
+    id: 'q62',
     section: 'Tableau Bridge',
     questionText: 'Additional notes for Tableau Bridge',
     questionType: 'textInput',
     answer: null,
     completed: false,
     order: 53,
-    metadata: { dependsOn: 'q45' },
+    metadata: { dependsOn: 'q46' },
   },
   cloudDataSources: {
-    id: 'q61',
+    id: 'q63',
     section: 'Cloud Data Sources',
     questionText: 'Additional notes for Cloud Data Sources',
     questionType: 'textInput',
@@ -687,7 +708,7 @@ const notesQuestions = {
     metadata: {},
   },
   generalNotes: {
-    id: 'q62',
+    id: 'q64',
     section: 'General Notes',
     questionText: 'Additional notes or comments',
     questionType: 'textInput',
@@ -704,15 +725,15 @@ const notesQuestions = {
 let updatedQuestions = [...questionTemplate];
 
 // Insert from LAST to FIRST
-updatedQuestions.splice(55, 0, notesQuestions.generalNotes);      // At the very end
-updatedQuestions.splice(55, 0, notesQuestions.cloudDataSources);  // After q55 (index 54)
-updatedQuestions.splice(52, 0, notesQuestions.tableauBridge);     // After q52 (index 51)
+updatedQuestions.splice(57, 0, notesQuestions.generalNotes);      // At the very end
+updatedQuestions.splice(57, 0, notesQuestions.cloudDataSources);  // After q57 (index 56)
+updatedQuestions.splice(53, 0, notesQuestions.tableauBridge);     // After q53 (index 52)
 updatedQuestions.splice(31, 0, notesQuestions.preFlightChecks);   // After q31 (index 30)
 updatedQuestions.splice(24, 0, notesQuestions.tableauServer);     // After q24 (index 23)
 updatedQuestions.splice(16, 0, notesQuestions.accessConnectivity); // After q16 (index 15)
 updatedQuestions.splice(7, 0, notesQuestions.communications);      // After q7 (index 6)
 
-// Renumber all order fields sequentially (1-61)
+// Renumber all order fields sequentially (1-64)
 updatedQuestions = updatedQuestions.map((question, index) => ({
   ...question,
   order: index + 1,
