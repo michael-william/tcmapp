@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '@/lib/api';
+import { normalizeMigrationDates } from '@/lib/dateUtils';
 
 export const useMigration = (migrationId) => {
   const [migration, setMigration] = useState(null);
@@ -31,7 +32,7 @@ export const useMigration = (migrationId) => {
       setLoading(true);
       setError(null);
       const response = await api.get(`/migrations/${migrationId}`);
-      const fetchedMigration = response.data.migration;
+      const fetchedMigration = normalizeMigrationDates(response.data.migration);
       setMigration(fetchedMigration);
       migrationRef.current = fetchedMigration; // Keep ref in sync
       setHasUnsavedChanges(false); // Reset unsaved flag when loading fresh data
@@ -95,7 +96,7 @@ export const useMigration = (migrationId) => {
 
       // Update state with backend response to get updatedAt and updatedBy fields
       if (response.data.migration) {
-        const updatedMigration = response.data.migration;
+        const updatedMigration = normalizeMigrationDates(response.data.migration);
         setMigration(updatedMigration);
         migrationRef.current = updatedMigration;
       }

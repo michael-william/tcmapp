@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '../test-utils';
+import { render, screen, fireEvent } from '../test-utils';
 import userEvent from '@testing-library/user-event';
 import { ClientInfoSection } from '@/components/organisms/ClientInfoSection';
 
@@ -119,5 +119,43 @@ describe('ClientInfoSection Component', () => {
 
     // Verify values still display correctly
     expect(screen.getByDisplayValue('Acme Corp')).toBeInTheDocument();
+  });
+
+  it('displays dates correctly when provided in YYYY-MM-DD format', () => {
+    const clientInfoWithNormalizedDates = {
+      ...mockClientInfo,
+      kickoffDate: '2024-05-01',
+      goLiveDate: '2024-06-15',
+    };
+
+    render(<ClientInfoSection clientInfo={clientInfoWithNormalizedDates} />);
+
+    const kickoffInput = screen.getByLabelText('Kickoff Date');
+    const goLiveInput = screen.getByLabelText('Go-Live Date');
+
+    // HTML date inputs require YYYY-MM-DD format
+    // When dates are normalized by useMigration hook, they should display correctly
+    expect(kickoffInput).toHaveValue('2024-05-01');
+    expect(goLiveInput).toHaveValue('2024-06-15');
+  });
+
+  it('passes date values through onChange when date input changes', () => {
+    const handleChange = vi.fn();
+
+    render(
+      <ClientInfoSection
+        clientInfo={{ kickoffDate: '2024-05-01' }}
+        onChange={handleChange}
+      />
+    );
+
+    const kickoffInput = screen.getByLabelText('Kickoff Date');
+
+    // Simulate date input change event
+    // Date inputs in HTML always emit values in YYYY-MM-DD format
+    fireEvent.change(kickoffInput, { target: { value: '2024-07-01' } });
+
+    // Verify onChange was called with the date value from the input
+    expect(handleChange).toHaveBeenCalledWith('kickoffDate', '2024-07-01');
   });
 });
