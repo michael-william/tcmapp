@@ -11,6 +11,11 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  questionKey: {
+    type: String,
+    required: false,  // Optional during transition
+    sparse: true,     // Allow null during migration
+  },
   section: {
     type: String,
     required: true,
