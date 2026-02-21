@@ -32,8 +32,8 @@ export const ManagementSection = ({
   readOnly = false,
   className,
 }) => {
-  // Calculate progress (exclude delta parent from count)
-  const regularQuestions = questions.filter(q => q.questionType !== 'deltaParent');
+  // Calculate progress (exclude delta parent and optional questions from count)
+  const regularQuestions = questions.filter(q => q.questionType !== 'deltaParent' && !q.metadata?.isOptional);
   const completedCount = regularQuestions.filter((q) => q.completed).length;
   const totalCount = regularQuestions.length;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
