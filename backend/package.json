@@ -9,7 +9,8 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "seed": "node src/seeds/questionTemplate.js",
-    "seed:users": "node src/seeds/seedUsers.js"
+    "seed:users": "node src/seeds/seedUsers.js",
+    "migrate:optional": "node src/scripts/addOptionalFlag.js"
   },
   "keywords": ["tableau", "migration", "checklist"],
   "author": "InterWorks",
