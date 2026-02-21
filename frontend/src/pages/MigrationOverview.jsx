@@ -91,14 +91,16 @@ export const MigrationOverview = () => {
     }
   };
 
-  // Calculate progress from questions
+  // Calculate progress from questions (excluding optional questions)
   const calculateProgress = () => {
     if (!migration?.questions) {
       return { completed: 0, total: 0, percentage: 0 };
     }
 
-    const total = migration.questions.length;
-    const completed = migration.questions.filter(q => q.completed).length;
+    // Filter out optional questions from progress tracking
+    const nonOptionalQuestions = migration.questions.filter((q) => !q.metadata?.isOptional);
+    const completed = nonOptionalQuestions.filter((q) => q.completed).length;
+    const total = nonOptionalQuestions.length;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return { completed, total, percentage };

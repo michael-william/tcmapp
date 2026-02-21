@@ -185,10 +185,12 @@ migrationSchema.index({ clientId: 1 });
 migrationSchema.index({ createdBy: 1 });
 migrationSchema.index({ 'managementModule.enabled': 1, clientId: 1 });
 
-// Method to calculate progress
+// Method to calculate progress (excluding optional questions)
 migrationSchema.methods.calculateProgress = function () {
-  const totalQuestions = this.questions.length;
-  const completedQuestions = this.questions.filter((q) => q.completed).length;
+  // Filter out optional questions from progress tracking
+  const nonOptionalQuestions = this.questions.filter((q) => !q.metadata?.isOptional);
+  const totalQuestions = nonOptionalQuestions.length;
+  const completedQuestions = nonOptionalQuestions.filter((q) => q.completed).length;
 
   return {
     total: totalQuestions,
