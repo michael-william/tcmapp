@@ -655,7 +655,9 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 8,
-    metadata: {},
+    metadata: {
+      isOptional: true,
+    },
   },
   accessConnectivity: {
     id: 'q59',
@@ -665,7 +667,9 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 17,
-    metadata: {},
+    metadata: {
+      isOptional: true,
+    },
   },
   tableauServer: {
     id: 'q60',
@@ -675,7 +679,9 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 25,
-    metadata: {},
+    metadata: {
+      isOptional: true,
+    },
   },
   preFlightChecks: {
     id: 'q61',
@@ -685,7 +691,9 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 32,
-    metadata: {},
+    metadata: {
+      isOptional: true,
+    },
   },
   tableauBridge: {
     id: 'q62',
@@ -695,7 +703,10 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 53,
-    metadata: { dependsOn: 'q46' },
+    metadata: {
+      dependsOn: 'q46',
+      isOptional: true,
+    },
   },
   cloudDataSources: {
     id: 'q63',
@@ -705,7 +716,9 @@ const notesQuestions = {
     answer: null,
     completed: false,
     order: 61,
-    metadata: {},
+    metadata: {
+      isOptional: true,
+    },
   },
   generalNotes: {
     id: 'q64',
@@ -717,6 +730,7 @@ const notesQuestions = {
     order: 62,
     metadata: {
       isFullWidth: true,
+      isOptional: true,
     },
   },
 };
