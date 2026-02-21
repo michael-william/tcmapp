@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Mail } from 'lucide-react';
+import { Users, Mail, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +32,16 @@ export const ContactsCard = ({ contacts, clientName }) => {
       console.error('Failed to copy emails:', error);
       toast.error('Failed to copy email addresses');
     }
+  };
+
+  const handleDownloadPrereqs = () => {
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = '/TCM_Prereqs.pdf';
+    link.download = 'TCM_Prerequisites.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -83,8 +93,20 @@ export const ContactsCard = ({ contacts, clientName }) => {
             )}
           </div>
 
-          {/* Copy All Emails Button */}
-          <div className="flex-none pt-2 border-t border-white/10">
+          {/* Action Buttons */}
+          <div className="flex-none pt-2 border-t border-white/10 space-y-2">
+            {/* Download TCM Prereqs Button */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleDownloadPrereqs}
+              className="w-full gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download TCM Prereqs.
+            </Button>
+
+            {/* Copy All Emails Button */}
             <Button
               variant="default"
               size="sm"
