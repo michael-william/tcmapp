@@ -8,6 +8,7 @@
 const questionTemplate = [
   {
     id: 'q1',
+    questionKey: 'security_secops_confirm',
     section: 'Security',
     questionText: 'SecOps are aware of the migration and have signed this off? Confirm',
     questionType: 'checkbox',
@@ -18,6 +19,7 @@ const questionTemplate = [
   },
   {
     id: 'q2',
+    questionKey: 'security_data_connectivity',
     section: 'Security',
     questionText: 'Has data connectivity and access to data sources been confirmed?',
     questionType: 'checkbox',
@@ -28,6 +30,7 @@ const questionTemplate = [
   },
   {
     id: 'q3',
+    questionKey: 'security_connection_details',
     section: 'Security',
     questionText: 'Provide detail of the expected connections',
     questionType: 'textInput',
@@ -38,6 +41,7 @@ const questionTemplate = [
   },
   {
     id: 'q4',
+    questionKey: 'communications_strategy_confirmed',
     section: 'Communications',
     questionText: 'Has an internal communication strategy been confirmed?',
     questionType: 'checkbox',
@@ -50,6 +54,7 @@ const questionTemplate = [
   },
   {
     id: 'q5',
+    questionKey: 'communications_assistance_needed',
     section: 'Communications',
     questionText: 'Would you like assistance with your communication strategy?',
     questionType: 'yesNo',
@@ -63,6 +68,7 @@ const questionTemplate = [
   },
   {
     id: 'q6',
+    questionKey: 'communications_resources_assigned',
     section: 'Communications',
     questionText: 'Have resources been requested and assigned internally?',
     questionType: 'checkbox',
@@ -75,6 +81,7 @@ const questionTemplate = [
   },
   {
     id: 'q7',
+    questionKey: 'communications_change_freeze',
     section: 'Communications',
     questionText: 'Are your developers aware of a potential change freeze?',
     questionType: 'checkbox',
@@ -87,6 +94,7 @@ const questionTemplate = [
   },
   {
     id: 'q8',
+    questionKey: 'stakeholders_list',
     section: 'Stakeholders',
     questionText: 'Provide a list of stakeholders and available resources for migration',
     questionType: 'textInput',
@@ -97,6 +105,7 @@ const questionTemplate = [
   },
   {
     id: 'q9',
+    questionKey: 'access_connection_method',
     section: 'Access & Connectivity',
     questionText: 'How is Interworks connecting to your Tableau Server?',
     questionType: 'textInput',
@@ -107,6 +116,7 @@ const questionTemplate = [
   },
   {
     id: 'q10',
+    questionKey: 'access_vpn_required',
     section: 'Access & Connectivity',
     questionText: 'Has the jumpbox been built to a required specification?',
     questionType: 'checkbox',
@@ -119,6 +129,7 @@ const questionTemplate = [
   },
   {
     id: 'q11',
+    questionKey: 'access_vpn_details',
     section: 'Access & Connectivity',
     questionText: 'Has access been provided to IW Consultants?',
     questionType: 'checkbox',
@@ -129,6 +140,7 @@ const questionTemplate = [
   },
   {
     id: 'q12',
+    questionKey: 'access_vpn_notes',
     section: 'Access & Connectivity',
     questionText: 'Has PowerShell been enabled with Admin rights?',
     questionType: 'checkbox',
@@ -139,6 +151,7 @@ const questionTemplate = [
   },
   {
     id: 'q13',
+    questionKey: 'access_interworks_access',
     section: 'Access & Connectivity',
     questionText: 'Confirm file transfer methods',
     questionType: 'textInput',
@@ -151,6 +164,7 @@ const questionTemplate = [
   },
   {
     id: 'q14',
+    questionKey: 'access_tableau_install',
     section: 'Access & Connectivity',
     questionText: 'Is Tableau Desktop available on the Jumpbox?',
     questionType: 'checkbox',
@@ -161,6 +175,7 @@ const questionTemplate = [
   },
   {
     id: 'q15',
+    questionKey: 'access_jumpbox_required',
     section: 'Access & Connectivity',
     questionText: 'TCM tool installed on Jumpbox?',
     questionType: 'checkbox',
@@ -171,6 +186,7 @@ const questionTemplate = [
   },
   {
     id: 'q16',
+    questionKey: 'access_jumpbox_details',
     section: 'Access & Connectivity',
     questionText: 'Server and Cloud PATS generated and connectivity confirmed?',
     questionType: 'checkbox',
@@ -181,6 +197,7 @@ const questionTemplate = [
   },
   {
     id: 'q17',
+    questionKey: 'auth_sso_enabled',
     section: 'Tableau Server',
     questionText: 'Are PAT tokens enabled on Tableau Server?',
     questionType: 'checkbox',
@@ -193,6 +210,7 @@ const questionTemplate = [
   },
   {
     id: 'q18',
+    questionKey: 'auth_openid_enabled',
     section: 'Tableau Server',
     questionText: 'Is Tableau Repository readonly access enabled?',
     questionType: 'checkbox',
@@ -205,6 +223,7 @@ const questionTemplate = [
   },
   {
     id: 'q19',
+    questionKey: 'auth_saml_enabled',
     section: 'Tableau Server',
     questionText: 'Has the Runbook been installed and an overview provided?',
     questionType: 'checkbox',
@@ -217,6 +236,7 @@ const questionTemplate = [
   },
   {
     id: 'q20',
+    questionKey: 'auth_migration_type',
     section: 'Tableau Server',
     questionText: 'Is there a time delay for client to review Runbook?',
     questionType: 'yesNo',
@@ -230,6 +250,7 @@ const questionTemplate = [
   },
   {
     id: 'q21',
+    questionKey: 'auth_tableau_used',
     section: 'Tableau Server',
     questionText: 'Expected Date for Runbook review completion',
     questionType: 'dateInput',
@@ -240,6 +261,7 @@ const questionTemplate = [
   },
   {
     id: 'q22',
+    questionKey: 'auth_user_provisioning',
     section: 'Tableau Server',
     questionText: 'Server ready to migrate?',
     questionType: 'checkbox',
@@ -252,6 +274,7 @@ const questionTemplate = [
   },
   {
     id: 'q23',
+    questionKey: 'auth_user_list',
     section: 'Tableau Server',
     questionText: 'Any initial project exclusions to be made aware of initially?',
     questionType: 'yesNo',
@@ -263,6 +286,7 @@ const questionTemplate = [
   },
   {
     id: 'q24',
+    questionKey: 'auth_user_deactivation',
     section: 'Tableau Server',
     questionText: 'Do all users have a valid email address?',
     questionType: 'checkbox',
@@ -273,6 +297,7 @@ const questionTemplate = [
   },
   {
     id: 'q25',
+    questionKey: 'backup_tableau_automated',
     section: 'Pre Flight Checks',
     questionText: 'Is Row Level Security used extensively in Workbooks?',
     questionType: 'yesNo',
@@ -284,6 +309,7 @@ const questionTemplate = [
   },
   {
     id: 'q26',
+    questionKey: 'backup_tableau_manual',
     section: 'Pre Flight Checks',
     questionText: 'Are you aware of any URL actions that may be present?',
     questionType: 'yesNo',
@@ -295,6 +321,7 @@ const questionTemplate = [
   },
   {
     id: 'q27',
+    questionKey: 'backup_postgres_automated',
     section: 'Pre Flight Checks',
     questionText: 'Are you aware of any fonts that are non web conformant?',
     questionType: 'yesNo',
@@ -306,6 +333,7 @@ const questionTemplate = [
   },
   {
     id: 'q28',
+    questionKey: 'backup_postgres_manual',
     section: 'Pre Flight Checks',
     questionText:
       'Pre flight checks will identify the above. Any RLS or URL Actions will need to be updated post migration by power users/developers. Please confirm.',
@@ -319,6 +347,7 @@ const questionTemplate = [
   },
   {
     id: 'q29',
+    questionKey: 'backup_file_automated',
     section: 'Pre Flight Checks',
     questionText: 'Pre flight checks performed and delivered to client',
     questionType: 'dateInput',
@@ -329,6 +358,7 @@ const questionTemplate = [
   },
   {
     id: 'q30',
+    questionKey: 'backup_file_manual',
     section: 'Pre Flight Checks',
     questionText: 'Has client reviewed Pre flight checks documentation?',
     questionType: 'checkbox',
@@ -339,6 +369,7 @@ const questionTemplate = [
   },
   {
     id: 'q31',
+    questionKey: 'schedule_current_tool',
     section: 'Pre Flight Checks',
     questionText: 'Do we expect any delay on starting the migration based on the pre flight checks?',
     questionType: 'yesNo',
@@ -352,6 +383,7 @@ const questionTemplate = [
   },
   {
     id: 'q32',
+    questionKey: 'schedule_cloud_scheduler',
     section: 'Tableau Cloud',
     questionText: 'Has the Tableau/Salesforce paperwork been signed?',
     questionType: 'checkbox',
@@ -365,6 +397,7 @@ const questionTemplate = [
   },
   {
     id: 'q33',
+    questionKey: 'cloud_sku_type',
     section: 'Tableau Cloud',
     questionText: 'Confirm Tableau Cloud SKU type',
     questionType: 'dropdown',
@@ -376,6 +409,7 @@ const questionTemplate = [
   },
   {
     id: 'q34',
+    questionKey: 'cloud_site_count',
     section: 'Tableau Cloud',
     questionText: 'Number of Expected Sites',
     questionType: 'dropdown',
@@ -384,7 +418,7 @@ const questionTemplate = [
     completed: false,
     order: 34,
     metadata: {
-      dependsOn: 'q33',
+      dependsOn: 'cloud_sku_type',
       dynamicOptions: true,
       skuLimits: {
         'Standard': 5,
@@ -396,6 +430,7 @@ const questionTemplate = [
   },
   {
     id: 'q35',
+    questionKey: 'cloud_admin_setup',
     section: 'Tableau Cloud',
     questionText: 'Has Authentication method been confirmed?',
     questionType: 'checkbox',
@@ -408,6 +443,7 @@ const questionTemplate = [
   },
   {
     id: 'q36',
+    questionKey: 'cloud_user_groups',
     section: 'Tableau Cloud',
     questionText: 'If SSO - Is app built and applied?',
     questionType: 'yesNo',
@@ -419,6 +455,7 @@ const questionTemplate = [
   },
   {
     id: 'q37',
+    questionKey: 'cloud_projects_created',
     section: 'Tableau Cloud',
     questionText: 'Is any conditional access expected?',
     questionType: 'yesNo',
@@ -430,6 +467,7 @@ const questionTemplate = [
   },
   {
     id: 'q38',
+    questionKey: 'cloud_license_assigned',
     section: 'Tableau Cloud',
     questionText: 'Is SCIM being implemented?',
     questionType: 'yesNo',
@@ -441,6 +479,7 @@ const questionTemplate = [
   },
   {
     id: 'q39',
+    questionKey: 'cloud_license_pending',
     section: 'Tableau Cloud',
     questionText: 'Are the user groups on the authentication app built?',
     questionType: 'yesNo',
@@ -452,6 +491,7 @@ const questionTemplate = [
   },
   {
     id: 'q40',
+    questionKey: 'cloud_trial_expiry',
     section: 'Tableau Cloud',
     questionText: 'Group Remapping required?',
     questionType: 'yesNo',
@@ -465,6 +505,7 @@ const questionTemplate = [
   },
   {
     id: 'q41',
+    questionKey: 'cloud_service_account',
     section: 'Tableau Cloud',
     questionText: 'Any project hierarchy adjustments',
     questionType: 'yesNo',
@@ -476,6 +517,7 @@ const questionTemplate = [
   },
   {
     id: 'q42',
+    questionKey: 'cloud_service_account_owner',
     section: 'Tableau Cloud',
     questionText: 'Have InterWorks engineers been provided access to Tableau Server as Site Admin Creators?',
     questionType: 'checkbox',
@@ -486,6 +528,7 @@ const questionTemplate = [
   },
   {
     id: 'q43',
+    questionKey: 'cloud_service_account_manager',
     section: 'Tableau Cloud',
     questionText: 'Are you expecting to use Custom Domains in Tableau Cloud?',
     questionType: 'yesNo',
@@ -497,6 +540,7 @@ const questionTemplate = [
   },
   {
     id: 'q44',
+    questionKey: 'cloud_manager_url',
     section: 'Tableau Cloud',
     questionText: 'Tableau Cloud Manager URL',
     questionType: 'textInput',
@@ -507,6 +551,7 @@ const questionTemplate = [
   },
   {
     id: 'q45',
+    questionKey: 'cloud_access_confirmed',
     section: 'Tableau Cloud',
     questionText: 'Additional notes for Tableau Cloud',
     questionType: 'textInput',
@@ -517,6 +562,7 @@ const questionTemplate = [
   },
   {
     id: 'q46',
+    questionKey: 'bridge_required',
     section: 'Tableau Bridge',
     questionText: 'Do you require the use of Tableau Bridge?',
     questionType: 'yesNo',
@@ -528,6 +574,7 @@ const questionTemplate = [
   },
   {
     id: 'q47',
+    questionKey: 'bridge_servers_built',
     section: 'Tableau Bridge',
     questionText: 'Have the Bridge Servers been requested and built?',
     questionType: 'yesNo',
@@ -535,50 +582,55 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 46,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q48',
+    questionKey: 'bridge_expected_date',
     section: 'Tableau Bridge',
     questionText: 'If No - Expected turnaround/Date',
     questionType: 'dateInput',
     answer: null,
     completed: false,
     order: 47,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q49',
+    questionKey: 'bridge_testing_done',
     section: 'Tableau Bridge',
     questionText: 'Has any testing been done?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 48,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q50',
+    questionKey: 'bridge_service_mode',
     section: 'Tableau Bridge',
     questionText: 'Is the Bridge client running in service mode?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 49,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q51',
+    questionKey: 'bridge_service_account',
     section: 'Tableau Bridge',
     questionText: 'Will the bridge server be accessed via a service account?',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 50,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q52',
+    questionKey: 'bridge_windows_auth',
     section: 'Tableau Bridge',
     questionText: 'Will the data sources be using Windows Auth?',
     questionType: 'yesNo',
@@ -586,20 +638,22 @@ const questionTemplate = [
     answer: null,
     completed: false,
     order: 51,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q53',
+    questionKey: 'bridge_flatfile_unc',
     section: 'Tableau Bridge',
     questionText: 'Flatfiles will require a full UNC filepath when using Bridge. Confirm',
     questionType: 'checkbox',
     answer: null,
     completed: false,
     order: 52,
-    metadata: { dependsOn: 'q46' },
+    metadata: { dependsOn: 'bridge_required' },
   },
   {
     id: 'q54',
+    questionKey: 'content_sites_list',
     section: 'Cloud Data Sources',
     questionText: 'Is Private Connect required?',
     questionType: 'yesNo',
@@ -614,6 +668,7 @@ const questionTemplate = [
   },
   {
     id: 'q55',
+    questionKey: 'content_projects_list',
     section: 'Cloud Data Sources',
     questionText: 'Is IP whitelisting required and completed?',
     questionType: 'checkbox',
@@ -624,6 +679,7 @@ const questionTemplate = [
   },
   {
     id: 'q56',
+    questionKey: 'cloud_ds_required',
     section: 'Cloud Data Sources',
     questionText: 'What authentication is used to Cloud Data Sources',
     questionType: 'textInput',
@@ -634,6 +690,7 @@ const questionTemplate = [
   },
   {
     id: 'q57',
+    questionKey: 'cloud_ds_platform',
     section: 'Cloud Data Sources',
     questionText: 'Cloud Platform',
     questionType: 'multiSelect',
@@ -649,6 +706,7 @@ const questionTemplate = [
 const notesQuestions = {
   communications: {
     id: 'q58',
+    questionKey: 'communications_notes',
     section: 'Communications',
     questionText: 'Additional notes for Communications',
     questionType: 'textInput',
@@ -661,6 +719,7 @@ const notesQuestions = {
   },
   accessConnectivity: {
     id: 'q59',
+    questionKey: 'access_notes',
     section: 'Access & Connectivity',
     questionText: 'Additional notes for Access & Connectivity',
     questionType: 'textInput',
@@ -673,6 +732,7 @@ const notesQuestions = {
   },
   tableauServer: {
     id: 'q60',
+    questionKey: 'auth_notes',
     section: 'Tableau Server',
     questionText: 'Additional notes for Tableau Server',
     questionType: 'textInput',
@@ -685,6 +745,7 @@ const notesQuestions = {
   },
   preFlightChecks: {
     id: 'q61',
+    questionKey: 'backup_notes',
     section: 'Pre Flight Checks',
     questionText: 'Additional notes for Pre Flight Checks',
     questionType: 'textInput',
@@ -697,6 +758,7 @@ const notesQuestions = {
   },
   tableauBridge: {
     id: 'q62',
+    questionKey: 'schedule_notes',
     section: 'Tableau Bridge',
     questionText: 'Additional notes for Tableau Bridge',
     questionType: 'textInput',
@@ -704,12 +766,13 @@ const notesQuestions = {
     completed: false,
     order: 53,
     metadata: {
-      dependsOn: 'q46',
+      dependsOn: 'bridge_required',
       isOptional: true,
     },
   },
   cloudDataSources: {
     id: 'q63',
+    questionKey: 'cloud_notes',
     section: 'Cloud Data Sources',
     questionText: 'Additional notes for Cloud Data Sources',
     questionType: 'textInput',
@@ -722,6 +785,7 @@ const notesQuestions = {
   },
   generalNotes: {
     id: 'q64',
+    questionKey: 'bridge_notes',
     section: 'General Notes',
     questionText: 'Additional notes or comments',
     questionType: 'textInput',
