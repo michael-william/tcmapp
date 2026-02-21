@@ -96,6 +96,11 @@ const questionSchema = new mongoose.Schema({
       default: false,
     },
     deltaTemplate: mongoose.Schema.Types.Mixed,
+    // Optional question flag (for "Additional Notes" questions)
+    isOptional: {
+      type: Boolean,
+      default: false,
+    },
   },
 });
 
