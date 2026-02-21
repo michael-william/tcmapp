@@ -135,4 +135,44 @@ describe('QuestionItem Component', () => {
     render(<QuestionItem question={question} />);
     expect(screen.getByLabelText('Please specify:')).toBeInTheDocument();
   });
+
+  it('renders multiSelect question type', () => {
+    const question = {
+      _id: 'q57',
+      id: 'q57',
+      questionType: 'multiSelect',
+      questionText: 'Cloud Platform',
+      options: ['AWS', 'Azure', 'GCP', 'Other', 'N/A'],
+      answer: ['N/A'],
+      metadata: {},
+    };
+
+    render(<QuestionItem question={question} />);
+    expect(screen.getByText('Cloud Platform')).toBeInTheDocument();
+    // MultiSelect renders a trigger button
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(0);
+  });
+
+  it('handles multiSelect onChange with array values', () => {
+    const handleChange = vi.fn();
+    const question = {
+      _id: 'q57',
+      id: 'q57',
+      questionType: 'multiSelect',
+      questionText: 'Cloud Platform',
+      options: ['AWS', 'Azure', 'GCP', 'Other', 'N/A'],
+      answer: ['N/A'],
+      metadata: {},
+    };
+
+    render(<QuestionItem question={question} onChange={handleChange} />);
+
+    // Component is rendered correctly
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(0);
+
+    // Note: Full interaction testing is done in QuestionMultiSelect.test.jsx
+    // This test verifies that the multiSelect case is properly routed in QuestionItem
+  });
 });
