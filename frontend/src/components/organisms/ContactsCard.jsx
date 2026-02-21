@@ -34,14 +34,31 @@ export const ContactsCard = ({ contacts, clientName }) => {
     }
   };
 
-  const handleDownloadPrereqs = () => {
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a');
-    link.href = '/TCM_Prereqs.pdf';
-    link.download = 'TCM_Prerequisites.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadPrereqs = async () => {
+    try {
+      // Fetch the PDF as a blob to preserve binary data
+      const response = await fetch('/TCM_Prereqs.pdf');
+      if (!response.ok) {
+        throw new Error('Failed to fetch PDF');
+      }
+
+      const blob = await response.blob();
+
+      // Create object URL and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'TCM_Prerequisites.pdf';
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+      toast.error('Failed to download prerequisites PDF');
+    }
   };
 
   return (
