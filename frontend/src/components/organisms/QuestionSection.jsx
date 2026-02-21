@@ -21,8 +21,10 @@ export const QuestionSection = ({
   onToggle,
   className,
 }) => {
-  const completedCount = questions.filter((q) => q.completed).length;
-  const totalCount = questions.length;
+  // Exclude optional questions (like "Additional Notes") from section completion logic
+  const nonOptionalQuestions = questions.filter((q) => !q.metadata?.isOptional);
+  const completedCount = nonOptionalQuestions.filter((q) => q.completed).length;
+  const totalCount = nonOptionalQuestions.length;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
 
   // Auto-collapse when all questions are completed

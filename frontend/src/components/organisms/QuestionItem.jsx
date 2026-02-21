@@ -11,6 +11,7 @@ import { QuestionDateInput } from '@/components/molecules/QuestionDateInput';
 import { QuestionDropdown } from '@/components/molecules/QuestionDropdown';
 import { QuestionYesNo } from '@/components/molecules/QuestionYesNo';
 import { QuestionNumberInput } from '@/components/molecules/QuestionNumberInput';
+import { QuestionMultiSelect } from '@/components/molecules/QuestionMultiSelect';
 import { AnswerChangeWarningModal } from '@/components/organisms/AnswerChangeWarningModal';
 import { cn } from '@/lib/utils';
 
@@ -34,9 +35,15 @@ export const QuestionItem = ({ question, onChange }) => {
     }
 
     // For other question types, check if answer exists and is not empty
-    const hasAnswer = question.answer !== null &&
-                      question.answer !== undefined &&
-                      question.answer !== '';
+    let hasAnswer;
+    if (Array.isArray(question.answer)) {
+      // For multiSelect, check if array has items
+      hasAnswer = question.answer.length > 0;
+    } else {
+      hasAnswer = question.answer !== null &&
+                  question.answer !== undefined &&
+                  question.answer !== '';
+    }
 
     // Check for ANY indicator that question was previously answered
     const hasBeenAnswered = question.updatedAt ||
@@ -61,7 +68,12 @@ export const QuestionItem = ({ question, onChange }) => {
     const updates = { answer: value, completed: !!value };
 
     // Check if previously answered and value is different
-    if (isPreviouslyAnswered() && value !== question.answer) {
+    // For arrays (multiSelect), compare by content
+    const isAnswerChanged = Array.isArray(value) && Array.isArray(question.answer)
+      ? JSON.stringify([...value].sort()) !== JSON.stringify([...question.answer].sort())
+      : value !== question.answer;
+
+    if (isPreviouslyAnswered() && isAnswerChanged) {
       setPendingChange({ updates });
       setShowWarningModal(true);
     } else {
@@ -209,6 +221,25 @@ export const QuestionItem = ({ question, onChange }) => {
             conditionalInputValue={question.conditionalInput || ''}
             onConditionalDateChange={(value) => handleConditionalChange('conditionalDate', value)}
             onConditionalInputChange={(value) => handleConditionalChange('conditionalInput', value)}
+            disabled={isDisabled}
+          />
+          {isDisabled && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Not applicable - Bridge is not required
+            </p>
+          )}
+        </div>
+      );
+      break;
+
+    case 'multiSelect':
+      questionContent = (
+        <div className={cn(isDisabled && 'opacity-50 cursor-not-allowed')}>
+          <QuestionMultiSelect
+            question={question}
+            options={question.options || []}
+            value={question.answer || []}
+            onChange={handleChange}
             disabled={isDisabled}
           />
           {isDisabled && (
