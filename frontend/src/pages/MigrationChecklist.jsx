@@ -207,12 +207,14 @@ export const MigrationChecklist = () => {
     return filtered;
   }, [questionsBySection, searchTerm, selectedSection, selectedStatus]);
 
-  // Calculate progress
+  // Calculate progress (excluding optional questions like "Additional Notes")
   const { completed, total, percentage } = useMemo(() => {
     if (!migration?.questions) return { completed: 0, total: 0, percentage: 0 };
 
-    const completedCount = migration.questions.filter((q) => q.completed).length;
-    const totalCount = migration.questions.length;
+    // Filter out optional questions from progress tracking
+    const nonOptionalQuestions = migration.questions.filter((q) => !q.metadata?.isOptional);
+    const completedCount = nonOptionalQuestions.filter((q) => q.completed).length;
+    const totalCount = nonOptionalQuestions.length;
     const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     return { completed: completedCount, total: totalCount, percentage: pct };
