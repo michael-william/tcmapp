@@ -11,6 +11,7 @@ const Client = require('../models/Client');
 const User = require('../models/User');
 const { requireAuth, requireInterWorks } = require('../middleware/auth');
 const questionTemplate = require('../seeds/questionTemplate');
+const { findQuestion } = require('../utils/questionHelpers');
 
 const router = express.Router();
 
@@ -266,7 +267,8 @@ router.put('/:id', requireAuth, param('id').isMongoId(), async (req, res) => {
 
       // Track who updated each question and when
       migration.questions = transformedQuestions.map((incomingQ) => {
-        const existingQ = migration.questions.find(q => q.id === incomingQ.id);
+        const identifier = incomingQ.questionKey || incomingQ.id;
+        const existingQ = findQuestion(migration.questions, identifier);
 
         // If question exists, check if answer or other fields changed
         if (existingQ) {
@@ -419,8 +421,8 @@ router.put(
       }
 
       // Reorder questions
-      questionIds.forEach((id, index) => {
-        const question = migration.questions.find((q) => q.id === id);
+      questionIds.forEach((identifier, index) => {
+        const question = findQuestion(migration.questions, identifier);
         if (question) {
           question.order = index + 1;
         }
@@ -490,9 +492,18 @@ router.post(
 
       const { section, questionText, questionType, options, metadata, helpText } = req.body;
 
-      // Generate new question ID
+      // Generate new question ID - find highest numeric ID to prevent duplicates
+      const existingIds = migration.questions
+        .map((q) => {
+          const match = q.id.match(/^q(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter((num) => !isNaN(num));
+
+      const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
+      const newQuestionId = `q${maxId + 1}`;
+
       const maxOrder = Math.max(...migration.questions.map((q) => q.order), 0);
-      const newQuestionId = `q${migration.questions.length + 1}`;
 
       const newQuestion = {
         id: newQuestionId,
@@ -521,10 +532,16 @@ router.post(
         migrationObj.questions = migrationObj.questions.map(transformQuestionForFrontend);
       }
 
+      // Calculate progress to keep response consistent with GET endpoints
+      const progress = migration.calculateProgress();
+
       res.status(201).json({
         success: true,
         message: 'Question added successfully.',
-        migration: migrationObj,
+        migration: {
+          ...migrationObj,
+          progress,
+        },
       });
     } catch (error) {
       console.error('Add question error:', error);
@@ -564,16 +581,16 @@ router.put(
         });
       }
 
-      const questionIndex = migration.questions.findIndex(
-        (q) => q.id === req.params.questionId
-      );
+      const question = findQuestion(migration.questions, req.params.questionId);
 
-      if (questionIndex === -1) {
+      if (!question) {
         return res.status(404).json({
           success: false,
           message: 'Question not found.',
         });
       }
+
+      const questionIndex = migration.questions.indexOf(question);
 
       // Update question fields
       const allowedFields = [
@@ -654,16 +671,16 @@ router.delete(
         });
       }
 
-      const questionIndex = migration.questions.findIndex(
-        (q) => q.id === req.params.questionId
-      );
+      const question = findQuestion(migration.questions, req.params.questionId);
 
-      if (questionIndex === -1) {
+      if (!question) {
         return res.status(404).json({
           success: false,
           message: 'Question not found.',
         });
       }
+
+      const questionIndex = migration.questions.indexOf(question);
 
       // Remove question
       migration.questions.splice(questionIndex, 1);
@@ -929,7 +946,7 @@ router.put(
       console.log(`[QUESTION UPDATE] Updating question ${questionId}:`, updates);
 
       // Find and update question
-      const question = migration.managementModule.questions.find(q => q.id === questionId);
+      const question = findQuestion(migration.managementModule.questions, questionId);
       if (!question) {
         return res.status(404).json({
           success: false,
@@ -1152,7 +1169,7 @@ router.post(
       const { name } = req.body;
 
       // Find parent question
-      const parentQuestion = migration.managementModule.questions.find(q => q.id === parentId);
+      const parentQuestion = findQuestion(migration.managementModule.questions, parentId);
       if (!parentQuestion) {
         return res.status(404).json({
           success: false,
@@ -1263,7 +1280,7 @@ router.put(
       const updates = req.body;
 
       // Find parent question
-      const parentQuestion = migration.managementModule.questions.find(q => q.id === parentId);
+      const parentQuestion = findQuestion(migration.managementModule.questions, parentId);
       if (!parentQuestion) {
         return res.status(404).json({
           success: false,
@@ -1359,7 +1376,7 @@ router.delete(
       const { parentId, deltaId } = req.params;
 
       // Find parent question
-      const parentQuestion = migration.managementModule.questions.find(q => q.id === parentId);
+      const parentQuestion = findQuestion(migration.managementModule.questions, parentId);
       if (!parentQuestion) {
         return res.status(404).json({
           success: false,
@@ -1648,7 +1665,7 @@ router.post(
       const { parentId, sectionName } = req.body;
 
       // Find parent question
-      const parentQuestion = migration.questions.find(q => q.id === parentId);
+      const parentQuestion = findQuestion(migration.questions, parentId);
 
       if (!parentQuestion) {
         return res.status(404).json({
