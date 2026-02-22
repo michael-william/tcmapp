@@ -11,7 +11,7 @@ const Client = require('../models/Client');
 const User = require('../models/User');
 const { requireAuth, requireInterWorks } = require('../middleware/auth');
 const questionTemplate = require('../seeds/questionTemplate');
-const { findQuestion } = require('../utils/questionHelpers');
+const { findQuestion, generateQuestionKey } = require('../utils/questionHelpers');
 
 const router = express.Router();
 
@@ -505,8 +505,12 @@ router.post(
 
       const maxOrder = Math.max(...migration.questions.map((q) => q.order), 0);
 
+      // Generate semantic questionKey
+      const questionKey = generateQuestionKey(section, questionText, migration.questions);
+
       const newQuestion = {
         id: newQuestionId,
+        questionKey,
         section,
         questionText,
         questionType: questionType || 'checkbox',

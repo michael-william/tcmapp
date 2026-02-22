@@ -632,6 +632,144 @@ describe('Migration Routes', () => {
 
       expect(response.body.success).toBe(false);
     });
+
+    it('should generate semantic questionKey following naming convention', async () => {
+      const newQuestion = {
+        section: 'Testing',
+        questionText: 'Does the add question button work?',
+        questionType: 'yesNo',
+        options: ['Yes', 'No'],
+      };
+
+      const response = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(newQuestion)
+        .expect(201);
+
+      expect(response.body.success).toBe(true);
+      const addedQuestion = response.body.migration.questions[1];
+      expect(addedQuestion.questionKey).toBeDefined();
+      expect(addedQuestion.questionKey).toMatch(/^testing_/);
+      expect(addedQuestion.questionKey).toContain('add');
+      expect(addedQuestion.questionKey).toContain('question');
+    });
+
+    it('should ensure questionKey uniqueness by appending counter', async () => {
+      // Add first question
+      const question1 = {
+        section: 'Security',
+        questionText: 'Is MFA enabled?',
+        questionType: 'yesNo',
+        options: ['Yes', 'No'],
+      };
+
+      const response1 = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(question1)
+        .expect(201);
+
+      const firstKey = response1.body.migration.questions[1].questionKey;
+
+      // Add duplicate question text
+      const question2 = {
+        section: 'Security',
+        questionText: 'Is MFA enabled?',
+        questionType: 'checkbox',
+      };
+
+      const response2 = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(question2)
+        .expect(201);
+
+      const secondKey = response2.body.migration.questions[2].questionKey;
+
+      // Should have different keys
+      expect(firstKey).toBeDefined();
+      expect(secondKey).toBeDefined();
+      expect(secondKey).not.toBe(firstKey);
+      expect(secondKey).toMatch(/_\d+$/); // Should end with _1 or similar
+    });
+
+    it('should generate unique question IDs preventing duplicates', async () => {
+      // Create migration with questions that have gaps in numbering
+      // This simulates a scenario where questions were added/deleted previously
+      const fullMigration = await Migration.create({
+        clientId: client._id,
+        questions: [
+          { id: 'q1', questionKey: 'security_q1', section: 'Security', questionText: 'Q1', questionType: 'checkbox', order: 1 },
+          { id: 'q2', questionKey: 'security_q2', section: 'Security', questionText: 'Q2', questionType: 'checkbox', order: 2 },
+          { id: 'q5', questionKey: 'security_q5', section: 'Security', questionText: 'Q5', questionType: 'checkbox', order: 5 },
+          { id: 'q10', questionKey: 'security_q10', section: 'Security', questionText: 'Q10', questionType: 'checkbox', order: 10 },
+        ],
+        createdBy: 'consultant@interworks.com',
+      });
+
+      // Add new question - should use max+1 (q11), not length+1 (q5 which would be duplicate)
+      const newQuestion = {
+        section: 'Security',
+        questionText: 'New question after gaps',
+        questionType: 'checkbox',
+      };
+
+      const response = await request(app)
+        .post(`/api/migrations/${fullMigration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(newQuestion)
+        .expect(201);
+
+      const questions = response.body.migration.questions;
+      const addedQuestion = questions.find(q => q.questionText === 'New question after gaps');
+
+      expect(addedQuestion).toBeDefined();
+      expect(addedQuestion.id).toBe('q11'); // max(1,2,5,10) + 1 = 11
+
+      // Verify no duplicate IDs exist
+      const ids = questions.map(q => q.id);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(ids.length); // All IDs should be unique
+    });
+
+    it('should include progress in response', async () => {
+      const newQuestion = {
+        section: 'Security',
+        questionText: 'Test progress in response',
+        questionType: 'checkbox',
+      };
+
+      const response = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(newQuestion)
+        .expect(201);
+
+      expect(response.body.migration.progress).toBeDefined();
+      expect(response.body.migration.progress.total).toBeDefined();
+      expect(response.body.migration.progress.completed).toBeDefined();
+      expect(response.body.migration.progress.percentage).toBeDefined();
+    });
+
+    it('should map helpText to metadata.infoTooltip', async () => {
+      const newQuestion = {
+        section: 'Communications',
+        questionText: 'Question with help text',
+        questionType: 'textInput',
+        helpText: 'This is helpful information',
+      };
+
+      const response = await request(app)
+        .post(`/api/migrations/${migration._id}/questions`)
+        .set('Authorization', `Bearer ${interworksToken}`)
+        .send(newQuestion)
+        .expect(201);
+
+      const addedQuestion = response.body.migration.questions[1];
+      expect(addedQuestion.helpText).toBe('This is helpful information');
+      expect(addedQuestion.metadata.infoTooltip).toBe('This is helpful information');
+    });
   });
 
   describe('PUT /api/migrations/:id/questions/:questionId', () => {

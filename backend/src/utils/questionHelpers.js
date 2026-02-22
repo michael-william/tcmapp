@@ -85,9 +85,72 @@ function findMultipleQuestions(questions, identifiers) {
     .filter(q => q !== undefined);
 }
 
+/**
+ * Generate a semantic questionKey from section and question text
+ *
+ * Follows the naming convention: {section_prefix}_{semantic_description}
+ * Ensures uniqueness by appending a counter if needed.
+ *
+ * @param {string} section - Question section (e.g., "Security", "Tableau Cloud")
+ * @param {string} questionText - Full question text
+ * @param {Array} existingQuestions - Array of existing questions to check uniqueness
+ * @returns {string} - Generated questionKey (e.g., "security_mfa_enabled")
+ *
+ * @example
+ * const key = generateQuestionKey('Security', 'Is MFA enabled?', questions);
+ * // Returns: 'security_mfa_enabled'
+ */
+function generateQuestionKey(section, questionText, existingQuestions = []) {
+  if (!section || !questionText) {
+    throw new Error('Section and questionText are required to generate questionKey');
+  }
+
+  // Convert section to snake_case prefix
+  const sectionPrefix = section
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special chars
+    .replace(/\s+/g, '_'); // Replace spaces with underscores
+
+  // Extract key words from question text (remove common words)
+  const stopWords = new Set([
+    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'can', 'of', 'in', 'on', 'at', 'to', 'for',
+    'with', 'by', 'from', 'as', 'and', 'or', 'but', 'if', 'then', 'than',
+    'this', 'that', 'these', 'those', 'what', 'which', 'who', 'when', 'where',
+    'why', 'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most',
+    'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same',
+    'so', 'than', 'too', 'very', 'you', 'your'
+  ]);
+
+  const words = questionText
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special chars and punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.has(word)) // Keep meaningful words
+    .slice(0, 4); // Take first 4 meaningful words
+
+  // Generate base key
+  const baseKey = `${sectionPrefix}_${words.join('_')}`;
+
+  // Ensure uniqueness
+  let questionKey = baseKey;
+  let counter = 1;
+
+  while (existingQuestions.some(q => q.questionKey === questionKey)) {
+    questionKey = `${baseKey}_${counter}`;
+    counter++;
+  }
+
+  return questionKey;
+}
+
 module.exports = {
   findQuestion,
   getQuestionValue,
   hasQuestion,
   findMultipleQuestions,
+  generateQuestionKey,
 };
