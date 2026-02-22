@@ -21,6 +21,7 @@ require('dotenv').config();
 // Define the new questions based on current template
 const q44 = {
   id: 'q44',
+  questionKey: 'cloud_manager_url',
   section: 'Tableau Cloud',
   questionText: 'Tableau Cloud Manager URL',
   questionType: 'textInput',
@@ -32,6 +33,7 @@ const q44 = {
 
 const q57 = {
   id: 'q57',
+  questionKey: 'cloud_ds_platform',
   section: 'Cloud Data Sources',
   questionText: 'Cloud Platform',
   questionType: 'multiSelect',
@@ -45,13 +47,16 @@ const q57 = {
 /**
  * Find the correct insertion index for a question
  * @param {Array} questions - Array of existing questions
- * @param {String} afterQuestionId - ID of question to insert after
+ * @param {String} afterQuestionId - ID or questionKey to insert after
  * @param {String} section - Section name as fallback
  * @returns {Number} - Index where question should be inserted
  */
 function findInsertionIndex(questions, afterQuestionId, section) {
   // Try to find the question that should come before this one
-  const afterIndex = questions.findIndex((q) => q.id === afterQuestionId);
+  // Support both questionKey and id for backward compatibility
+  const afterIndex = questions.findIndex(
+    (q) => q.questionKey === afterQuestionId || q.id === afterQuestionId
+  );
 
   if (afterIndex !== -1) {
     // Insert right after the found question
@@ -104,8 +109,10 @@ async function addNewQuestions() {
       console.log(`  Client: ${migration.clientInfo?.clientName || 'N/A'}`);
       console.log(`  Total questions: ${migration.questions.length}`);
 
-      // Check if q44 exists
-      const hasQ44 = migration.questions.some((q) => q.id === 'q44');
+      // Check if q44 exists (support both questionKey and id)
+      const hasQ44 = migration.questions.some(
+        (q) => q.questionKey === 'cloud_manager_url' || q.id === 'q44'
+      );
       console.log(`  Has q44: ${hasQ44}`);
 
       if (!hasQ44) {
@@ -124,8 +131,10 @@ async function addNewQuestions() {
         console.log('  q44 already exists, skipping');
       }
 
-      // Check if q57 exists
-      const hasQ57 = migration.questions.some((q) => q.id === 'q57');
+      // Check if q57 exists (support both questionKey and id)
+      const hasQ57 = migration.questions.some(
+        (q) => q.questionKey === 'cloud_ds_platform' || q.id === 'q57'
+      );
       console.log(`  Has q57: ${hasQ57}`);
 
       if (!hasQ57) {
