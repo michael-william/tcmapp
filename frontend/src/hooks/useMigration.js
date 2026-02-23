@@ -44,15 +44,18 @@ export const useMigration = (migrationId) => {
     }
   }, [migrationId]);
 
-  // Update a single question
-  const updateQuestion = useCallback((questionId, updates) => {
+  // Update a single question (supports both questionKey and id)
+  const updateQuestion = useCallback((identifier, updates) => {
     setMigration((prev) => {
       if (!prev) return prev;
 
       const updated = {
         ...prev,
         questions: prev.questions.map((q) =>
-          q.id === questionId ? { ...q, ...updates } : q
+          // Support both questionKey and id for backward compatibility
+          (q.questionKey === identifier || q.id === identifier)
+            ? { ...q, ...updates, timestamp: new Date() }
+            : q
         ),
       };
       migrationRef.current = updated; // Keep ref in sync

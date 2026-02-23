@@ -719,6 +719,75 @@ export const handlers = [
     });
   }),
 
+  // Migrations - Add Question
+  http.post(`${API_URL}/migrations/:id/questions`, async ({ request, params }) => {
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Authentication required.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    if (!body.section || !body.questionText) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: 'Section and questionText are required.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Generate new question with unique ID and questionKey
+    const newQuestion = {
+      id: `q${mockMigration.questions.length + 1}`,
+      questionKey: `${body.section.toLowerCase().replace(/\s+/g, '_')}_new_question`,
+      section: body.section,
+      questionText: body.questionText,
+      questionType: body.questionType || 'checkbox',
+      options: body.options || [],
+      answer: null,
+      completed: false,
+      order: mockMigration.questions.length + 1,
+      metadata: body.metadata || {},
+      helpText: body.helpText || '',
+    };
+
+    if (body.helpText) {
+      newQuestion.metadata.infoTooltip = body.helpText;
+    }
+
+    // Add to mock migration
+    mockMigration.questions.push(newQuestion);
+
+    return HttpResponse.json(
+      {
+        success: true,
+        message: 'Question added successfully.',
+        migration: {
+          ...mockMigration,
+          progress: {
+            total: mockMigration.questions.length,
+            completed: mockMigration.questions.filter((q) => q.completed).length,
+            percentage: Math.round(
+              (mockMigration.questions.filter((q) => q.completed).length /
+                mockMigration.questions.length) *
+                100
+            ),
+          },
+        },
+      },
+      { status: 201 }
+    );
+  }),
+
   // Users - Delete
   http.delete(`${API_URL}/users/:id`, ({ request, params }) => {
     const authHeader = request.headers.get('Authorization');

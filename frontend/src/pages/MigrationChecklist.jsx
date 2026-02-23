@@ -42,6 +42,7 @@ export const MigrationChecklist = () => {
     updateClientInfo,
     saveMigration,
     retrySave,
+    refetch,
   } = useMigration(id);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,16 +54,18 @@ export const MigrationChecklist = () => {
   const [hasManagement, setHasManagement] = useState(false);
   const [enablingManagement, setEnablingManagement] = useState(false);
 
-  // Enhance questions with dynamic options for Q34
+  // Enhance questions with dynamic options for site count based on SKU type
   const enhancedQuestions = useMemo(() => {
     if (!migration?.questions) return [];
 
     return migration.questions.map(q => {
-      // Special handling for Q34 - dynamic options based on Q33
+      // Special handling for site count - dynamic options based on SKU type
       // Check for dependsOn and skuLimits instead of dynamicOptions flag
-      if (q.id === 'q34' && q.metadata?.dependsOn === 'q33' && q.metadata?.skuLimits) {
-        const q33 = migration.questions.find(q2 => q2.id === 'q33');
-        const skuType = q33?.answer;
+      if (q.questionKey === 'cloud_site_count' && q.metadata?.dependsOn === 'cloud_sku_type' && q.metadata?.skuLimits) {
+        const skuQuestion = migration.questions.find(
+          q2 => q2.questionKey === 'cloud_sku_type' || q2.id === 'q33'
+        );
+        const skuType = skuQuestion?.answer;
 
         if (!skuType || skuType === '') {
           return { ...q, options: [] };
@@ -237,11 +240,21 @@ export const MigrationChecklist = () => {
   const handleBridgeConditionalLogic = useCallback((bridgeAnswer, skipModal = false) => {
     if (!bridgeAnswer) return;
 
-    // Define dependent question IDs (works for all migrations)
-    const dependentQuestionIds = ['q46', 'q47', 'q48', 'q49', 'q50', 'q51', 'q52', 'q60'];
+    // Define dependent question keys (all Bridge questions except the trigger)
+    const dependentQuestionKeys = [
+      'bridge_servers_built',
+      'bridge_expected_date',
+      'bridge_testing_done',
+      'bridge_service_mode',
+      'bridge_service_account',
+      'bridge_windows_auth',
+      'bridge_flatfile_unc',
+      'bridge_notes'
+    ];
 
     const dependentQuestions = migration?.questions?.filter(
-      q => dependentQuestionIds.includes(q.id)
+      q => dependentQuestionKeys.includes(q.questionKey) ||
+           ['q47', 'q48', 'q49', 'q50', 'q51', 'q52', 'q53', 'q64'].includes(q.id)
     ) || [];
 
     if (bridgeAnswer === 'No') {
@@ -263,17 +276,19 @@ export const MigrationChecklist = () => {
       // Disable and set N/A
       dependentQuestions.forEach(q => {
         const naValue = getNAValue(q.questionType);
-        updateQuestion(q.id, {
+        const identifier = q.questionKey || q.id;
+        updateQuestion(identifier, {
           answer: naValue,
           completed: false,
-          metadata: { ...q.metadata, disabledBy: 'q45' },
+          metadata: { ...q.metadata, disabledBy: 'bridge_required' },
         });
       });
     } else if (bridgeAnswer === 'Yes') {
-      // Re-enable questions (only if currently disabled by q45)
+      // Re-enable questions (only if currently disabled by bridge_required)
       dependentQuestions.forEach(q => {
-        if (q.metadata?.disabledBy === 'q45') {
-          updateQuestion(q.id, {
+        if (q.metadata?.disabledBy === 'bridge_required' || q.metadata?.disabledBy === 'q46') {
+          const identifier = q.questionKey || q.id;
+          updateQuestion(identifier, {
             answer: null,
             completed: false,
             metadata: { ...q.metadata, disabledBy: null },
@@ -287,14 +302,16 @@ export const MigrationChecklist = () => {
   const handleQuestionChange = (questionId, updates) => {
     const question = migration?.questions?.find(q => q._id === questionId);
 
-    // Special handling for q33 (SKU type change)
-    if (question?.id === 'q33') {
-      const q34 = migration?.questions?.find(q => q.id === 'q34');
+    // Special handling for SKU type change
+    if (question?.questionKey === 'cloud_sku_type' || question?.id === 'q33') {
+      const siteCountQuestion = migration?.questions?.find(
+        q => q.questionKey === 'cloud_site_count' || q.id === 'q34'
+      );
       const newSkuType = updates.answer;
-      const currentSites = q34?.answer;
+      const currentSites = siteCountQuestion?.answer;
 
-      if (q34 && currentSites && newSkuType) {
-        const skuLimits = q34.metadata?.skuLimits || {
+      if (siteCountQuestion && currentSites && newSkuType) {
+        const skuLimits = siteCountQuestion.metadata?.skuLimits || {
           'Standard': 5,
           'Enterprise': 10,
           'Tableau +': 50,
@@ -303,7 +320,8 @@ export const MigrationChecklist = () => {
         const maxSitesForNewSku = skuLimits[newSkuType];
 
         if (parseInt(currentSites) > maxSitesForNewSku) {
-          updateQuestion(q34.id, {
+          const siteIdentifier = siteCountQuestion.questionKey || siteCountQuestion.id;
+          updateQuestion(siteIdentifier, {
             answer: null,
             completed: false
           });
@@ -353,24 +371,29 @@ export const MigrationChecklist = () => {
     updateQuestion(questionId, enhancedUpdates);
   };
 
-  // Get q45 answer value for monitoring
-  const q45Answer = useMemo(() => {
-    return migration?.questions?.find(q => q.id === 'q45')?.answer;
+  // Get bridge_required answer value for monitoring
+  const bridgeRequiredAnswer = useMemo(() => {
+    return migration?.questions?.find(
+      q => q.questionKey === 'bridge_required' || q.id === 'q46'
+    )?.answer;
   }, [migration?.questions]);
 
-  // Monitor q45 changes and apply conditional logic
+  // Monitor bridge_required changes and apply conditional logic
   useEffect(() => {
-    if (q45Answer) {
-      handleBridgeConditionalLogic(q45Answer);
+    if (bridgeRequiredAnswer) {
+      handleBridgeConditionalLogic(bridgeRequiredAnswer);
     }
-  }, [q45Answer, handleBridgeConditionalLogic]);
+  }, [bridgeRequiredAnswer, handleBridgeConditionalLogic]);
 
   // Handle Bridge modal confirmation
   const handleBridgeModalConfirm = () => {
-    const q45 = migration?.questions?.find(q => q.id === 'q45');
+    const bridgeQuestion = migration?.questions?.find(
+      q => q.questionKey === 'bridge_required' || q.id === 'q46'
+    );
 
-    // Update q45 answer
-    updateQuestion(q45.id, {
+    // Update bridge_required answer
+    const identifier = bridgeQuestion.questionKey || bridgeQuestion.id;
+    updateQuestion(identifier, {
       answer: bridgeConditionalModal.newValue,
       completed: true,
     });
@@ -414,8 +437,22 @@ export const MigrationChecklist = () => {
 
   // Add new question
   const handleAddQuestion = async (newQuestion) => {
-    // TODO: Implement add question API call
-    console.log('Adding question:', newQuestion);
+    try {
+      const response = await api.post(`/migrations/${id}/questions`, {
+        section: newQuestion.section,
+        questionText: newQuestion.questionText,
+        questionType: newQuestion.questionType,
+        helpText: newQuestion.helpText,
+      });
+
+      toast.success('Question added successfully');
+      await refetch(); // Refresh migration data to show new question
+    } catch (error) {
+      console.error('Failed to add question:', error);
+      toast.error('Failed to add question', {
+        description: error.response?.data?.message || 'An error occurred',
+      });
+    }
   };
 
   // Manual save handler
